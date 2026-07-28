@@ -7,6 +7,8 @@
     <link rel="manifest" href="manifest.json">
     <!-- JSZip chargé en local pour une autonomie 100% Hors-Ligne -->
     <script src="jszip.min.js"></script>
+    <!-- Parser DXF professionnel pour la conversion vectorielle AutoCAD -> SVG -->
+    <script src="https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.min.js"></script>
 
     <style>
         *, *::before, *::after { box-sizing: border-box; }
@@ -683,64 +685,93 @@
     let modificationsEnAttente = false;
 
     /* ==========================================================================
-       CONVERTISSEUR VECTORIEL AUTONOME : DXF AUTOCAD -> SVG (PURE JS HORS-LIGNE)
+       CONVERTISSEUR VECTORIEL AUTONOME AVEC DXF-PARSER : DXF AUTOCAD -> SVG
        ========================================================================== */
     function convertirDxfTextEnSvgDataUrl(dxfText) {
-        const lines = dxfText.split(/\r?\n/);
-        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-        let elementsSvg = [];
+        try {
+            const parser = new DxfParser();
+            const dxf = parser.parseSync(dxfText);
 
-        function updateBounds(x, y) {
-            if (x < minX) minX = x;
-            if (x > maxX) maxX = x;
-            if (y < minY) minY = y;
-            if (y > maxY) maxY = y;
-        }
-
-        let inEntities = false;
-        let currentEntity = null;
-
-        for (let i = 0; i < lines.length - 1; i += 2) {
-            const code = lines[i].trim();
-            const val = lines[i + 1].trim();
-
-            if (code === '2' && val === 'ENTITIES') { inEntities = true; continue; }
-            if (code === '0' && val === 'ENDSEC') { inEntities = false; continue; }
-
-            if (inEntities && code === '0') {
-                if (currentEntity) processEntity(currentEntity);
-                currentEntity = { type: val, x1: 0, y1: 0, x2: 0, y2: 0, xc: 0, yc: 0, r: 0, points: [], text: '' };
-            } else if (currentEntity) {
-                if (code === '10') { currentEntity.x1 = parseFloat(val); currentEntity.xc = currentEntity.x1; }
-                else if (code === '20') { currentEntity.y1 = parseFloat(val); currentEntity.yc = currentEntity.y1; }
-                else if (code === '11') { currentEntity.x2 = parseFloat(val); }
-                else if (code === '21') { currentEntity.y2 = parseFloat(val); }
-                else if (code === '40') { currentEntity.r = parseFloat(val); }
-                else if (code === '1') { currentEntity.text = val; }
+            if (!dxf || !dxf.entities || dxf.entities.length === 0) {
+                alert("⚠️ Le fichier DXF ne contient aucune entité dessinée exploitable.");
+                return "";
             }
-        }
-        if (currentEntity) processEntity(currentEntity);
 
-        function processEntity(e) {
-            if (e.type === 'LINE') {
-                updateBounds(e.x1, e.y1); updateBounds(e.x2, e.y2);
-                elementsSvg.push(`<line x1="${e.x1}" y1="${-e.y1}" x2="${e.x2}" y2="${-e.y2}" stroke="#222" stroke-width="1"/>`);
-            } else if (e.type === 'CIRCLE') {
-                updateBounds(e.xc - e.r, e.yc - e.r); updateBounds(e.xc + e.r, e.yc + e.r);
-                elementsSvg.push(`<circle cx="${e.xc}" cy="${-e.yc}" r="${e.r}" stroke="#222" stroke-width="1" fill="none"/>`);
-            } else if (e.type === 'TEXT' || e.type === 'MTEXT') {
-                updateBounds(e.x1, e.y1);
-                elementsSvg.push(`<text x="${e.x1}" y="${-e.y1}" font-size="12" fill="#333">${e.text}</text>`);
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            let pathsSvg = [];
+
+            function addBounds(x, y) {
+                if (isNaN(x) || isNaN(y)) return;
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
             }
+
+            dxf.entities.forEach(entity => {
+                // GESTION DES LIGNES SIMPLES
+                if (entity.type === 'LINE' && entity.vertices && entity.vertices.length >= 2) {
+                    const p1 = entity.vertices[0];
+                    const p2 = entity.vertices[1];
+                    addBounds(p1.x, p1.y); addBounds(p2.x, p2.y);
+                    pathsSvg.push(`<line x1="${p1.x}" y1="${-p1.y}" x2="${p2.x}" y2="${-p2.y}" stroke="#111" stroke-width="1"/>`);
+                }
+                // GESTION DES POLYLIGNES (Murs, cloisons...)
+                else if ((entity.type === 'LWPOLYLINE' || entity.type === 'POLYLINE') && entity.vertices && entity.vertices.length > 0) {
+                    let d = "";
+                    entity.vertices.forEach((v, i) => {
+                        addBounds(v.x, v.y);
+                        d += (i === 0 ? `M ${v.x} ${-v.y}` : ` L ${v.x} ${-v.y}`);
+                    });
+                    if (entity.shape) d += " Z";
+                    pathsSvg.push(`<path d="${d}" stroke="#111" stroke-width="1" fill="none"/>`);
+                }
+                // GESTION DES CERCLES
+                else if (entity.type === 'CIRCLE' && entity.center) {
+                    const cx = entity.center.x, cy = entity.center.y, r = entity.radius || 10;
+                    addBounds(cx - r, cy - r); addBounds(cx + r, cy + r);
+                    pathsSvg.push(`<circle cx="${cx}" cy="${-cy}" r="${r}" stroke="#111" stroke-width="1" fill="none"/>`);
+                }
+                // GESTION DES ARCS
+                else if (entity.type === 'ARC' && entity.center) {
+                    const cx = entity.center.x, cy = entity.center.y, r = entity.radius || 10;
+                    addBounds(cx - r, cy - r); addBounds(cx + r, cy + r);
+                    const startAngle = (entity.startAngle * Math.PI) / 180;
+                    const endAngle = (entity.endAngle * Math.PI) / 180;
+                    const x1 = cx + r * Math.cos(startAngle);
+                    const y1 = cy + r * Math.sin(startAngle);
+                    const x2 = cx + r * Math.cos(endAngle);
+                    const y2 = cy + r * Math.sin(endAngle);
+                    const largeArc = (entity.endAngle - entity.startAngle + 360) % 360 > 180 ? 1 : 0;
+                    pathsSvg.push(`<path d="M ${x1} ${-y1} A ${r} ${r} 0 ${largeArc} 0 ${x2} ${-y2}" stroke="#111" stroke-width="1" fill="none"/>`);
+                }
+                // GESTION DES TEXTES ET MULTI-TEXTES
+                else if ((entity.type === 'TEXT' || entity.type === 'MTEXT') && entity.startPoint) {
+                    addBounds(entity.startPoint.x, entity.startPoint.y);
+                    const txt = entity.text || '';
+                    pathsSvg.push(`<text x="${entity.startPoint.x}" y="${-entity.startPoint.y}" font-size="12" fill="#333">${txt}</text>`);
+                }
+            });
+
+            if (minX === Infinity) {
+                alert("❌ Impossible de calculer les limites du fichier DXF.");
+                return "";
+            }
+
+            const width = Math.abs(maxX - minX) || 1000;
+            const height = Math.abs(maxY - minY) || 1000;
+            const padding = Math.max(width, height) * 0.05;
+
+            const viewBox = `${minX - padding} ${-maxY - padding} ${width + (padding * 2)} ${height + (padding * 2)}`;
+
+            const svgFinal = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="100%" height="100%" style="background:#ffffff;"><g>${pathsSvg.join('')}</g></svg>`;
+            return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgFinal)));
+
+        } catch (err) {
+            console.error("Erreur parsing DXF :", err);
+            alert("❌ Erreur lors de la lecture du fichier DXF : " + err.message);
+            return "";
         }
-
-        if (minX === Infinity) { minX = 0; minY = 0; maxX = 800; maxY = 600; }
-        const width = Math.abs(maxX - minX) || 800;
-        const height = Math.abs(maxY - minY) || 600;
-        const viewBox = `${minX} ${-maxY} ${width} ${height}`;
-
-        const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="100%" height="100%"><g transform="scale(1,1)">${elementsSvg.join('')}</g></svg>`;
-        return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
     }
 
     /* ==========================================================================
