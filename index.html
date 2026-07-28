@@ -21,6 +21,13 @@
         .nav-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; flex-wrap: wrap; }
         .btn-back { background: #5f6368; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
         
+        /* Badges d'état de synchronisation */
+        .sync-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #e8f0fe; color: #1a73e8; border: 1px solid #b4cff7; }
+        .sync-status-badge.synced { background: #e6f4ea; color: #137333; border-color: #a8dab5; }
+        .sync-status-badge.pending { background: #fef7e0; color: #b06000; border-color: #fdd835; }
+        .sync-status-badge.syncing { background: #e8f0fe; color: #1a73e8; border-color: #aecbfa; }
+        .sync-status-badge.offline { background: #fce8e6; color: #c5221f; border: 1px solid #f5b7b1; }
+
         /* MENU DÉROULANT DES ACTIONS */
         .dropdown-container { position: relative; display: inline-block; }
         .btn-dropdown { background: #1a73e8; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; }
@@ -144,8 +151,8 @@
 
         @media screen and (max-width: 600px) {
             .app-container { margin: 0; padding: 12px; border-radius: 0; }
-            h1 { font-size: 18px; }
-            h2 { font-size: 15px; }
+            h1 { font-size: 20px; }
+            h2 { font-size: 17px; }
             .nav-bar { flex-direction: column; align-items: stretch; }
             .btn-back { width: 100%; text-align: center; }
             .dropdown-container { width: 100%; }
@@ -178,12 +185,10 @@
             #printTemplate { display: block !important; }
             .page-break { page-break-before: always; break-before: page; }
             
-            /* Compactage des titres en impression pour gagner de la hauteur */
             h1 { font-size: 13pt !important; margin: 5px 0 !important; border-bottom: 2px solid #333; padding-bottom: 2px; }
             h2 { font-size: 11pt !important; margin: 8px 0 4px 0 !important; border-bottom: 1px solid #333; padding-bottom: 2px; }
             h3 { font-size: 10pt !important; margin: 5px 0 !important; border-bottom: 1px solid #666; padding-bottom: 2px; }
 
-            /* CONTRAINTE SUR LES PLANS : Empêche le plan de déborder avec son titre */
             .plan-wrapper, .plan-container {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
@@ -191,7 +196,7 @@
             }
             
             .plan-img { 
-                max-height: 200mm !important; /* Laisse ~70mm pour le titre et les marges A4 */
+                max-height: 200mm !important;
                 width: auto !important;
                 max-width: 100% !important;
                 object-fit: contain !important;
@@ -236,7 +241,7 @@
 <div class="app-container">
 
     <div id="pageAccueil" class="section active">
-        <h1>Rapport Visite Site V1.0</h1>
+        <h1>Conducteur de Chantier PWA</h1>
         
         <div class="config-box">
             <strong>🔑 Synchronisation Multi-Appareil GitHub :</strong><br>
@@ -270,11 +275,11 @@
             <label for="localisation">Localisation :</label>
             <input type="text" id="localisation" required placeholder="Ex: Trouville-sur-Mer">
 
-            <label>Plans par niveau (Supports Images &amp; SVG) :</label>
+            <label>Plans par niveau (Supports Images, SVG &amp; AutoCAD DXF) :</label>
             <div style="background:#f8f9fa; border:1px solid #dadce0; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <div class="flex-row">
                     <input type="text" id="nomNiveauInput" placeholder="Ex: RDC, R+1...">
-                    <input type="file" id="planInput" accept="image/*,.svg" onchange="chargerImagePlanNiveau(event)">
+                    <input type="file" id="planInput" accept="image/*,.svg,.dxf" onchange="chargerImagePlanNiveau(event)">
                 </div>
                 <button type="button" class="btn btn-small" style="background:#5f6368;" onclick="enregistrerNiveauDansListe()">+ Ajouter ce niveau</button>
                 <div id="listeNiveauxTemporaire" style="margin-top:10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
@@ -294,12 +299,19 @@
     <div id="pageChantierDetails" class="section">
         <div class="nav-bar">
             <button class="btn-back" onclick="changerPage('pageAccueil')">← Retour</button>
+
+            <!-- INDICE ET BADGE DE SYNCHRO DYNAMIQUE -->
+            <div id="syncStatusBadge" class="sync-status-badge synced">
+                <span id="syncStatusIcon">🟢</span>
+                <span id="syncStatusText">À jour</span>
+            </div>
             
             <div class="dropdown-container no-print">
                 <button class="btn-dropdown" onclick="basculerMenuActions(event)">⚙️ Actions &amp; Exports ▾</button>
                 <div id="dropdownMenuActions" class="dropdown-menu">
                     <button onclick="declencherImpression()">🖨️ Exporter en PDF</button>
-                    <button onclick="sauvegarderEtSynchroniser()">☁️ Synchro Structure Chantier (config.json)</button>
+                    <button onclick="forcerSynchroSmartManuelle()">☁️ Forcer la Synchronisation Smart</button>
+                    <button onclick="sauvegarderEtSynchroniser()">💾 Synchro Structure Chantier (config.json)</button>
                     <button onclick="exporterChantierEnFichierLocal()">💾 Exporter l'Affaire (.json)</button>
                     <button onclick="exporterRapportDuJourIncr()">⏏️ Exporter Visite du Jour (.zip / Cloud)</button>
                     <button onclick="document.getElementById('importHistoriquePucesInput').click(); fermerMenuActions();">📥 Fusionner un Rapport Local (.zip / .json)</button>
@@ -331,11 +343,11 @@
                 </div>
             </div>
 
-            <label>Ajouter un niveau / plan à cette affaire :</label>
+            <label>Ajouter un niveau / plan à cette affaire (Images, SVG, DXF AutoCAD) :</label>
             <div style="background:#f8f9fa; border:1px solid #dadce0; padding:12px; border-radius:8px; margin-bottom:20px;">
                 <div class="flex-row" style="margin-bottom:0;">
                     <input type="text" id="nomNiveauDirectInput" placeholder="Nom (Ex: R+2, Parking...)" style="padding:8px; font-size:14px;">
-                    <input type="file" id="planDirectInput" accept="image/*,.svg" onchange="chargerImagePlanNiveauDirectTerrain(event)" style="font-size:13px;">
+                    <input type="file" id="planDirectInput" accept="image/*,.svg,.dxf" onchange="chargerImagePlanNiveauDirectTerrain(event)" style="font-size:13px;">
                     <button type="button" class="btn btn-small" style="background:#5f6368;" onclick="injecterNiveauDirectDansFichierSource()">+ Injecter Niveau</button>
                 </div>
             </div>
@@ -666,6 +678,71 @@
     let couleurPinceauPhoto = '#d93025';
     let taillePinceauPhoto = 5;
 
+    /* VARIABLES DU MOTEUR DE SYNCHRONISATION SMART */
+    let estEnTrainDeSynchroniser = false;
+    let modificationsEnAttente = false;
+
+    /* ==========================================================================
+       CONVERTISSEUR VECTORIEL AUTONOME : DXF AUTOCAD -> SVG (PURE JS HORS-LIGNE)
+       ========================================================================== */
+    function convertirDxfTextEnSvgDataUrl(dxfText) {
+        const lines = dxfText.split(/\r?\n/);
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        let elementsSvg = [];
+
+        function updateBounds(x, y) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+        }
+
+        let inEntities = false;
+        let currentEntity = null;
+
+        for (let i = 0; i < lines.length - 1; i += 2) {
+            const code = lines[i].trim();
+            const val = lines[i + 1].trim();
+
+            if (code === '2' && val === 'ENTITIES') { inEntities = true; continue; }
+            if (code === '0' && val === 'ENDSEC') { inEntities = false; continue; }
+
+            if (inEntities && code === '0') {
+                if (currentEntity) processEntity(currentEntity);
+                currentEntity = { type: val, x1: 0, y1: 0, x2: 0, y2: 0, xc: 0, yc: 0, r: 0, points: [], text: '' };
+            } else if (currentEntity) {
+                if (code === '10') { currentEntity.x1 = parseFloat(val); currentEntity.xc = currentEntity.x1; }
+                else if (code === '20') { currentEntity.y1 = parseFloat(val); currentEntity.yc = currentEntity.y1; }
+                else if (code === '11') { currentEntity.x2 = parseFloat(val); }
+                else if (code === '21') { currentEntity.y2 = parseFloat(val); }
+                else if (code === '40') { currentEntity.r = parseFloat(val); }
+                else if (code === '1') { currentEntity.text = val; }
+            }
+        }
+        if (currentEntity) processEntity(currentEntity);
+
+        function processEntity(e) {
+            if (e.type === 'LINE') {
+                updateBounds(e.x1, e.y1); updateBounds(e.x2, e.y2);
+                elementsSvg.push(`<line x1="${e.x1}" y1="${-e.y1}" x2="${e.x2}" y2="${-e.y2}" stroke="#222" stroke-width="1"/>`);
+            } else if (e.type === 'CIRCLE') {
+                updateBounds(e.xc - e.r, e.yc - e.r); updateBounds(e.xc + e.r, e.yc + e.r);
+                elementsSvg.push(`<circle cx="${e.xc}" cy="${-e.yc}" r="${e.r}" stroke="#222" stroke-width="1" fill="none"/>`);
+            } else if (e.type === 'TEXT' || e.type === 'MTEXT') {
+                updateBounds(e.x1, e.y1);
+                elementsSvg.push(`<text x="${e.x1}" y="${-e.y1}" font-size="12" fill="#333">${e.text}</text>`);
+            }
+        }
+
+        if (minX === Infinity) { minX = 0; minY = 0; maxX = 800; maxY = 600; }
+        const width = Math.abs(maxX - minX) || 800;
+        const height = Math.abs(maxY - minY) || 600;
+        const viewBox = `${minX} ${-maxY} ${width} ${height}`;
+
+        const svgStr = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="100%" height="100%"><g transform="scale(1,1)">${elementsSvg.join('')}</g></svg>`;
+        return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgStr)));
+    }
+
     /* ==========================================================================
        1. MOTEUR INDEXEDDB
        ========================================================================== */
@@ -692,9 +769,7 @@
             return new Promise((resolve) => {
                 req.onsuccess = () => resolve(req.result || []);
             });
-        } catch(e) {
-            return [];
-        }
+        } catch(e) { return []; }
     }
 
     async function sauvegarderTousChantiersDansIndexedDB(tableauChantiers) {
@@ -748,6 +823,14 @@
         await chargerCharteDepuisGitHub();
         initialiserModuleCroquisCanvas();
         initialiserModuleAnnotationPhoto();
+
+        window.addEventListener('online', () => {
+            mettreAJourBadgeSynchro('pending', 'Connexion rétablie...');
+            planifierSynchroArrierePlan();
+        });
+        window.addEventListener('offline', () => {
+            mettreAJourBadgeSynchro('offline', 'Hors-ligne');
+        });
 
         document.addEventListener('click', function(e) {
             const dropdown = document.querySelector('.dropdown-container');
@@ -830,6 +913,7 @@
 
     function compresserImage(base64Str, maxWidth = 1200, maxHeight = 1200) {
         return new Promise((resolve) => {
+            if (base64Str.startsWith('data:image/svg+xml')) return resolve(base64Str);
             const img = new Image();
             img.src = base64Str;
             img.onload = () => {
@@ -935,7 +1019,215 @@
         chargerCharteDepuisGitHub();
     }
 
-    /* SYNCHRONISATION DU CHANTIER COMPLET FIXE DANS Nom_Chantier/config.json */
+    /* ==========================================================================
+       NOUVEAU MOTEUR DE SYNCHRONISATION SMART DÉCOUPLÉE (PHOTOS EN FICHIERS SÉPARÉS)
+       ========================================================================== */
+    function mettreAJourBadgeSynchro(etat, message) {
+        const badge = document.getElementById('syncStatusBadge');
+        const icon = document.getElementById('syncStatusIcon');
+        const text = document.getElementById('syncStatusText');
+
+        if (!badge || !icon || !text) return;
+
+        badge.className = "sync-status-badge " + etat;
+
+        if (etat === "synced") {
+            icon.innerText = "🟢";
+            text.innerText = message || "À jour";
+        } else if (etat === "pending") {
+            icon.innerText = "🟠";
+            text.innerText = message || "En attente";
+        } else if (etat === "syncing") {
+            icon.innerText = "🔄";
+            text.innerText = message || "Synchro...";
+        } else if (etat === "offline") {
+            icon.innerText = "🔴";
+            text.innerText = message || "Hors-ligne";
+        }
+    }
+
+    function notifierModificationLocale() {
+        modificationsEnAttente = true;
+        if (!navigator.onLine) {
+            mettreAJourBadgeSynchro('offline', 'Modif locale (Hors-ligne)');
+        } else {
+            mettreAJourBadgeSynchro('pending', 'En attente d\'envoi');
+            planifierSynchroArrierePlan();
+        }
+    }
+
+    let minuterieSynchro = null;
+    function planifierSynchroArrierePlan() {
+        if (minuterieSynchro) clearTimeout(minuterieSynchro);
+        minuterieSynchro = setTimeout(() => {
+            executerSynchronisationSmartArrierePlan();
+        }, 1500);
+    }
+
+    async function executerSynchronisationSmartArrierePlan() {
+        if (estEnTrainDeSynchroniser || !chantierActuel) return;
+        if (!navigator.onLine) {
+            mettreAJourBadgeSynchro('offline', 'Hors-ligne');
+            return;
+        }
+
+        const { user, repo, token } = obtenirIdentifiantsGitHub();
+        if (!user || !repo || !token) {
+            mettreAJourBadgeSynchro('offline', 'Clé GitHub absente');
+            return;
+        }
+
+        estEnTrainDeSynchroniser = true;
+        mettreAJourBadgeSynchro('syncing', 'Synchronisation...');
+
+        try {
+            const nomDossier = obtenirNomDossierChantier(chantierActuel.nom);
+            const urlConfig = `https://api.github.com/repos/${user}/${repo}/contents/${nomDossier}/config.json`;
+
+            let distantChantier = null;
+            let shaDistant = null;
+
+            const resGet = await fetch(`${urlConfig}?t=${Date.now()}`, {
+                headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
+                cache: "no-store"
+            });
+
+            if (resGet.ok) {
+                const dataJson = await resGet.json();
+                shaDistant = dataJson.sha;
+                const contentDecoded = decodeURIComponent(escape(atob(dataJson.content.replace(/\n/g, ''))));
+                distantChantier = JSON.parse(contentDecoded);
+            } else if (resGet.status !== 404) {
+                throw new Error("Erreur HTTP GitHub " + resGet.status);
+            }
+
+            if (distantChantier && distantChantier.puces) {
+                fusionnerChantiersSmart(chantierActuel, distantChantier);
+            }
+
+            const copieChantier = JSON.parse(JSON.stringify(chantierActuel));
+
+            if (copieChantier.puces) {
+                for (let p of copieChantier.puces) {
+                    if (p.photos && p.photos.length > 0) {
+                        const cheminsRelatifs = [];
+                        for (let idxPhoto = 0; idxPhoto < p.photos.length; idxPhoto++) {
+                            const photoItem = p.photos[idxPhoto];
+
+                            if (photoItem && photoItem.startsWith('data:')) {
+                                const ext = photoItem.includes('image/avif') ? 'avif' : (photoItem.includes('image/webp') ? 'webp' : 'jpg');
+                                const nomFichierPhoto = `photos/puce_${p.numero}_photo_${idxPhoto + 1}.${ext}`;
+                                const urlPhotoGit = `https://api.github.com/repos/${user}/${repo}/contents/${nomDossier}/${nomFichierPhoto}`;
+                                const pureBase64 = photoItem.split(',')[1].replace(/[\r\n\s]/g, '');
+
+                                try {
+                                    let shaPhoto = null;
+                                    const resCheckPhoto = await fetch(`${urlPhotoGit}?t=${Date.now()}`, {
+                                        headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
+                                        cache: "no-store"
+                                    });
+                                    if (resCheckPhoto.ok) {
+                                        const photoInfo = await resCheckPhoto.json();
+                                        shaPhoto = photoInfo.sha;
+                                    }
+
+                                    const bodyPhoto = {
+                                        message: `Upload photo puce ${p.numero}`,
+                                        content: pureBase64
+                                    };
+                                    if (shaPhoto) bodyPhoto.sha = shaPhoto;
+
+                                    await fetch(urlPhotoGit, {
+                                        method: "PUT",
+                                        headers: {
+                                            "Authorization": `token ${token}`,
+                                            "Accept": "application/vnd.github.v3+json",
+                                            "Content-Type": "application/json"
+                                        },
+                                        body: JSON.stringify(bodyPhoto)
+                                    });
+
+                                    cheminsRelatifs.push(nomFichierPhoto);
+                                } catch (ePhoto) {
+                                    cheminsRelatifs.push(nomFichierPhoto);
+                                }
+                            } else {
+                                cheminsRelatifs.push(photoItem);
+                            }
+                        }
+                        p.photos = cheminsRelatifs;
+                    }
+                }
+            }
+
+            const base64Data = convertirTexteEnBase64Utf8(JSON.stringify(copieChantier, null, 2));
+            const bodyPayload = {
+                message: `Auto-synchro structure : ${chantierActuel.nom}`,
+                content: base64Data
+            };
+            if (shaDistant) bodyPayload.sha = shaDistant;
+
+            const resPut = await fetch(urlConfig, {
+                method: "PUT",
+                headers: {
+                    "Authorization": `token ${token}`,
+                    "Accept": "application/vnd.github.v3+json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(bodyPayload)
+            });
+
+            if (resPut.ok) {
+                modificationsEnAttente = false;
+                mettreAJourBadgeSynchro('synced', 'À jour');
+                await sauvegarderUnChantierDansIndexedDB(chantierActuel);
+                rafraichirPucesGraphiques();
+                rafraichirTableauRemarques();
+            } else {
+                const errDetail = await resPut.json().catch(() => ({}));
+                console.error("Échec PUT config.json :", errDetail);
+                mettreAJourBadgeSynchro('pending', 'Erreur d\'envoi');
+            }
+
+        } catch (e) {
+            console.error("Erreur synchro arrière-plan :", e);
+            mettreAJourBadgeSynchro('pending', 'Erreur connexion');
+        } finally {
+            estEnTrainDeSynchroniser = false;
+        }
+    }
+
+    function fusionnerChantiersSmart(local, distant) {
+        if (!distant || !distant.puces) return;
+
+        const mapPuces = new Map();
+
+        (local.puces || []).forEach(p => mapPuces.set(p.id, p));
+
+        (distant.puces || []).forEach(pDistant => {
+            if (!mapPuces.has(pDistant.id)) {
+                mapPuces.set(pDistant.id, pDistant);
+            } else {
+                const pLocal = mapPuces.get(pDistant.id);
+                const timeLocal = pLocal.updatedAt || 0;
+                const timeDistant = pDistant.updatedAt || 0;
+
+                if (timeDistant > timeLocal) {
+                    mapPuces.set(pDistant.id, pDistant);
+                }
+            }
+        });
+
+        local.puces = Array.from(mapPuces.values());
+        local.puces.sort((a,b) => (a.numero || 0) - (b.numero || 0));
+    }
+
+    function forcerSynchroSmartManuelle() {
+        fermerMenuActions();
+        if (!chantierActuel) return alert("Veuillez d'abord sélectionner un chantier.");
+        executerSynchronisationSmartArrierePlan();
+    }
+
     async function sauvegarderEtSynchroniser() {
         fermerMenuActions();
         if(!chantierActuel) return;
@@ -948,50 +1240,7 @@
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
         rafraichirVueAccueil();
 
-        const { user, repo, token } = obtenirIdentifiantsGitHub();
-        if(!user || !repo || !token) return alert("Sauvegardé uniquement en local. Connectez votre compte GitHub pour la synchro Cloud.");
-
-        const url = `https://api.github.com/repos/${user}/${repo}/contents/${nomDossier}/config.json`;
-
-        try {
-            const contentBase64 = convertirTexteEnBase64Utf8(JSON.stringify(chantierActuel, null, 2));
-            let sha = null;
-
-            const resCheck = await fetch(`${url}?t=${Date.now()}`, { 
-                headers: { 
-                    "Authorization": `Bearer ${token}`,
-                    "Accept": "application/vnd.github.v3+json"
-                },
-                cache: "no-store"
-            });
-
-            if(resCheck.status === 200) {
-                const fileInfo = await resCheck.json();
-                if(fileInfo && fileInfo.sha) sha = fileInfo.sha;
-            }
-
-            const bodyData = { 
-                message: `Mise à jour structure chantier : ${chantierActuel.nom}`, 
-                content: contentBase64 
-            };
-            if(sha) bodyData.sha = sha;
-
-            const resPush = await fetch(url, {
-                method: "PUT",
-                headers: { 
-                    "Authorization": `Bearer ${token}`, 
-                    "Accept": "application/vnd.github.v3+json",
-                    "Content-Type": "application/json" 
-                },
-                body: JSON.stringify(bodyData)
-            });
-
-            if(resPush.ok) alert(`☁️ Structure du chantier "${chantierActuel.nom}" synchronisée avec succès (${nomDossier}/config.json) !`);
-            else {
-                const errJson = await resPush.json();
-                alert(`⚠️ Erreur Cloud GitHub (${resPush.status}) : ${errJson.message || 'Échec'}`);
-            }
-        } catch(e) { alert("Erreur : " + e.message); }
+        executerSynchronisationSmartArrierePlan();
     }
 
     function exporterChantierEnFichierLocal() {
@@ -1009,7 +1258,6 @@
         URL.revokeObjectURL(url);
     }
 
-    /* EXPORT EN ARCHIVE .ZIP (LOCAL) + ENVOI DÉCOUPLÉ SUR GITHUB (CLOUD) */
     async function exporterRapportDuJourIncr() {
         fermerMenuActions();
         if(!chantierActuel) return alert("Aucun chantier actif sélectionné.");
@@ -1169,7 +1417,6 @@
         }
     }
 
-    /* FUSION D'UN RAPPORT DEPUIS UN FICHIER .ZIP OU .JSON LOCAL */
     async function injecterHistoriqueRemarquesJson(event) {
         const file = event.target.files[0];
         if (!file || !chantierActuel) return;
@@ -1235,7 +1482,6 @@
         event.target.value = ""; 
     }
 
-    /* IMPORTATION ET FUSION DIRECTE DEPUIS LE CLOUD GITHUB */
     async function ouvrirModalSelectionRapportsCloud() {
         fermerMenuActions();
         if(!chantierActuel) return alert("Veuillez sélectionner un chantier actif.");
@@ -1349,6 +1595,7 @@
             if(!p.photos) p.photos = [];
             if(!p.taches) p.taches = [];
             p.statut = normaliserStatutPuce(p);
+            p.updatedAt = Date.now();
         });
 
         chantierActuel.puces = [...chantierActuel.puces, ...pucesAInjecter];
@@ -1365,6 +1612,7 @@
 
         chargerPlanEtPucesDuNiveauActuel();
         rafraichirVueNotes();
+        notifierModificationLocale();
         alert(`🎯 Succès ! ${pucesAInjecter.length} puces et ${notesAInjecter.length} note(s) ont été fusionnées sur vos plans.`);
     }
 
@@ -1415,6 +1663,7 @@
                 summaryTasksRepliees = {};
 
                 dessinerPlanningGantt();
+                notifierModificationLocale();
                 alert(`📅 Succès ! Planning importé : ${listeTachesParsees.length} tâches chargées.`);
             } catch(err) {
                 alert("❌ Erreur de lecture du fichier XML. Assurez-vous d'avoir enregistré sous le format 'XML Microsoft Project' (.xml).");
@@ -1516,6 +1765,8 @@
         document.getElementById(`progressBarVisual-${indexTableau}`).style.width = valEntiere + "%";
         document.getElementById(`progressTextPercent-${indexTableau}`).innerText = valEntiere;
         document.getElementById(`progressBadgeLive-${indexTableau}`).innerText = valEntiere + "%";
+        
+        notifierModificationLocale();
     }
 
     async function sauvegarderAvancementsGanttEnLocal() {
@@ -1526,6 +1777,7 @@
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
         
         dessinerPlanningGantt();
+        notifierModificationLocale();
         alert("💾 Vos modifications d'avancement de planning ont été enregistrées avec succès !");
     }
 
@@ -1545,6 +1797,7 @@
                 await sauvegarderUnChantierDansIndexedDB(chantierActuel);
                 
                 dessinerPlanningGantt(); 
+                notifierModificationLocale();
                 alert("🗑️ Le planning a été entièrement effacé de ce chantier ! Vous pouvez à présent charger un nouveau fichier .xml propre.");
             }
         }
@@ -1553,11 +1806,17 @@
     function chargerImagePlanNiveauDirectTerrain(event) {
         const file = event.target.files[0];
         if (file) {
-            const r = new FileReader(); 
-            r.onload = function(e) { 
-                compresserImage(e.target.result).then(c => planDirectTerrainBase64 = c); 
-            };
-            r.readAsDataURL(file);
+            if (file.name.toLowerCase().endsWith('.dxf')) {
+                const r = new FileReader();
+                r.onload = function(e) { planDirectTerrainBase64 = convertirDxfTextEnSvgDataUrl(e.target.result); };
+                r.readAsText(file);
+            } else {
+                const r = new FileReader(); 
+                r.onload = function(e) { 
+                    compresserImage(e.target.result).then(c => planDirectTerrainBase64 = c); 
+                };
+                r.readAsDataURL(file);
+            }
         }
     }
 
@@ -1567,7 +1826,7 @@
 
         if(!chantierActuel) return;
         if(!nomNiv || !planDirectTerrainBase64) {
-            return alert("⚠️ Spécifiez un nom de niveau et sélectionnez une image de plan.");
+            return alert("⚠️ Spécifiez un nom de niveau et sélectionnez une image/SVG/DXF de plan.");
         }
 
         chantierActuel.niveaux.push({ nom: nomNiv, plan: planDirectTerrainBase64 });
@@ -1586,6 +1845,7 @@
         planDirectTerrainBase64 = "";
 
         chargerPlanEtPucesDuNiveauActuel();
+        notifierModificationLocale();
         alert(`✅ Nouveau niveau "${nomNiv}" injecté avec succès !`);
     }
 
@@ -1680,9 +1940,15 @@
     function chargerImagePlanNiveau(event) {
         const file = event.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) { compresserImage(e.target.result).then(c => planEnCoursDeChargementBase64 = c); };
-            reader.readAsDataURL(file);
+            if (file.name.toLowerCase().endsWith('.dxf')) {
+                const reader = new FileReader();
+                reader.onload = function(e) { planEnCoursDeChargementBase64 = convertirDxfTextEnSvgDataUrl(e.target.result); };
+                reader.readAsText(file);
+            } else {
+                const reader = new FileReader();
+                reader.onload = function(e) { compresserImage(e.target.result).then(c => planEnCoursDeChargementBase64 = c); };
+                reader.readAsDataURL(file);
+            }
         }
     }
     function enregistrerNiveauDansListe() {
@@ -1793,6 +2059,8 @@
         rafraichirVueNotes();
         dessinerPlanningGantt();
         changerPage('pageChantierDetails');
+
+        executerSynchronisationSmartArrierePlan();
     }
 
     /* GESTION DES NOTES ET LIAISON PUCE */
@@ -1902,6 +2170,7 @@
         
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
         if(rafraichirRendu) rafraichirVueNotes();
+        notifierModificationLocale();
     }
 
     /* MOTEUR DE DESSIN VECTORIEL SVG */
@@ -2208,7 +2477,14 @@
         
         if (puceSelectionneeId !== null) {
             let p = chantierActuel.puces.find(p => p.id === puceSelectionneeId);
-            if(p) { p.x = x; p.y = y; rafraichirPucesGraphiques(); puceSelectionneeId = null; return; }
+            if(p) { 
+                p.x = x; p.y = y; 
+                p.updatedAt = Date.now();
+                rafraichirPucesGraphiques(); 
+                puceSelectionneeId = null; 
+                notifierModificationLocale();
+                return; 
+            }
         }
         const num = chantierActuel.puces.length + 1;
         const nPuce = { 
@@ -2222,10 +2498,12 @@
             taches: [], 
             entreprises: [], 
             dateCreation: new Date().toLocaleDateString('fr-FR'), 
+            updatedAt: Date.now(),
             statut: "active" 
         };
         chantierActuel.puces.push(nPuce);
         rafraichirPucesGraphiques(); selectionnerPuce(nPuce.id);
+        notifierModificationLocale();
     }
 
     function selectionnerPuceDepuisTableau(idPuce) {
@@ -2442,6 +2720,7 @@
             p.entreprises = Array.from(document.querySelectorAll('#zoneEntreprisesPuceCheckboxes input:checked')).map(i => i.value);
             p.statut = statutPuceTemporaire;
             p.resolue = (statutPuceTemporaire === "resolue");
+            p.updatedAt = Date.now();
 
             document.getElementById('zoneSaisiePuce').style.display = 'none'; puceSelectionneeId = null;
             rafraichirTableauRemarques(); rafraichirPucesGraphiques();
@@ -2450,6 +2729,7 @@
             if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
             
             await sauvegarderUnChantierDansIndexedDB(chantierActuel);
+            notifierModificationLocale();
         }
     }
     
@@ -2463,6 +2743,7 @@
         if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
         
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
+        notifierModificationLocale();
     }
     
     function rafraichirTableauRemarques() {
@@ -2536,6 +2817,7 @@
                 const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
                 if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
                 await sauvegarderUnChantierDansIndexedDB(chantierActuel);
+                notifierModificationLocale();
             }
         }
     }
@@ -2584,7 +2866,6 @@
                 const blockNiveau = document.createElement('div'); 
                 blockNiveau.style.marginBottom = "20px";
                 
-                // Saut de page automatique après chaque plan (sauf le tout dernier)
                 if (idxNiveau < chantierActuel.niveaux.length - 1) {
                     blockNiveau.style.pageBreakAfter = "always";
                     blockNiveau.style.breakAfter = "page";
