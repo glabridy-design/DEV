@@ -1650,7 +1650,7 @@
 
     async function chargerIndexDepuisGitHub() {
         const { user, repo, token } = obtenirIdentifiantsGitHub();
-        if(!user || !repo || !token) return alert("Identifiants non configurés.");
+        if(!user || !repo || !token) return alert("Identifiants GitHub non configurés.");
 
         const urlRoot = `https://api.github.com/repos/${user}/${repo}/contents/`;
         try {
@@ -1683,10 +1683,21 @@
                         delete cObj.surLeCloud;
 
                         const idx = listeTousChantiers.findIndex(x => x.id == cObj.id || x.folderName == d.name);
-                        if(idx !== -1) listeTousChantiers[idx] = cObj;
-                        else listeTousChantiers.push(cObj);
                         
-                        await sauvegarderUnChantierDansIndexedDB(cObj);
+                        if(idx !== -1) {
+                            // On fusionne la config distante SANS écraser les puces et notes locales existantes !
+                            listeTousChantiers[idx] = {
+                                ...cObj,
+                                puces: listeTousChantiers[idx].puces || [],
+                                notes: listeTousChantiers[idx].notes || []
+                            };
+                        } else {
+                            cObj.puces = [];
+                            cObj.notes = [];
+                            listeTousChantiers.push(cObj);
+                        }
+                        
+                        await sauvegarderUnChantierDansIndexedDB(listeTousChantiers[idx || listeTousChantiers.length - 1]);
                         nbCharges++;
                     } catch(e) {}
                 }
@@ -1797,16 +1808,29 @@
 
     function selectionnerChantierParId(id) {
         chantierActuel = listeTousChantiers.find(c => c.id == id);
-        if(!chantierActuel) return;
-        if(!chantierActuel.notes) chantierActuel.notes = [];
+        if(!chantierActuel) return alert("❌ Impossible de trouver ce chantier dans la mémoire locale.");
 
-        document.getElementById('viewNom').innerText = chantierActuel.nom;
-        document.getElementById('viewRef').innerText = chantierActuel.reference;
-        document.getElementById('viewLoc').innerText = chantierActuel.localisation;
+        // Sécurisation : On garantit que tous les tableaux existent même si GitHub ne les avait pas !
+        if(!chantierActuel.notes) chantierActuel.notes = [];
+        if(!chantierActuel.puces) chantierActuel.puces = [];
+        if(!chantierActuel.niveaux) chantierActuel.niveaux = [];
+        if(!chantierActuel.entreprises) chantierActuel.entreprises = [];
+        if(!chantierActuel.planning) chantierActuel.planning = [];
+
+        document.getElementById('viewNom').innerText = chantierActuel.nom || "Sans nom";
+        document.getElementById('viewRef').innerText = chantierActuel.reference || "N/A";
+        document.getElementById('viewLoc').innerText = chantierActuel.localisation || "N/A";
         document.getElementById('viewDriveUrlInput').value = chantierActuel.driveUrl || DEFAULT_GOOGLE_DRIVE_URL;
         document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge">${e}</span>`).join('') || "Aucune entreprise";
-        document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="${i}">${n.nom}</option>`).join('');
-        indexNiveauActuel = 0;
+        
+        if (chantierActuel.niveaux.length > 0) {
+            document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="${i}">${n.nom}</option>`).join('');
+            indexNiveauActuel = 0;
+            chargerPlanEtPucesDuNiveauActuel();
+        } else {
+            document.getElementById('selectNiveauVisite').innerHTML = "<option>Aucun plan/niveau</option>";
+            document.getElementById('viewPlanImg').src = "";
+        }
         
         document.getElementById('chkAfficherActives').checked = true;
         document.getElementById('chkAfficherEnCours').checked = true;
@@ -1824,11 +1848,10 @@
         summaryTasksRepliees = {};
 
         switchTab('tabTerrain');
-        chargerPlanEtPucesDuNiveauActuel();
         rafraichirVueNotes();
         dessinerPlanningGantt();
         changerPage('pageChantierDetails');
-
+    
         executerSynchronisationSmartArrierePlan();
     }
 
