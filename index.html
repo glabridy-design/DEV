@@ -274,6 +274,9 @@
             <label for="localisation">Localisation :</label>
             <input type="text" id="localisation" required placeholder="Ex: Trouville-sur-Mer">
 
+            <label for="driveUrlInput">🔗 Lien du dossier Google Drive pour ce chantier (ZIP Visites) :</label>
+            <input type="text" id="driveUrlInput" placeholder="https://drive.google.com/drive/folders/..." value="https://drive.google.com/drive/folders/1tRoQjp4ww2Qp6QuD2AdG5LPT9Wkl4Siz?usp=drive_link">
+
             <label>Plans par niveau (Supports Images, SVG &amp; AutoCAD DXF) :</label>
             <div style="background:#f8f9fa; border:1px solid #dadce0; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <div class="flex-row">
@@ -333,6 +336,16 @@
         </div>
 
         <div id="tabTerrain" class="tab-content active">
+            <!-- GESTION DU LIEN DRIVE DU CHANTIER -->
+            <div style="background:#e8f0fe; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin-bottom:15px;">
+                <label style="margin-top:0; color:#1a73e8; font-size:13px;">🔗 Dossier Google Drive de ce chantier :</label>
+                <div class="flex-row" style="margin-bottom:0;">
+                    <input type="text" id="viewDriveUrlInput" placeholder="https://drive.google.com/drive/folders/..." style="font-size:13px; padding:8px; background:white;">
+                    <button type="button" class="btn btn-small" style="background:#1a73e8;" onclick="mettreAJourLienDriveChantier()">💾 Enregistrer le lien</button>
+                    <button type="button" class="btn btn-small btn-success" onclick="ouvrirDossierDriveDirectement()">📁 Ouvrir le Drive</button>
+                </div>
+            </div>
+
             <label>Entreprises associées :</label>
             <div style="background:#f8f9fa; border:1px solid #dadce0; padding:10px; border-radius:8px; margin-bottom:15px;">
                 <div id="viewEntreprises" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;"></div>
@@ -667,8 +680,15 @@
     let estEnTrainDeSynchroniser = false;
     let modificationsEnAttente = false;
 
-    /* URL DU DOSSIER GOOGLE DRIVE POUR LE STOCKAGE DES ZIPS DE VISITE */
-    const GOOGLE_DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/1tRoQjp4ww2Qp6QuD2AdG5LPT9Wkl4Siz?usp=drive_link";
+    /* URL PAR DÉFAUT DU DOSSIER GOOGLE DRIVE POUR LES ZIPS DE VISITE */
+    const DEFAULT_GOOGLE_DRIVE_URL = "https://drive.google.com/drive/folders/1tRoQjp4ww2Qp6QuD2AdG5LPT9Wkl4Siz?usp=drive_link";
+
+    function obtenirLienDriveActuel() {
+        if (chantierActuel && chantierActuel.driveUrl && chantierActuel.driveUrl.trim() !== "") {
+            return chantierActuel.driveUrl.trim();
+        }
+        return DEFAULT_GOOGLE_DRIVE_URL;
+    }
 
     /* ==========================================================================
        CONVERTISSEUR VECTORIEL AUTONOME AVEC DXF-PARSER : DXF AUTOCAD -> SVG
@@ -1343,12 +1363,19 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(urlBlob);
 
-        // 2. Exemplaire Drive : Ouverture guidée du dossier Google Drive
+        // 2. Exemplaire Drive : Ouverture guidée du dossier Google Drive spécifique au chantier
+        const driveUrl = obtenirLienDriveActuel();
         setTimeout(() => {
-            if (confirm(`📦 Archive "${zipNomFichierLocal}" téléchargée en local !\n\nVoulez-vous ouvrir le dossier Google Drive "ZIP Visite" pour y déposer votre second exemplaire ?`)) {
-                window.open(GOOGLE_DRIVE_FOLDER_URL, '_blank');
+            if (confirm(`📦 Archive "${zipNomFichierLocal}" téléchargée en local !\n\nVoulez-vous ouvrir le dossier Google Drive de ce chantier pour y déposer votre second exemplaire ?`)) {
+                window.open(driveUrl, '_blank');
             }
         }, 500);
+    }
+
+    /* OUVERTURE DIRECTE DU DRIVE DU CHANTIER */
+    function ouvrirDossierDriveDirectement() {
+        const url = obtenirLienDriveActuel();
+        window.open(url, '_blank');
     }
 
     /* REDIRECTION VERS GOOGLE DRIVE POUR SELECTIONNER UN RAPPORT CLOUD A FUSIONNER */
@@ -1356,14 +1383,29 @@
         fermerMenuActions();
         if(!chantierActuel) return alert("Veuillez sélectionner un chantier actif.");
         
-        if (confirm("🌐 Pour fusionner un rapport Cloud Google Drive :\n\n1. Téléchargez le fichier ZIP de la visite depuis Google Drive.\n2. Ensuite, sélectionnez-le dans la fenêtre d'importation qui va s'ouvrir.\n\nOuvrir le dossier Google Drive maintenant ?")) {
-            window.open(GOOGLE_DRIVE_FOLDER_URL, '_blank');
+        const driveUrl = obtenirLienDriveActuel();
+        if (confirm("🌐 Pour fusionner un rapport Cloud Google Drive :\n\n1. Téléchargez le fichier ZIP de la visite depuis votre Google Drive.\n2. Ensuite, sélectionnez-le dans la fenêtre d'importation qui va s'ouvrir.\n\nOuvrir le dossier Google Drive du chantier maintenant ?")) {
+            window.open(driveUrl, '_blank');
             setTimeout(() => {
                 document.getElementById('importHistoriquePucesInput').click();
             }, 1000);
         } else {
             document.getElementById('importHistoriquePucesInput').click();
         }
+    }
+
+    /* MISE A JOUR DU LIEN DRIVE DEPUIS LA PAGE CHANTIER */
+    async function mettreAJourLienDriveChantier() {
+        if (!chantierActuel) return;
+        const input = document.getElementById('viewDriveUrlInput');
+        chantierActuel.driveUrl = input.value.trim();
+
+        const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
+        if (idx !== -1) listeTousChantiers[idx] = chantierActuel;
+
+        await sauvegarderUnChantierDansIndexedDB(chantierActuel);
+        notifierModificationLocale();
+        alert("💾 Lien Google Drive enregistré pour ce chantier !");
     }
 
     /* FUSION D'UN RAPPORT DEPUIS UN FICHIER .ZIP OU .JSON LOCAL OU TELECHARGE DEPUIS DRIVE */
@@ -1822,11 +1864,14 @@
         e.preventDefault();
         if(niveauxTemporaires.length === 0) return alert("Ajoutez au moins un niveau.");
         const nouveauNom = document.getElementById('nom').value.trim();
+        const driveUrlSaisi = document.getElementById('driveUrlInput').value.trim();
+
         const nouveauChantier = {
             id: Date.now(),
             nom: nouveauNom,
             reference: document.getElementById('reference').value.trim(),
             localisation: document.getElementById('localisation').value.trim(),
+            driveUrl: driveUrlSaisi || DEFAULT_GOOGLE_DRIVE_URL,
             folderName: obtenirNomDossierChantier(nouveauNom),
             niveaux: niveauxTemporaires, entreprises: entreprisesTemporaires, puces: [], planning: [], notes: []
         };
@@ -1885,6 +1930,7 @@
         document.getElementById('viewNom').innerText = chantierActuel.nom;
         document.getElementById('viewRef').innerText = chantierActuel.reference;
         document.getElementById('viewLoc').innerText = chantierActuel.localisation;
+        document.getElementById('viewDriveUrlInput').value = chantierActuel.driveUrl || DEFAULT_GOOGLE_DRIVE_URL;
         document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge">${e}</span>`).join('') || "Aucune entreprise";
         document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="${i}">${n.nom}</option>`).join('');
         indexNiveauActuel = 0;
