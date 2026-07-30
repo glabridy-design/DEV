@@ -210,13 +210,13 @@
 <div class="app-container">
 
     <div id="pageAccueil" class="section active">
-        <h1>Conducteur de Chantier PWA</h1>
+        <h1>Rapport visite Syncro drive</h1>
         
         <div class="config-box">
-            <strong>🔑 Synchronisation Multi-Appareil GitHub :</strong><br>
+            <strong>🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
             <div style="margin-top: 8px; display: flex; gap: 5px; flex-wrap: wrap;">
                 <input type="text" id="cloudUser" placeholder="Pseudo GitHub" style="flex:1; padding:6px; font-size:13px;">
-                <input type="text" id="cloudRepo" placeholder="Nom du Dépo" style="flex:1; padding:6px; font-size:13px;">
+                <input type="text" id="cloudRepo" placeholder="Nom du Dépôt" style="flex:1; padding:6px; font-size:13px;">
                 <input type="password" id="cloudToken" placeholder="GitHub Token (PAT)" style="flex:1; padding:6px; font-size:13px;">
                 <button class="btn btn-small" style="margin:0; background:#24292e;" onclick="sauvegarderConfigCloud()">Connecter</button>
             </div>
@@ -224,7 +224,7 @@
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
             <button class="btn btn-success" style="flex:1; min-width:180px;" onclick="changerPage('pageCreer')">+ Créer un nouveau chantier</button>
-            <button class="btn" style="flex:1; background: #5f6368; min-width:180px;" onclick="chargerIndexDepuisGitHub()">🔄 Télécharger la liste Cloud (.json)</button>
+            <button class="btn" style="flex:1; background: #5f6368; min-width:180px;" onclick="chargerIndexDepuisGitHub()">🔄 Télécharger les Chantiers Cloud (.json)</button>
             <button class="btn" style="flex:1; background: #0b57d0; min-width:180px;" onclick="document.getElementById('importLocalFileInput').click()">📁 Importer un chantier (.json)</button>
             <input type="file" id="importLocalFileInput" accept=".json" style="display:none;" onchange="importerFichierChantierLocal(event)">
         </div>
@@ -272,22 +272,21 @@
         <div class="nav-bar">
             <button class="btn-back" onclick="changerPage('pageAccueil')">← Retour</button>
 
-            <!-- INDICE ET BADGE DE SYNCHRO DYNAMIQUE -->
+            <!-- BADGE DE SYNCHRO CONFIGURATION CHANTIER -->
             <div id="syncStatusBadge" class="sync-status-badge synced">
                 <span id="syncStatusIcon">🟢</span>
-                <span id="syncStatusText">À jour</span>
+                <span id="syncStatusText">Config à jour</span>
             </div>
             
             <div class="dropdown-container no-print">
                 <button class="btn-dropdown" onclick="basculerMenuActions(event)">⚙️ Actions &amp; Exports ▾</button>
                 <div id="dropdownMenuActions" class="dropdown-menu">
                     <button onclick="declencherImpression()">🖨️ Exporter en PDF</button>
-                    <button onclick="forcerSynchroSmartManuelle()">☁️ Forcer la Synchronisation Smart</button>
-                    <button onclick="sauvegarderEtSynchroniser()">💾 Synchro Structure Chantier (config.json)</button>
-                    <button onclick="exporterChantierEnFichierLocal()">💾 Exporter l'Affaire (.json)</button>
-                    <button onclick="exporterRapportDuJourIncr()">⏏️ Exporter Visite du Jour (.zip - Local &amp; Drive)</button>
+                    <button onclick="forcerSynchroSmartManuelle()">☁️ Synchro Config Chantier sur GitHub</button>
+                    <button onclick="exporterChantierEnFichierLocal()">💾 Exporter Config Chantier (.json)</button>
+                    <button onclick="exporterRapportDuJourIncr()">⏏️ Exporter Visite du Jour (.zip vers Drive)</button>
                     <button onclick="document.getElementById('importHistoriquePucesInput').click(); fermerMenuActions();">📥 Fusionner un Rapport Local (.zip / .json)</button>
-                    <button onclick="ouvrirGoogleDriveRapports()">🌐 Fusionner un Rapport Cloud (Google Drive)</button>
+                    <button onclick="ouvrirGoogleDriveRapports()">🌐 Télécharger un Rapport Cloud (Google Drive)</button>
                 </div>
             </div>
             <input type="file" id="importHistoriquePucesInput" accept=".zip,.json" style="display:none;" onchange="injecterHistoriqueRemarquesJson(event)">
@@ -311,7 +310,7 @@
                 <label style="margin-top:0; color:#1a73e8; font-size:13px;">🔗 Dossier Google Drive de ce chantier :</label>
                 <div class="flex-row" style="margin-bottom:0;">
                     <input type="text" id="viewDriveUrlInput" placeholder="https://drive.google.com/drive/folders/..." style="font-size:13px; padding:8px; background:white;">
-                    <button type="button" class="btn btn-small" style="background:#1a73e8;" onclick="mettreAJourLienDriveChantier()">💾 Enregistrer le lien</button>
+                    <button type="button" class="btn btn-small" style="background:#1a73e8;" onclick="mettreAJourLienDriveChantier()">💾 Enregistrer</button>
                     <button type="button" class="btn btn-small btn-success" onclick="ouvrirDossierDriveDirectement()">📁 Ouvrir le Drive</button>
                 </div>
             </div>
@@ -644,7 +643,6 @@
     let estEnTrainDeSynchroniser = false;
     let modificationsEnAttente = false;
 
-    /* URL PAR DÉFAUT DU DOSSIER GOOGLE DRIVE POUR LES ZIPS DE VISITE */
     const DEFAULT_GOOGLE_DRIVE_URL = "https://drive.google.com/drive/folders/1tRoQjp4ww2Qp6QuD2AdG5LPT9Wkl4Siz?usp=drive_link";
 
     function obtenirLienDriveActuel() {
@@ -1005,7 +1003,7 @@
         chargerCharteDepuisGitHub();
     }
 
-    /* SYNCHRO STRUCTURE CHANTIER CONFIG.JSON SUR GITHUB */
+    /* SYNCHRO DE LA STRUCTURE UNIQUE CONFIG.JSON SUR GITHUB */
     function mettreAJourBadgeSynchro(etat, message) {
         const badge = document.getElementById('syncStatusBadge');
         const icon = document.getElementById('syncStatusIcon');
@@ -1017,7 +1015,7 @@
 
         if (etat === "synced") {
             icon.innerText = "🟢";
-            text.innerText = message || "À jour";
+            text.innerText = message || "Config à jour";
         } else if (etat === "pending") {
             icon.innerText = "🟠";
             text.innerText = message || "En attente";
@@ -1085,30 +1083,22 @@
                 throw new Error("Erreur HTTP GitHub " + resGet.status);
             }
 
-            if (distantChantier && distantChantier.puces) {
-                fusionnerChantiersSmart(chantierActuel, distantChantier);
-            }
+            // GITHUB REÇOIT UNIQUEMENT LA CONFIG DE BASE (PAS DE PUCES, PAS DE NOTES, PAS DE PHOTOS DE VISITES)
+            const configSeuleChantier = {
+                id: chantierActuel.id,
+                nom: chantierActuel.nom,
+                reference: chantierActuel.reference,
+                localisation: chantierActuel.localisation,
+                driveUrl: chantierActuel.driveUrl || DEFAULT_GOOGLE_DRIVE_URL,
+                folderName: nomDossier,
+                niveaux: chantierActuel.niveaux || [],
+                entreprises: chantierActuel.entreprises || [],
+                planning: chantierActuel.planning || []
+            };
 
-            // Nettoyage : On ne pousse QUE la structure légère sur GitHub
-            const copieChantier = JSON.parse(JSON.stringify(chantierActuel));
-
-            if (copieChantier.puces) {
-                for (let p of copieChantier.puces) {
-                    if (p.photos && p.photos.length > 0) {
-                        p.photos = p.photos.map((pic, idx) => {
-                            if (pic && pic.startsWith('data:')) {
-                                const ext = pic.includes('image/avif') ? 'avif' : (pic.includes('image/webp') ? 'webp' : 'jpg');
-                                return `photos/puce_${p.numero}_photo_${idx + 1}.${ext}`;
-                            }
-                            return pic;
-                        });
-                    }
-                }
-            }
-
-            const base64Data = convertirTexteEnBase64Utf8(JSON.stringify(copieChantier, null, 2));
+            const base64Data = convertirTexteEnBase64Utf8(JSON.stringify(configSeuleChantier, null, 2));
             const bodyPayload = {
-                message: `Auto-synchro structure : ${chantierActuel.nom}`,
+                message: `Mise à jour config chantier : ${chantierActuel.nom}`,
                 content: base64Data
             };
             if (shaDistant) bodyPayload.sha = shaDistant;
@@ -1125,13 +1115,9 @@
 
             if (resPut.ok) {
                 modificationsEnAttente = false;
-                mettreAJourBadgeSynchro('synced', 'À jour');
+                mettreAJourBadgeSynchro('synced', 'Config à jour');
                 await sauvegarderUnChantierDansIndexedDB(chantierActuel);
-                rafraichirPucesGraphiques();
-                rafraichirTableauRemarques();
             } else {
-                const errDetail = await resPut.json().catch(() => ({}));
-                console.error("Échec PUT config.json :", errDetail);
                 mettreAJourBadgeSynchro('pending', 'Erreur d\'envoi');
             }
 
@@ -1141,31 +1127,6 @@
         } finally {
             estEnTrainDeSynchroniser = false;
         }
-    }
-
-    function fusionnerChantiersSmart(local, distant) {
-        if (!distant || !distant.puces) return;
-
-        const mapPuces = new Map();
-
-        (local.puces || []).forEach(p => mapPuces.set(p.id, p));
-
-        (distant.puces || []).forEach(pDistant => {
-            if (!mapPuces.has(pDistant.id)) {
-                mapPuces.set(pDistant.id, pDistant);
-            } else {
-                const pLocal = mapPuces.get(pDistant.id);
-                const timeLocal = pLocal.updatedAt || 0;
-                const timeDistant = pDistant.updatedAt || 0;
-
-                if (timeDistant > timeLocal) {
-                    mapPuces.set(pDistant.id, pDistant);
-                }
-            }
-        });
-
-        local.puces = Array.from(mapPuces.values());
-        local.puces.sort((a,b) => (a.numero || 0) - (b.numero || 0));
     }
 
     function forcerSynchroSmartManuelle() {
@@ -1197,14 +1158,14 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `chantier_${chantierActuel.nom.replace(/\s+/g, '_')}.json`;
+        a.download = `config_chantier_${chantierActuel.nom.replace(/\s+/g, '_')}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
 
-    /* EXPORT EN ARCHIVE .ZIP (EXEMPLAIRE LOCAL + REDIRECTION DRIVE) */
+    /* EXPORT VISITE DU JOUR EN ARCHIVE .ZIP (POUR GOOGLE DRIVE) */
     async function exporterRapportDuJourIncr() {
         fermerMenuActions();
         if(!chantierActuel) return alert("Aucun chantier actif sélectionné.");
@@ -1218,7 +1179,7 @@
         const pucesCopie = JSON.parse(JSON.stringify(chantierActuel.puces || []));
         const notesCopie = JSON.parse(JSON.stringify(chantierActuel.notes || []));
 
-        // 1. Photos
+        // 1. Ingestion des photos dans le ZIP
         pucesCopie.forEach((p) => {
             if (p.photos && p.photos.length > 0) {
                 const nouveauxChemins = [];
@@ -1240,7 +1201,7 @@
             }
         });
 
-        // 2. Croquis
+        // 2. Ingestion des croquis vectoriels dans le ZIP
         notesCopie.forEach((n, idxNote) => {
             if (n.croquis && n.croquis.startsWith('data:')) {
                 const nomFichierCroquis = `croquis_note_${idxNote + 1}.svg`;
@@ -1253,7 +1214,7 @@
             }
         });
 
-        // 3. Rapport JSON
+        // 3. Rapport JSON de visite
         const rapportJsonObj = {
             type_fichier: "rapport_visite_incremental",
             chantier_id: chantierActuel.id,
@@ -1264,10 +1225,9 @@
             notes_associees: notesCopie
         };
 
-        const stringRapportJson = JSON.stringify(rapportJsonObj, null, 2);
-        zip.file("rapport.json", stringRapportJson);
+        zip.file("rapport.json", JSON.stringify(rapportJsonObj, null, 2));
 
-        // 4. Génération & Téléchargement
+        // 4. Génération & Téléchargement du ZIP local
         const zipBlob = await zip.generateAsync({ type: "blob" });
         const zipNomFichierLocal = `${nomDossierChantier}_${nomSousDossierRapport}.zip`;
         
@@ -1280,10 +1240,10 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(urlBlob);
 
-        // 5. Ouverture Google Drive
+        // 5. Redirection guidée vers Google Drive
         const driveUrl = obtenirLienDriveActuel();
         setTimeout(() => {
-            if (confirm(`📦 Archive "${zipNomFichierLocal}" téléchargée en local !\n\nVoulez-vous ouvrir le dossier Google Drive de ce chantier pour y déposer votre second exemplaire ?`)) {
+            if (confirm(`📦 Archive "${zipNomFichierLocal}" téléchargée en local !\n\nVoulez-vous ouvrir le dossier Google Drive de ce chantier pour y déposer ce rapport ?`)) {
                 window.open(driveUrl, '_blank');
             }
         }, 500);
@@ -1733,7 +1693,7 @@
             }
 
             rafraichirVueAccueil();
-            alert(`✅ Synchronisation réussie : ${nbCharges} dossier(s) de chantier téléchargé(s) !`);
+            alert(`✅ Synchronisation réussie : ${nbCharges} configuration(s) de chantier téléchargée(s) !`);
         } catch(e) {
             alert("Erreur réseau ou d'identification lors de la synchronisation : " + e.message);
         }
