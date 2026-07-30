@@ -1,4 +1,4 @@
-const CACHE_NAME = 'Rapport Visite V2.0';
+const CACHE_NAME = 'Rapport Visite V3.0';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
