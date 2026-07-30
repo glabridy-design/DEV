@@ -210,7 +210,7 @@
 <div class="app-container">
 
     <div id="pageAccueil" class="section active">
-        <h1>Rapport visite Syncro drive</h1>
+        <h1>Conducteur de Chantier PWA</h1>
         
         <div class="config-box">
             <strong>🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
@@ -1003,7 +1003,6 @@
         chargerCharteDepuisGitHub();
     }
 
-    /* SYNCHRO DE LA STRUCTURE UNIQUE CONFIG.JSON SUR GITHUB */
     function mettreAJourBadgeSynchro(etat, message) {
         const badge = document.getElementById('syncStatusBadge');
         const icon = document.getElementById('syncStatusIcon');
@@ -1077,13 +1076,10 @@
             if (resGet.ok) {
                 const dataJson = await resGet.json();
                 shaDistant = dataJson.sha;
-                const contentDecoded = decodeURIComponent(escape(atob(dataJson.content.replace(/\n/g, ''))));
-                distantChantier = JSON.parse(contentDecoded);
             } else if (resGet.status !== 404) {
                 throw new Error("Erreur HTTP GitHub " + resGet.status);
             }
 
-            // GITHUB REÇOIT UNIQUEMENT LA CONFIG DE BASE (PAS DE PUCES, PAS DE NOTES, PAS DE PHOTOS DE VISITES)
             const configSeuleChantier = {
                 id: chantierActuel.id,
                 nom: chantierActuel.nom,
@@ -1165,7 +1161,6 @@
         URL.revokeObjectURL(url);
     }
 
-    /* EXPORT VISITE DU JOUR EN ARCHIVE .ZIP (POUR GOOGLE DRIVE) */
     async function exporterRapportDuJourIncr() {
         fermerMenuActions();
         if(!chantierActuel) return alert("Aucun chantier actif sélectionné.");
@@ -1179,7 +1174,6 @@
         const pucesCopie = JSON.parse(JSON.stringify(chantierActuel.puces || []));
         const notesCopie = JSON.parse(JSON.stringify(chantierActuel.notes || []));
 
-        // 1. Ingestion des photos dans le ZIP
         pucesCopie.forEach((p) => {
             if (p.photos && p.photos.length > 0) {
                 const nouveauxChemins = [];
@@ -1201,7 +1195,6 @@
             }
         });
 
-        // 2. Ingestion des croquis vectoriels dans le ZIP
         notesCopie.forEach((n, idxNote) => {
             if (n.croquis && n.croquis.startsWith('data:')) {
                 const nomFichierCroquis = `croquis_note_${idxNote + 1}.svg`;
@@ -1214,7 +1207,6 @@
             }
         });
 
-        // 3. Rapport JSON de visite
         const rapportJsonObj = {
             type_fichier: "rapport_visite_incremental",
             chantier_id: chantierActuel.id,
@@ -1227,7 +1219,6 @@
 
         zip.file("rapport.json", JSON.stringify(rapportJsonObj, null, 2));
 
-        // 4. Génération & Téléchargement du ZIP local
         const zipBlob = await zip.generateAsync({ type: "blob" });
         const zipNomFichierLocal = `${nomDossierChantier}_${nomSousDossierRapport}.zip`;
         
@@ -1240,7 +1231,6 @@
         document.body.removeChild(a);
         URL.revokeObjectURL(urlBlob);
 
-        // 5. Redirection guidée vers Google Drive
         const driveUrl = obtenirLienDriveActuel();
         setTimeout(() => {
             if (confirm(`📦 Archive "${zipNomFichierLocal}" téléchargée en local !\n\nVoulez-vous ouvrir le dossier Google Drive de ce chantier pour y déposer ce rapport ?`)) {
@@ -1363,7 +1353,7 @@
             p.updatedAt = Date.now();
         });
 
-        chantierActuel.puces = [...chantierActuel.puces, ...pucesAInjecter];
+        chantierActuel.puces = [...(chantierActuel.puces || []), ...pucesAInjecter];
         chantierActuel.puces.forEach((p, i) => p.numero = i + 1);
 
         if (notesAInjecter.length > 0) {
@@ -1594,6 +1584,7 @@
             return alert("⚠️ Spécifiez un nom de niveau et sélectionnez une image/SVG/DXF de plan.");
         }
 
+        if(!chantierActuel.niveaux) chantierActuel.niveaux = [];
         chantierActuel.niveaux.push({ nom: nomNiv, plan: planDirectTerrainBase64 });
 
         const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
@@ -1685,7 +1676,6 @@
                         const idx = listeTousChantiers.findIndex(x => x.id == cObj.id || x.folderName == d.name);
                         
                         if(idx !== -1) {
-                            // On fusionne la config distante SANS écraser les puces et notes locales existantes !
                             listeTousChantiers[idx] = {
                                 ...cObj,
                                 puces: listeTousChantiers[idx].puces || [],
@@ -1697,7 +1687,8 @@
                             listeTousChantiers.push(cObj);
                         }
                         
-                        await sauvegarderUnChantierDansIndexedDB(listeTousChantiers[idx || listeTousChantiers.length - 1]);
+                        const chantierAConserver = idx !== -1 ? listeTousChantiers[idx] : listeTousChantiers[listeTousChantiers.length - 1];
+                        await sauvegarderUnChantierDansIndexedDB(chantierAConserver);
                         nbCharges++;
                     } catch(e) {}
                 }
@@ -1810,7 +1801,6 @@
         chantierActuel = listeTousChantiers.find(c => c.id == id);
         if(!chantierActuel) return alert("❌ Impossible de trouver ce chantier dans la mémoire locale.");
 
-        // Sécurisation : On garantit que tous les tableaux existent même si GitHub ne les avait pas !
         if(!chantierActuel.notes) chantierActuel.notes = [];
         if(!chantierActuel.puces) chantierActuel.puces = [];
         if(!chantierActuel.niveaux) chantierActuel.niveaux = [];
@@ -1851,8 +1841,6 @@
         rafraichirVueNotes();
         dessinerPlanningGantt();
         changerPage('pageChantierDetails');
-    
-        executerSynchronisationSmartArrierePlan();
     }
 
     function rafraichirVueNotes() {
@@ -2245,8 +2233,8 @@
     }
 
     function chargerPlanEtPucesDuNiveauActuel() {
-        if(!chantierActuel || !chantierActuel.niveaux[indexNiveauActuel]) return;
-        document.getElementById('viewPlanImg').src = chantierActuel.niveaux[indexNiveauActuel].plan;
+        if(!chantierActuel || !chantierActuel.niveaux || !chantierActuel.niveaux[indexNiveauActuel]) return;
+        document.getElementById('viewPlanImg').src = chantierActuel.niveaux[indexNiveauActuel].plan || "";
         rafraichirPucesGraphiques(); rafraichirTableauRemarques();
     }
     
@@ -2259,6 +2247,8 @@
         const img = document.getElementById('viewPlanImg'); const rect = img.getBoundingClientRect();
         const x = ((event.clientX - rect.left) / rect.width) * 100; const y = ((event.clientY - rect.top) / rect.height) * 100;
         
+        if(!chantierActuel.puces) chantierActuel.puces = [];
+
         if (puceSelectionneeId !== null) {
             let p = chantierActuel.puces.find(p => p.id === puceSelectionneeId);
             if(p) { 
@@ -2271,10 +2261,12 @@
             }
         }
         const num = chantierActuel.puces.length + 1;
+        const nomNivActuel = (chantierActuel.niveaux && chantierActuel.niveaux[indexNiveauActuel]) ? chantierActuel.niveaux[indexNiveauActuel].nom : "Niveau unique";
+        
         const nPuce = { 
             id: Date.now(), 
             numero: num, 
-            niveauNom: chantierActuel.niveaux[indexNiveauActuel].nom, 
+            niveauNom: nomNivActuel, 
             zonePrecis: "", 
             x, y, 
             commentaire: "", 
@@ -2291,10 +2283,11 @@
     }
 
     function selectionnerPuceDepuisTableau(idPuce) {
+        if(!chantierActuel.puces) return;
         const p = chantierActuel.puces.find(item => item.id == idPuce);
         if (!p) return;
 
-        const idxNiveau = chantierActuel.niveaux.findIndex(n => n.nom === p.niveauNom);
+        const idxNiveau = chantierActuel.niveaux ? chantierActuel.niveaux.findIndex(n => n.nom === p.niveauNom) : -1;
         if (idxNiveau !== -1 && idxNiveau !== indexNiveauActuel) {
             indexNiveauActuel = idxNiveau;
             document.getElementById('selectNiveauVisite').value = indexNiveauActuel;
@@ -2308,14 +2301,16 @@
     function rafraichirPucesGraphiques() {
         const container = document.getElementById('planContainer');
         container.querySelectorAll('.pin').forEach(p => p.remove());
-        if(!chantierActuel) return;
+        if(!chantierActuel || !chantierActuel.puces) return;
 
         const voirActives = document.getElementById('chkAfficherActives').checked;
         const voirEnCours = document.getElementById('chkAfficherEnCours').checked;
         const voirLevees = document.getElementById('chkAfficherLevees').checked;
 
+        const nomNivActuel = (chantierActuel.niveaux && chantierActuel.niveaux[indexNiveauActuel]) ? chantierActuel.niveaux[indexNiveauActuel].nom : "";
+
         chantierActuel.puces.forEach(p => {
-            if (p.niveauNom === chantierActuel.niveaux[indexNiveauActuel].nom) {
+            if (p.niveauNom === nomNivActuel || !nomNivActuel) {
                 const st = normaliserStatutPuce(p);
                 
                 if (!voirActives && st === "active") return;
@@ -2345,12 +2340,13 @@
     }
     
     function selectionnerPuce(id) {
+        if(!chantierActuel.puces) return;
         puceSelectionneeId = id; const p = chantierActuel.puces.find(p => p.id === id); if(!p) return;
         document.getElementById('zoneSaisiePuce').style.display = 'block';
         document.getElementById('labelNumeroPuce').innerText = p.numero;
         document.getElementById('commentairePuce').value = p.commentaire || "";
         document.getElementById('zonePuceInput').value = p.zonePrecis || ""; 
-        document.getElementById('zoneEntreprisesPuceCheckboxes').innerHTML = chantierActuel.entreprises.map(e => `<label class="entreprise-checkbox-item"><input type="checkbox" value="${e}" ${(p.entreprises || []).includes(e)?'checked':''}> ${e}</label>`).join('');
+        document.getElementById('zoneEntreprisesPuceCheckboxes').innerHTML = (chantierActuel.entreprises || []).map(e => `<label class="entreprise-checkbox-item"><input type="checkbox" value="${e}" ${(p.entreprises || []).includes(e)?'checked':''}> ${e}</label>`).join('');
         
         if (p.photo && (!p.photos || p.photos.length === 0)) {
             p.photos = [p.photo];
@@ -2495,6 +2491,7 @@
     }
     
     async function sauvegarderDonniesPuce() {
+        if(!chantierActuel.puces) chantierActuel.puces = [];
         const p = chantierActuel.puces.find(p => p.id === puceSelectionneeId);
         if(p) {
             p.commentaire = document.getElementById('commentairePuce').value; 
@@ -2518,6 +2515,7 @@
     }
     
     async function supprimerPuceActuelle() {
+        if(!chantierActuel.puces) return;
         chantierActuel.puces = chantierActuel.puces.filter(p => p.id !== puceSelectionneeId);
         chantierActuel.puces.forEach((p, i) => p.numero = i + 1);
         document.getElementById('zoneSaisiePuce').style.display = 'none'; puceSelectionneeId = null;
@@ -2594,6 +2592,7 @@
         const input = document.getElementById('nomEntrepriseTerrainInput');
         const nom = input.value.trim();
         if(nom && chantierActuel) {
+            if(!chantierActuel.entreprises) chantierActuel.entreprises = [];
             if(!chantierActuel.entreprises.includes(nom)) {
                 chantierActuel.entreprises.push(nom);
                 document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge">${e}</span>`).join('');
@@ -2632,12 +2631,12 @@
         document.querySelectorAll('#printTemplate #pdfRefChantier').forEach(el => el.innerText = chantierActuel.reference);
         document.querySelectorAll('#printTemplate #pdfLocChantier').forEach(el => el.innerText = chantierActuel.localisation);
         document.querySelectorAll('#printTemplate #pdfDateVisite').forEach(el => el.innerText = new Date().toLocaleDateString('fr-FR'));
-        document.getElementById('pdfEntreprises').innerText = chantierActuel.entreprises.join(', ') || "Aucune entreprise spécifiée";
+        document.getElementById('pdfEntreprises').innerText = (chantierActuel.entreprises || []).join(', ') || "Aucune entreprise spécifiée";
 
         let compteurChapitreIndex = 1;
 
         const blockPlans = document.getElementById('pdfPlansSection');
-        if (imprimerPlans) {
+        if (imprimerPlans && chantierActuel.niveaux) {
             blockPlans.style.display = "block";
             document.getElementById('pdfHeaderPlans').innerText = `${compteurChapitreIndex}. Plans de situation & Implantation des puces`;
             compteurChapitreIndex++;
@@ -2666,25 +2665,27 @@
                 img.src = niv.plan;
                 ctn.appendChild(img);
 
-                chantierActuel.puces.forEach(p => {
-                    if (p.niveauNom === niv.nom) {
-                        const st = normaliserStatutPuce(p);
-                        if (!inclureActives && st === "active") return;
-                        if (!inclureEnCours && st === "en_cours") return;
-                        if (!inclureLevees && st === "resolue") return;
+                if(chantierActuel.puces) {
+                    chantierActuel.puces.forEach(p => {
+                        if (p.niveauNom === niv.nom) {
+                            const st = normaliserStatutPuce(p);
+                            if (!inclureActives && st === "active") return;
+                            if (!inclureEnCours && st === "en_cours") return;
+                            if (!inclureLevees && st === "resolue") return;
 
-                        let classPin = '';
-                        if (st === "en_cours") classPin = ' progress';
-                        else if (st === "resolue") classPin = ' resolved';
+                            let classPin = '';
+                            if (st === "en_cours") classPin = ' progress';
+                            else if (st === "resolue") classPin = ' resolved';
 
-                        const pin = document.createElement('div'); 
-                        pin.className = 'pin' + classPin; 
-                        pin.style.left = p.x + '%'; 
-                        pin.style.top = p.y + '%'; 
-                        pin.innerText = p.numero;
-                        ctn.appendChild(pin);
-                    }
-                });
+                            const pin = document.createElement('div'); 
+                            pin.className = 'pin' + classPin; 
+                            pin.style.left = p.x + '%'; 
+                            pin.style.top = p.y + '%'; 
+                            pin.innerText = p.numero;
+                            ctn.appendChild(pin);
+                        }
+                    });
+                }
 
                 blockNiveau.appendChild(ctn); 
                 pdfPlansMultiples.appendChild(blockNiveau);
@@ -2783,7 +2784,7 @@
         }
 
         const blockTableau = document.getElementById('pdfTableauSection');
-        if (imprimerTableau) {
+        if (imprimerTableau && chantierActuel.puces) {
             blockTableau.style.display = "block";
             document.getElementById('pdfTitreRemarques').innerText = `${compteurChapitreIndex}. Tableau des constatations et remarques`;
             compteurChapitreIndex++;
@@ -2837,7 +2838,7 @@
         }
 
         const blockPhotos = document.getElementById('pdfPhotosSection');
-        if (imprimerPhotos) {
+        if (imprimerPhotos && chantierActuel.puces) {
             blockPhotos.style.display = "block";
             document.getElementById('pdfTitrePhotos').innerText = `${compteurChapitreIndex}. Reportage photographique`;
             compteurChapitreIndex++;
