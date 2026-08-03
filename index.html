@@ -2882,7 +2882,7 @@
             if (collectionToutesPhotosImprimables.length === 0) {
                 photoPagesContainer.innerHTML = "<p style='font-style:italic;'>Aucune photographie filtrée à imprimer.</p>";
             } else {
-                const PHOTOS_PAR_PAGE = 4; const nbPages = Math.ceil(collectionToutesPhotosImprimables.length / PHOTOS_PAR_PAGE);
+                const PHOTOS_PAR_PAGE = 6; const nbPages = Math.ceil(collectionToutesPhotosImprimables.length / PHOTOS_PAR_PAGE);
                 for (let pageIdx = 0; pageIdx < nbPages; pageIdx++) {
                     if (pageIdx > 0) { const pb = document.createElement('div'); pb.className = "page-break"; photoPagesContainer.appendChild(pb); }
                     const title = document.createElement('h3'); title.innerText = `Planche Photos — Page ${pageIdx + 1} / ${nbPages}`; photoPagesContainer.appendChild(title);
