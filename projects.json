@@ -1,0 +1,12 @@
+{
+  "TRO-OPC-DEELLES-2026": {
+    "nomChantier": "Casino Trouville",
+    "dossierGitHub": "Casino_Trouville",
+    "driveFolderId": "1tRoQjp4ww2Qp6QuD2AdG5LPT9Wkl4Siz"
+  },
+  "HNY-CUISINE": {
+    "nomChantier": "HNY Cuisine",
+    "dossierGitHub": "HNY_Cuisine",
+    "driveFolderId": "TON_ID_DOSSIER_DRIVE_CUISINE"
+  }
+}
