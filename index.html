@@ -288,6 +288,7 @@
                     <button onclick="forcerSynchroSmartManuelle()">☁️ Synchro Config Chantier sur GitHub</button>
                     <button onclick="exporterChantierEnFichierLocal()">💾 Exporter Config Chantier (.json)</button>
                     <button onclick="exporterRapportDuJourIncr()">⏏️ Exporter Visite du Jour (.zip vers Drive)</button>
+                    <button onclick="exporterRapportBase64Direct()">📦 Exporter le rapport (JSON Base64 Direct)</button>
                     <button onclick="document.getElementById('importHistoriquePucesInput').click(); fermerMenuActions();">📥 Fusionner un Rapport Local (.zip / .json)</button>
                     <button onclick="ouvrirGoogleDriveRapports()">🌐 Télécharger un Rapport Cloud (Google Drive)</button>
                     <button class="danger-item" onclick="reinitialiserToutesLesPucesEtRemarques()">🗑️ Réinitialiser / Purger tout le rapport</button>
@@ -1167,6 +1168,36 @@
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
+
+    async function exporterRapportBase64Direct() {
+        fermerMenuActions();
+        if (!chantierActuel) return alert("Aucun chantier actif sélectionné.");
+
+        const dateAujourdhui = new Date().toLocaleDateString('fr-FR').replace(/\//g, "-");
+        const nomDossierChantier = obtenirNomDossierChantier(chantierActuel.nom);
+
+        const rapportObj = JSON.parse(JSON.stringify(chantierActuel));
+        rapportObj.type_fichier = "rapport_visite_base64_autonome";
+        rapportObj.date_export = dateAujourdhui;
+
+        const stringData = JSON.stringify(rapportObj, null, 2);
+        const blob = new Blob([stringData], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `rapport_base64_${nomDossierChantier}_${dateAujourdhui}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        const driveUrl = obtenirLienDriveActuel();
+        setTimeout(() => {
+            if (confirm(`📦 Fichier "rapport_base64_${nomDossierChantier}_${dateAujourdhui}.json" généré avec succès !\n\nVoulez-vous ouvrir le dossier Google Drive de ce chantier pour y déposer ce fichier ?`)) {
+                window.open(driveUrl, '_blank');
+            }
+        }, 500);
     }
 
     async function exporterRapportDuJourIncr() {
