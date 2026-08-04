@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultation de Chantier - Mode Lecture Seule</title>
+    <!-- Parser DXF pour support des plans AutoCAD -->
+    <script src="https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.min.js"></script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; color: #333; }
+        .app-container { max-width: 900px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        
+        h1, h2, h3 { color: #1a73e8; margin-top: 0; }
+        
+        .header-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1a73e8; padding-bottom: 12px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+        .read-only-badge { background: #e8f0fe; color: #1a73e8; padding: 6px 14px; border-radius: 20px; font-weight: bold; font-size: 13px; border: 1px solid #b4cff7; }
+
+        /* Onglets */
+        .tabs-container { display: flex; border-bottom: 2px solid #dadce0; margin-bottom: 20px; gap: 5px; flex-wrap: wrap; }
+        .tab-button { flex: 1; min-width: 140px; padding: 12px 8px; background: #f1f3f4; border: none; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; font-size: 14px; color: #5f6368; transition: all 0.2s; text-align: center; }
+        .tab-button:hover { background: #e8eaed; color: #1a73e8; }
+        .tab-button.active { background: #1a73e8; color: white; border-bottom: 2px solid #1a73e8; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Formulaires & Filtres */
+        label { display: block; margin: 10px 0 4px; font-weight: 600; font-size: 14px; color: #4a4a4a; }
+        select, input[type="text"] { width: 100%; padding: 10px; border: 1px solid #dadce0; border-radius: 8px; font-size: 14px; background: #f8f9fa; }
+        
+        .filter-box { background: #edf2fa; border: 1px solid #b4cff7; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .map-filters-box { background: #f8f9fa; border: 1px solid #dadce0; border-radius: 8px; padding: 12px 15px; margin-top: 10px; display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .filter-checkbox-label { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; cursor: pointer; margin: 0; color: #4a4a4a; }
+
+        /* Plan & Puces */
+        .plan-wrapper { position: relative; width: 100%; overflow: auto; background: #eaeaea; border: 2px dashed #ccc; border-radius: 8px; margin-top: 10px; text-align: center; }
+        .plan-container { position: relative; display: inline-block; max-width: 100%; }
+        .plan-img { display: block; max-width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
+        
+        .pin { position: absolute; width: 22px; height: 22px; background: #d93025; color: white; border-radius: 50%; text-align: center; font-size: 11px; font-weight: bold; line-height: 18px; transform: translate(-50%, -50%); border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; }
+        .pin.progress { background: #e67e22; }
+        .pin.resolved { background: #28a745; }
+        .pin.selected { z-index: 10; transform: translate(-50%, -50%) scale(1.25); box-shadow: 0 0 0 3px rgba(26,115,232,0.6); }
+        .pin-late-badge { position: absolute; top: -8px; right: -8px; font-size: 11px; background: white; border-radius: 50%; padding: 1px; }
+
+        /* Fiche de consultation Puce */
+        .details-card { background: #fff; border: 1px solid #b4cff7; padding: 18px; border-radius: 8px; margin-top: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .status-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .status-badge.active { background: #fadbd8; color: #c0392b; border: 1px solid #f5b7b1; }
+        .status-badge.progress { background: #fdebd0; color: #d35400; border: 1px solid #f5cba7; }
+        .status-badge.resolved { background: #d4efdf; color: #1e8449; border: 1px solid #a9dfbf; }
+        .status-badge.late-task { background: #fadbd8; color: #d93025; border: 1px solid #f5b7b1; }
+
+        .photo-gallery-wrapper { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f8f9fa; }
+        .photo-gallery-item { width: 100px; height: 100px; border-radius: 6px; border: 1px solid #dadce0; background-size: cover; background-position: center; cursor: pointer; }
+
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 15px; }
+        .table-remarques { width: 100%; border-collapse: collapse; min-width: 600px; }
+        .table-remarques th, .table-remarques td { border: 1px solid #dadce0; padding: 10px; text-align: left; font-size: 14px; }
+        .table-remarques th { background: #f1f3f4; }
+        .table-remarques tr.clickable-row { cursor: pointer; transition: background 0.15s; }
+        .table-remarques tr.clickable-row:hover { background-color: #edf2fa !important; }
+
+        /* Planning Gantt */
+        .gantt-chart-container { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 15px; margin-top: 15px; overflow-x: auto; }
+        .gantt-row { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #f1f3f4; padding: 10px 0; font-size: 14px; gap: 10px; }
+        .gantt-col-name { width: 100%; max-width: 300px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .gantt-progress-track { width: 140px; height: 16px; background: #e8eaed; border-radius: 8px; overflow: hidden; position: relative; }
+        .gantt-progress-bar { height: 100%; background: #1a73e8; border-radius: 8px 0 0 8px; }
+        .gantt-progress-bar.summary { background: #24292e; }
+        .gantt-progress-bar.late { background: #d93025; }
+
+        /* Overlay Agrandissement Photo */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal-img { max-width: 90vw; max-height: 90vh; border-radius: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
+
+        @media screen and (max-width: 600px) {
+            .app-container { margin: 0; padding: 12px; border-radius: 0; }
+            .header-bar { flex-direction: column; align-items: flex-start; }
+            .tabs-container { flex-direction: column; }
+            .tab-button { width: 100%; text-align: left; border-radius: 6px; margin-bottom: 4px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header-bar">
+        <div>
+            <h1 id="viewNom" style="margin:0;">Chargement du chantier...</h1>
+            <div style="font-size:13px; color:#5f6368; margin-top:4px;">
+                Ref : <span id="viewRef">---</span> | Lieu : <span id="viewLoc">---</span>
+            </div>
+        </div>
+        <div class="read-only-badge">👁️ Mode Consultation Seule</div>
+    </div>
+
+    <div class="filter-box">
+        <label for="selectChantierPublic" style="margin-top:0; color:#1a73e8;">Sélectionner le chantier :</label>
+        <select id="selectChantierPublic" onchange="changerChantierPublic()"></select>
+    </div>
+
+    <div class="tabs-container">
+        <button class="tab-button active" onclick="switchTab('tabTerrain')">🗺️ Plan &amp; Observations</button>
+        <button class="tab-button" onclick="switchTab('tabGantt')">📅 Planning &amp; Avancement</button>
+    </div>
+
+    <div id="tabTerrain" class="tab-content active">
+        <div style="display:flex; gap:15px; flex-wrap:wrap; margin-bottom:15px;">
+            <div style="flex:1; min-width:200px;">
+                <label for="selectNiveauVisite" style="margin-top:0;">Niveau / Plan :</label>
+                <select id="selectNiveauVisite" onchange="changerDeNiveau()"></select>
+            </div>
+            <div style="flex:1; min-width:200px;">
+                <label for="selectFiltreEntreprise" style="margin-top:0; color:#1a73e8;">🏢 Filtrer par Entreprise :</label>
+                <select id="selectFiltreEntreprise" onchange="rafraichirPucesGraphiques(); rafraichirTableauRemarques();">
+                    <option value="">-- Toutes les entreprises --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="map-filters-box">
+            <span style="font-size:12px; color:#5f6368; font-weight:bold; text-transform:uppercase;">Statuts :</span>
+            <label class="filter-checkbox-label"><input type="checkbox" id="chkActives" checked onchange="rafraichirPucesGraphiques(); rafraichirTableauRemarques();"><span style="color:#c0392b;">🔴 Actives</span></label>
+            <label class="filter-checkbox-label"><input type="checkbox" id="chkEnCours" checked onchange="rafraichirPucesGraphiques(); rafraichirTableauRemarques();"><span style="color:#e67e22;">🟠 En cours</span></label>
+            <label class="filter-checkbox-label"><input type="checkbox" id="chkLevees" checked onchange="rafraichirPucesGraphiques(); rafraichirTableauRemarques();"><span style="color:#1e8449;">🟢 Levées</span></label>
+        </div>
+
+        <div class="plan-wrapper">
+            <div id="planContainer" class="plan-container">
+                <img id="viewPlanImg" class="plan-img" alt="Plan">
+            </div>
+        </div>
+
+        <div id="zoneConsultationPuce" class="details-card" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="margin:0;">Remarque N° <span id="labelNumPuce">X</span></h3>
+                <div id="badgeStatutPuce" class="status-badge active">Active</div>
+            </div>
+            <div style="font-size:14px; margin-bottom:10px; color:#5f6368;">
+                📍 <strong>Localisation :</strong> <span id="labelZonePuce">N/A</span>
+            </div>
+
+            <label>📋 Actions à mener / Tâches :</label>
+            <div id="containerTachesPuce" style="margin-bottom:15px;"></div>
+
+            <label>📷 Photos rattachées :</label>
+            <div id="containerPhotosPuce" class="photo-gallery-wrapper">Aucune photo</div>
+
+            <label>💬 Observations complémentaires :</label>
+            <div id="labelCommentairePuce" style="background:#f8f9fa; border:1px solid #dadce0; padding:10px; border-radius:6px; font-size:14px; min-height:40px;">-</div>
+        </div>
+
+        <h2>Tableau récapitulatif des remarques</h2>
+        <div class="table-responsive">
+            <table class="table-remarques">
+                <thead>
+                    <tr><th>N°</th><th>Niveau / Zone</th><th>Statut</th><th>Entreprises &amp; Tâches / Constats</th><th>Date</th></tr>
+                </thead>
+                <tbody id="corpsTableauRemarques"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="tabGantt" class="tab-content">
+        <h2>📅 Planning d'avancement global</h2>
+        <div id="ganttVisualContainer" class="gantt-chart-container"></div>
+    </div>
+</div>
+
+<div id="modalPhotoOverlay" class="modal-overlay" onclick="fermerZoomPhoto()">
+    <img id="modalPhotoImg" class="modal-img" src="" alt="Photo agrandie">
+</div>
+
+<script>
+    let listeTousChantiers = [];
+    let chantierActuel = null;
+    let indexNiveauActuel = 0;
+    let puceSelectionneeId = null;
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        const clickedBtn = Array.from(document.querySelectorAll('.tab-button')).find(b => b.getAttribute('onclick').includes(tabId));
+        if(clickedBtn) clickedBtn.classList.add('active');
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+        const user = localStorage.getItem('git_user');
+        const repo = localStorage.getItem('git_repo');
+        const token = localStorage.getItem('git_token');
+
+        if(user && repo && token) {
+            await chargerDepuisGitHub(user, repo, token);
+        } else {
+            document.getElementById('viewNom').innerText = "⚠️ Configuration Cloud non trouvée";
+        }
+    });
+
+    async function chargerDepuisGitHub(user, repo, token) {
+        try {
+            const resRoot = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/`, {
+                headers: { "Authorization": `token ${token}` }
+            });
+            if(!resRoot.ok) throw new Error("Accès GitHub impossible");
+            
+            const elements = await resRoot.json();
+            const dossiers = elements.filter(item => item.type === "dir");
+
+            listeTousChantiers = [];
+            for(let d of dossiers) {
+                const resConfig = await fetch(`https://api.github.com/repos/${user}/${repo}/contents/${d.name}/config.json`, {
+                    headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3.raw" }
+                });
+                if(resConfig.ok) {
+                    const cObj = await resConfig.json();
+                    listeTousChantiers.push(cObj);
+                }
+            }
+
+            if(listeTousChantiers.length > 0) {
+                const select = document.getElementById('selectChantierPublic');
+                select.innerHTML = listeTousChantiers.map((c, i) => `<option value="${i}">${c.nom}</option>`).join('');
+                chargerChantierIndex(0);
+            } else {
+                document.getElementById('viewNom').innerText = "Aucun chantier public disponible";
+            }
+        } catch(e) {
+            document.getElementById('viewNom').innerText = "Erreur de chargement des chantiers";
+        }
+    }
+
+    function changerChantierPublic() {
+        const idx = parseInt(document.getElementById('selectChantierPublic').value);
+        chargerChantierIndex(idx);
+    }
+
+    function chargerChantierIndex(idx) {
+        chantierActuel = listeTousChantiers[idx];
+        if(!chantierActuel) return;
+
+        document.getElementById('viewNom').innerText = chantierActuel.nom || "Sans nom";
+        document.getElementById('viewRef').innerText = chantierActuel.reference || "N/A";
+        document.getElementById('viewLoc').innerText = chantierActuel.localisation || "N/A";
+
+        const entSelect = document.getElementById('selectFiltreEntreprise');
+        entSelect.innerHTML = `<option value="">-- Toutes les entreprises --</option>` +
+            (chantierActuel.entreprises || []).map(e => `<option value="${e}">${e}</option>`).join('');
+
+        if (chantierActuel.niveaux && chantierActuel.niveaux.length > 0) {
+            document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="${i}">${n.nom}</option>`).join('');
+            indexNiveauActuel = 0;
+            chargerPlanNiveau();
+        } else {
+            document.getElementById('selectNiveauVisite').innerHTML = "<option>Aucun plan</option>";
+            document.getElementById('viewPlanImg').src = "";
+        }
+
+        dessinerPlanningGantt();
+    }
+
+    function chargerPlanNiveau() {
+        if(!chantierActuel || !chantierActuel.niveaux || !chantierActuel.niveaux[indexNiveauActuel]) return;
+        document.getElementById('viewPlanImg').src = chantierActuel.niveaux[indexNiveauActuel].plan || "";
+        rafraichirPucesGraphiques();
+        rafraichirTableauRemarques();
+    }
+
+    function changerDeNiveau() {
+        indexNiveauActuel = parseInt(document.getElementById('selectNiveauVisite').value);
+        chargerPlanNiveau();
+    }
+
+    function normaliserStatutPuce(p) {
+        if (p.statut) return p.statut;
+        if (p.resolue === true) return "resolue";
+        return "active";
+    }
+
+    function rafraichirPucesGraphiques() {
+        const container = document.getElementById('planContainer');
+        container.querySelectorAll('.pin').forEach(p => p.remove());
+        if(!chantierActuel || !chantierActuel.puces) return;
+
+        const voirActives = document.getElementById('chkActives').checked;
+        const voirEnCours = document.getElementById('chkEnCours').checked;
+        const voirLevees = document.getElementById('chkLevees').checked;
+        const filtreEnt = document.getElementById('selectFiltreEntreprise').value;
+
+        const nomNivActuel = chantierActuel.niveaux[indexNiveauActuel]?.nom || "";
+
+        chantierActuel.puces.forEach(p => {
+            if (p.niveauNom === nomNivActuel || !nomNivActuel) {
+                const st = normaliserStatutPuce(p);
+                if (!voirActives && st === "active") return;
+                if (!voirEnCours && st === "en_cours") return;
+                if (!voirLevees && st === "resolue") return;
+
+                if (filtreEnt) {
+                    const aTacheEnt = p.taches && p.taches.some(t => t.entreprise === filtreEnt);
+                    const aEntGlobale = p.entreprises && p.entreprises.includes(filtreEnt);
+                    if (!aTacheEnt && !aEntGlobale) return;
+                }
+
+                const div = document.createElement('div');
+                let classStatut = '';
+                if (st === "en_cours") classStatut = ' progress';
+                else if (st === "resolue") classStatut = ' resolved';
+
+                div.className = 'pin' + classStatut + (puceSelectionneeId === p.id ? ' selected' : '');
+                div.style.left = p.x + '%'; div.style.top = p.y + '%'; div.innerText = p.numero;
+
+                div.onclick = (e) => { e.stopPropagation(); afficherFichePuce(p.id); };
+                container.appendChild(div);
+            }
+        });
+    }
+
+    function afficherFichePuce(idPuce) {
+        puceSelectionneeId = idPuce;
+        const p = chantierActuel.puces.find(item => item.id === idPuce);
+        if(!p) return;
+
+        document.getElementById('zoneConsultationPuce').style.display = 'block';
+        document.getElementById('labelNumPuce').innerText = p.numero;
+        document.getElementById('labelZonePuce').innerText = p.zonePrecis || "Non spécifiée";
+        document.getElementById('labelCommentairePuce').innerText = p.commentaire || "Aucune observation particulière.";
+
+        const st = normaliserStatutPuce(p);
+        const badge = document.getElementById('badgeStatutPuce');
+        if (st === "en_cours") { badge.innerText = "En cours 🟠"; badge.className = "status-badge progress"; }
+        else if (st === "resolue") { badge.innerText = "Levée 🟢"; badge.className = "status-badge resolved"; }
+        else { badge.innerText = "Active 🔴"; badge.className = "status-badge active"; }
+
+        const containerTaches = document.getElementById('containerTachesPuce');
+        if (p.taches && p.taches.length > 0) {
+            containerTaches.innerHTML = p.taches.map(t => `
+                <div style="background:#f8f9fa; border:1px solid #dadce0; padding:8px 12px; border-radius:6px; margin-bottom:6px; font-size:13px;">
+                    ${t.faite ? '✅' : '⏳'} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}]
+                </div>
+            `).join('');
+        } else {
+            containerTaches.innerHTML = "<span style='font-style:italic; font-size:13px; color:#888;'>Aucune action spécifique.</span>";
+        }
+
+        const containerPhotos = document.getElementById('containerPhotosPuce');
+        if (p.photos && p.photos.length > 0) {
+            containerPhotos.innerHTML = p.photos.map(pic => `
+                <div class="photo-gallery-item" style="background-image:url(${pic});" onclick="zoomerPhoto('${pic}')"></div>
+            `).join('');
+        } else {
+            containerPhotos.innerHTML = "<span style='font-style:italic; font-size:13px; color:#888;'>Aucune photo.</span>";
+        }
+
+        rafraichirPucesGraphiques();
+        document.getElementById('zoneConsultationPuce').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function rafraichirTableauRemarques() {
+        const tbody = document.getElementById('corpsTableauRemarques');
+        if(!chantierActuel || !chantierActuel.puces || chantierActuel.puces.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='5'>Aucune remarque enregistrée.</td></tr>";
+            return;
+        }
+
+        const voirActives = document.getElementById('chkActives').checked;
+        const voirEnCours = document.getElementById('chkEnCours').checked;
+        const voirLevees = document.getElementById('chkLevees').checked;
+        const filtreEnt = document.getElementById('selectFiltreEntreprise').value;
+
+        let html = "";
+        chantierActuel.puces.forEach(p => {
+            const st = normaliserStatutPuce(p);
+            if (!voirActives && st === "active") return;
+            if (!voirEnCours && st === "en_cours") return;
+            if (!voirLevees && st === "resolue") return;
+
+            if (filtreEnt) {
+                const aTacheEnt = p.taches && p.taches.some(t => t.entreprise === filtreEnt);
+                const aEntGlobale = p.entreprises && p.entreprises.includes(filtreEnt);
+                if (!aTacheEnt && !aEntGlobale) return;
+            }
+
+            let labelStatut = '<span class="status-badge active">Active</span>';
+            if (st === "en_cours") labelStatut = '<span class="status-badge progress">En cours</span>';
+            else if (st === "resolue") labelStatut = '<span class="status-badge resolved">Levée</span>';
+
+            const zoneAffichee = p.zonePrecis ? ` — <b>${p.zonePrecis}</b>` : '';
+            const obsText = p.commentaire ? `<div>${p.commentaire}</div>` : '';
+
+            html += `
+                <tr class="clickable-row" onclick="afficherFichePuce(${p.id})">
+                    <td><b>Puce ${p.numero}</b></td>
+                    <td>${p.niveauNom}${zoneAffichee}</td>
+                    <td>${labelStatut}</td>
+                    <td>${obsText}</td>
+                    <td>${p.dateCreation || 'N/A'}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html || "<tr><td colspan='5'>Aucune remarque ne correspond aux filtres.</td></tr>";
+    }
+
+    function dessinerPlanningGantt() {
+        const visualCtn = document.getElementById('ganttVisualContainer');
+        if(!chantierActuel || !chantierActuel.planning || chantierActuel.planning.length === 0) {
+            visualCtn.innerHTML = "<p style='font-style:italic; color:#666;'>Aucun planning chargé.</p>";
+            return;
+        }
+
+        let html = "";
+        chantierActuel.planning.forEach(t => {
+            const indent = (t.outlineLevel - 1) * 15;
+            const textStyle = t.isSummary ? "font-weight: bold; color: #1a73e8;" : "font-weight: normal;";
+            const formatStart = t.start ? t.start.split("-").reverse().join("/") : "N/A";
+            const formatFinish = t.finish ? t.finish.split("-").reverse().join("/") : "N/A";
+
+            let barClass = "gantt-progress-bar";
+            if (t.isSummary) barClass += " summary";
+
+            html += `
+                <div class="gantt-row">
+                    <div class="gantt-col-name" style="padding-left:${indent}px; ${textStyle}">
+                        ${t.isSummary ? '📂' : '📋'} ${t.name}
+                    </div>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="gantt-progress-track">
+                            <div class="${barClass}" style="width:${t.percent}%"></div>
+                        </div>
+                        <span style="font-size:11px; color:#5f6368; min-width:120px; text-align:right;">
+                            <strong>${t.percent}%</strong> (${formatStart} - ${formatFinish})
+                        </span>
+                    </div>
+                </div>
+            `;
+        });
+        visualCtn.innerHTML = html;
+    }
+
+    function zoomerPhoto(src) {
+        document.getElementById('modalPhotoImg').src = src;
+        document.getElementById('modalPhotoOverlay').style.display = 'flex';
+    }
+
+    function fermerZoomPhoto() {
+        document.getElementById('modalPhotoOverlay').style.display = 'none';
+    }
+</script>
+</body>
+</html>
