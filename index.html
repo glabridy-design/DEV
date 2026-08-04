@@ -39,6 +39,8 @@
         .dropdown-menu button { color: #333; padding: 12px 16px; text-decoration: none; display: block; width: 100%; border: none; background: none; text-align: left; font-size: 14px; cursor: pointer; border-bottom: 1px solid #f1f3f4; }
         .dropdown-menu button:last-child { border-bottom: none; }
         .dropdown-menu button:hover { background-color: #f8f9fa; color: #1a73e8; }
+        .dropdown-menu button.danger-item { color: #d93025; font-weight: bold; }
+        .dropdown-menu button.danger-item:hover { background-color: #fce8e6; color: #c5221f; }
 
         /* Onglets internes */
         .tabs-container { display: flex; border-bottom: 2px solid #dadce0; margin-bottom: 20px; gap: 5px; padding-top: 10px; flex-wrap: wrap; }
@@ -190,7 +192,7 @@
             .gantt-print-bar.late { background-color: #990000 !important; }
             .photo-grid-table { width: 100%; border-collapse: separate; border-spacing: 10px; page-break-inside: avoid; }
             .photo-grid-table td { width: 50%; vertical-align: top; border: 1px solid #ddd; padding: 8px; text-align: center; background: #fff; page-break-inside: avoid; }
-            .photo-grid-img { width: 100%; height: 210px; object-fit: contain; background: #fafafa; display: block; margin-bottom: 6px; border: 1px solid #eee; }
+            .photo-grid-img { width: 100%; height: 160px; object-fit: contain; background: #fafafa; display: block; margin-bottom: 6px; border: 1px solid #eee; }
             .photo-grid-caption { font-size: 9pt; font-weight: bold; color: #1a73e8; }
             .pin { width: 18px !important; height: 18px !important; font-size: 10px !important; line-height: 14px !important; background-color: #d93025 !important; color: white !important; border: 2px solid white !important; transform: translate(-50%, -50%) scale(1) !important; box-shadow: none !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             .pin.progress { background-color: #e67e22 !important; }
@@ -211,7 +213,7 @@
 <div class="app-container">
 
     <div id="pageAccueil" class="section active">
-        <h1>Conducteur de Chantier PWA</h1>
+        <h1>Rapport de visite V2</h1>
         
         <div class="config-box">
             <strong>🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
@@ -288,6 +290,7 @@
                     <button onclick="exporterRapportDuJourIncr()">⏏️ Exporter Visite du Jour (.zip vers Drive)</button>
                     <button onclick="document.getElementById('importHistoriquePucesInput').click(); fermerMenuActions();">📥 Fusionner un Rapport Local (.zip / .json)</button>
                     <button onclick="ouvrirGoogleDriveRapports()">🌐 Télécharger un Rapport Cloud (Google Drive)</button>
+                    <button class="danger-item" onclick="reinitialiserToutesLesPucesEtRemarques()">🗑️ Réinitialiser / Purger tout le rapport</button>
                 </div>
             </div>
             <input type="file" id="importHistoriquePucesInput" accept=".zip,.json" style="display:none;" onchange="injecterHistoriqueRemarquesJson(event)">
@@ -411,7 +414,11 @@
                 </div>
             </div>
 
-            <h2>Observations enregistrées</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; flex-wrap: wrap; gap: 10px;">
+                <h2 style="margin: 0;">Observations enregistrées</h2>
+                <button type="button" class="btn btn-small btn-danger" onclick="reinitialiserToutesLesPucesEtRemarques()">🗑️ Réinitialiser / Purger tout le rapport</button>
+            </div>
+
             <div class="table-responsive">
                 <table class="table-remarques">
                     <thead>
@@ -1257,6 +1264,36 @@
             }, 1000);
         } else {
             document.getElementById('importHistoriquePucesInput').click();
+        }
+    }
+
+    async function reinitialiserToutesLesPucesEtRemarques() {
+        fermerMenuActions();
+        if(!chantierActuel) return;
+        
+        const totalPuces = chantierActuel.puces ? chantierActuel.puces.length : 0;
+        if(totalPuces === 0) {
+            return alert("ℹ️ Le rapport de ce chantier ne contient actuellement aucune puce ou remarque.");
+        }
+
+        const conf1 = confirm(`Êtes-vous sûr de vouloir supprimer TOUTES les puces, photos et remarques (${totalPuces} points) du chantier "${chantierActuel.nom}" ?`);
+        if(conf1) {
+            const conf2 = confirm(`⚠️ CETTE ACTION EST IRREVOCABLE :\n\nTous les constats géolocalisés sur les plans et les photos d'observations associées vont être définitivement effacés.\n\nConfirmer la réinitialisation du rapport ?`);
+            if(conf2) {
+                chantierActuel.puces = [];
+                puceSelectionneeId = null;
+                document.getElementById('zoneSaisiePuce').style.display = 'none';
+
+                const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
+                if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
+                
+                await sauvegarderUnChantierDansIndexedDB(chantierActuel);
+                
+                rafraichirPucesGraphiques();
+                rafraichirTableauRemarques();
+                notifierModificationLocale();
+                alert("🗑️ Le rapport de visite a été entièrement réinitialisé ! Tous les points et remarques ont été supprimés.");
+            }
         }
     }
 
