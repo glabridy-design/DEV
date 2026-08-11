@@ -92,8 +92,13 @@
         .plan-container { position: relative; display: inline-block; max-width: 100%; }
         .plan-img { display: block; max-width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
         
+        /* Overlay vectoriel SVG pour le tracé des zones */
+        .plan-svg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+        .plan-svg-overlay polygon, .plan-svg-overlay rect { pointer-events: auto; cursor: pointer; transition: fill-opacity 0.2s; }
+        .plan-svg-overlay polygon:hover, .plan-svg-overlay rect:hover { fill-opacity: 0.55 !important; }
+
         /* Puces sur le plan */
-        .pin { position: absolute; width: 22px; height: 22px; background: #d93025; color: white; border-radius: 50%; text-align: center; font-size: 11px; font-weight: bold; line-height: 18px; transform: translate(-50%, -50%); border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; }
+        .pin { position: absolute; width: 22px; height: 22px; background: #d93025; color: white; border-radius: 50%; text-align: center; font-size: 11px; font-weight: bold; line-height: 18px; transform: translate(-50%, -50%); border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; z-index: 6; }
         .pin.progress { background: #e67e22; }
         .pin.resolved { background: #28a745; }
         .pin.selected { z-index: 10; transform: translate(-50%, -50%) scale(1.25); box-shadow: 0 0 0 3px rgba(26,115,232,0.6); }
@@ -346,7 +351,9 @@
             <h2>Plan interactif</h2>
             <div class="plan-wrapper">
                 <div id="planContainer" class="plan-container">
-                    <img id="viewPlanImg" class="plan-img" alt="Plan" onclick="placerPuce(event)">
+                    <img id="viewPlanImg" class="plan-img" alt="Plan" onclick="clicSurPlanContainer(event)">
+                    <!-- Overlay SVG interactif pour les zones de puces -->
+                    <svg id="planSvgOverlay" class="plan-svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
                 </div>
             </div>
 
@@ -378,7 +385,21 @@
                     <button type="button" class="btn btn-small btn-warning" style="flex:1;" onclick="changerStatutPuceTerrain('en_cours')">🟠 En cours</button>
                     <button type="button" class="btn btn-small btn-success" style="flex:1;" onclick="changerStatutPuceTerrain('resolue')">🟢 Levée</button>
                 </div>
-                
+
+                <!-- SECTION DEDIEE AUX ZONES APPLICABLES POUR CETTE PUCE -->
+                <div style="background:#fff; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin-bottom:15px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <h4 style="margin:0; color:#1a73e8;">📐 Zones rattachées à cette remarque</h4>
+                        <div style="display:flex; gap:6px;">
+                            <button type="button" class="btn btn-small" style="background:#1a73e8; font-size:12px;" onclick="demarrerTraceZone('rect')">🟩 Tracé Rectangle</button>
+                            <button type="button" class="btn btn-small" style="background:#6f42c1; font-size:12px;" onclick="demarrerTraceZone('poly')">🔷 Tracé Polygone libre</button>
+                        </div>
+                    </div>
+                    <p style="font-size:12px; color:#666; margin:6px 0 0 0;">Si la remarque concerne une surface (mur, couloir...), tracez la zone directement sur le plan.</p>
+                    <div id="zoneSaisieInformationStatus" style="display:none; font-size:13px; font-weight:bold; color:#d93025; background:#fce8e6; padding:8px; border-radius:6px; margin-top:8px;"></div>
+                    <div id="listeZonesPuceActiveContainer" style="margin-top:10px;"></div>
+                </div>
+
                 <label>Photos constatations (Historique visuel) :</label>
                 <input type="file" id="photoPuce" accept="image/*" onchange="chargerPhotoPuceAjoutMultiples(event)">
                 <div id="photoGalleryContainer" class="photo-gallery-wrapper">Aucune photo enregistrée pour ce constat</div>
@@ -630,11 +651,16 @@
     let planDirectTerrainBase64 = "";
     let photosPuceTemporairesTableau = []; 
     let tachesPuceTemporairesTableau = [];
+    let zonesPuceTemporairesTableau = []; // Zones associées à la puce en cours d'édition
     let chantierActuel = null; 
     let indexNiveauActuel = 0; 
     let puceSelectionneeId = null;
     let statutPuceTemporaire = "active"; 
     let summaryTasksRepliees = {};
+
+    // Variables pour le mode de dessin de zone sur le plan
+    let modeDessinZoneActif = null; // null, 'rect', 'poly'
+    let pointsZoneEnCours = [];
 
     let idNoteCroquisEnCours = null;
     let estEnTrainDeDessiner = false;
@@ -838,6 +864,12 @@
         if (p.statut) return p.statut; 
         if (p.resolue === true) return "resolue";
         return "active";
+    }
+
+    function obtenirCouleurHexaParStatut(statut) {
+        if (statut === "en_cours") return "#e67e22";
+        if (statut === "resolue") return "#28a745";
+        return "#d93025"; // active
     }
 
     function evaluerRetardTache(tache) {
@@ -1418,6 +1450,7 @@
             }
             if(!p.photos) p.photos = [];
             if(!p.taches) p.taches = [];
+            if(!p.zones) p.zones = [];
             p.statut = normaliserStatutPuce(p);
             p.updatedAt = Date.now();
         });
@@ -2312,10 +2345,78 @@
         chargerPlanEtPucesDuNiveauActuel();
     }
     
-    function placerPuce(event) {
-        const img = document.getElementById('viewPlanImg'); const rect = img.getBoundingClientRect();
-        const x = ((event.clientX - rect.left) / rect.width) * 100; const y = ((event.clientY - rect.top) / rect.height) * 100;
-        
+    /* -------------------------------------------------------------
+       LOGIQUE DE TRACE ET D'INTERACTION AVEC LES ZONES DE PUCE
+    ------------------------------------------------------------- */
+    function demarrerTraceZone(type) {
+        if (!puceSelectionneeId) return alert("Sélectionnez d'abord une puce.");
+        modeDessinZoneActif = type;
+        pointsZoneEnCours = [];
+        const infoDiv = document.getElementById('zoneSaisieInformationStatus');
+        infoDiv.style.display = 'block';
+        if (type === 'rect') {
+            infoDiv.innerText = "🟩 Cliquez pour poser le coin Supérieur-Gauche, puis le coin Inférieur-Droit du rectangle.";
+        } else {
+            infoDiv.innerHTML = "🔷 Cliquez sur le plan pour ajouter des sommets. <button type='button' class='btn btn-small btn-success' style='padding:2px 8px; font-size:11px;' onclick='finaliserTracePolygoneZone(event)'>Terminer le polygone ✔</button>";
+        }
+    }
+
+    function finaliserTracePolygoneZone(event) {
+        if (event) event.stopPropagation();
+        if (pointsZoneEnCours.length < 3) {
+            alert("Il faut au moins 3 points pour valider une zone polygonale.");
+            return;
+        }
+        zonesPuceTemporairesTableau.push({ type: 'poly', points: [...pointsZoneEnCours] });
+        annulerOuFinirTraceZone();
+    }
+
+    function annulerOuFinirTraceZone() {
+        modeDessinZoneActif = null;
+        pointsZoneEnCours = [];
+        document.getElementById('zoneSaisieInformationStatus').style.display = 'none';
+        rafraichirListeZonesSaisiePuce();
+        rafraichirPucesGraphiques();
+    }
+
+    function clicSurPlanContainer(event) {
+        const img = document.getElementById('viewPlanImg');
+        const rect = img.getBoundingClientRect();
+        const x = parseFloat((((event.clientX - rect.left) / rect.width) * 100).toFixed(2));
+        const y = parseFloat((((event.clientY - rect.top) / rect.height) * 100).toFixed(2));
+
+        if (modeDessinZoneActif === 'rect') {
+            pointsZoneEnCours.push({ x, y });
+            if (pointsZoneEnCours.length === 2) {
+                const xMin = Math.min(pointsZoneEnCours[0].x, pointsZoneEnCours[1].x);
+                const xMax = Math.max(pointsZoneEnCours[0].x, pointsZoneEnCours[1].x);
+                const yMin = Math.min(pointsZoneEnCours[0].y, pointsZoneEnCours[1].y);
+                const yMax = Math.max(pointsZoneEnCours[0].y, pointsZoneEnCours[1].y);
+
+                zonesPuceTemporairesTableau.push({
+                    type: 'rect',
+                    x: xMin, y: yMin,
+                    w: Math.max(1, xMax - xMin),
+                    h: Math.max(1, yMax - yMin)
+                });
+                annulerOuFinirTraceZone();
+            } else {
+                rafraichirPucesGraphiques();
+            }
+            return;
+        }
+
+        if (modeDessinZoneActif === 'poly') {
+            pointsZoneEnCours.push({ x, y });
+            rafraichirPucesGraphiques();
+            return;
+        }
+
+        // Mode standard : Déplacement / Placement de puce
+        placerPuce(x, y);
+    }
+
+    function placerPuce(x, y) {
         if(!chantierActuel.puces) chantierActuel.puces = [];
 
         if (puceSelectionneeId !== null) {
@@ -2325,6 +2426,7 @@
                 p.updatedAt = Date.now();
                 rafraichirPucesGraphiques(); 
                 puceSelectionneeId = null; 
+                document.getElementById('zoneSaisiePuce').style.display = 'none';
                 notifierModificationLocale();
                 return; 
             }
@@ -2341,6 +2443,7 @@
             commentaire: "", 
             photos: [], 
             taches: [], 
+            zones: [],
             entreprises: [], 
             dateCreation: new Date().toLocaleDateString('fr-FR'), 
             updatedAt: Date.now(),
@@ -2369,7 +2472,11 @@
     
     function rafraichirPucesGraphiques() {
         const container = document.getElementById('planContainer');
+        const svgOverlay = document.getElementById('planSvgOverlay');
+        
         container.querySelectorAll('.pin').forEach(p => p.remove());
+        svgOverlay.innerHTML = "";
+
         if(!chantierActuel || !chantierActuel.puces) return;
 
         const voirActives = document.getElementById('chkAfficherActives').checked;
@@ -2377,6 +2484,8 @@
         const voirLevees = document.getElementById('chkAfficherLevees').checked;
 
         const nomNivActuel = (chantierActuel.niveaux && chantierActuel.niveaux[indexNiveauActuel]) ? chantierActuel.niveaux[indexNiveauActuel].nom : "";
+
+        let elementsSvg = "";
 
         chantierActuel.puces.forEach(p => {
             if (p.niveauNom === nomNivActuel || !nomNivActuel) {
@@ -2386,8 +2495,21 @@
                 if (!voirEnCours && st === "en_cours") return;
                 if (!voirLevees && st === "resolue") return;
 
+                const couleurZone = obtenirCouleurHexaParStatut(st);
+                const pZones = (p.id === puceSelectionneeId) ? zonesPuceTemporairesTableau : (p.zones || []);
+
+                // Rendu des zones rattachées à la puce
+                pZones.forEach((z) => {
+                    if (z.type === 'rect') {
+                        elementsSvg += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="0.8" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></rect>`;
+                    } else if (z.type === 'poly' && z.points && z.points.length >= 3) {
+                        const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
+                        elementsSvg += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="0.8" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></polygon>`;
+                    }
+                });
+
+                // Rendu de la puce ponctuelle
                 const div = document.createElement('div'); 
-                
                 let classStatut = '';
                 if (st === "en_cours") classStatut = ' progress';
                 else if (st === "resolue") classStatut = ' resolved';
@@ -2406,6 +2528,22 @@
                 container.appendChild(div);
             }
         });
+
+        // Rendu temporaire pendant le tracé en cours
+        if (modeDessinZoneActif && pointsZoneEnCours.length > 0) {
+            const coulDraft = "#1a73e8";
+            if (modeDessinZoneActif === 'poly') {
+                const ptsPolyDraft = pointsZoneEnCours.map(pt => `${pt.x},${pt.y}`).join(' ');
+                elementsSvg += `<polyline points="${ptsPolyDraft}" fill="none" stroke="${coulDraft}" stroke-width="1" stroke-dasharray="2,2"></polyline>`;
+                pointsZoneEnCours.forEach(pt => {
+                    elementsSvg += `<circle cx="${pt.x}" cy="${pt.y}" r="1.2" fill="${coulDraft}"></circle>`;
+                });
+            } else if (modeDessinZoneActif === 'rect') {
+                elementsSvg += `<circle cx="${pointsZoneEnCours[0].x}" cy="${pointsZoneEnCours[0].y}" r="1.5" fill="${coulDraft}"></circle>`;
+            }
+        }
+
+        svgOverlay.innerHTML = elementsSvg;
     }
     
     function selectionnerPuce(id) {
@@ -2423,18 +2561,44 @@
         }
         if (!p.photos) p.photos = [];
         if (!p.taches) p.taches = [];
+        if (!p.zones) p.zones = [];
 
         statutPuceTemporaire = normaliserStatutPuce(p);
         photosPuceTemporairesTableau = [...p.photos];
         tachesPuceTemporairesTableau = JSON.parse(JSON.stringify(p.taches));
+        zonesPuceTemporairesTableau = JSON.parse(JSON.stringify(p.zones));
 
         const entSelect = document.getElementById('nouvelleTacheEntrepriseSelect');
         entSelect.innerHTML = `<option value="">-- Entreprise responsable --</option>` + 
             (chantierActuel.entreprises || []).map(e => `<option value="${e}">${e}</option>`).join('');
 
+        rafraichirListeZonesSaisiePuce();
         rafraichirAffichageGaleriePhotosSaisie();
         rafraichirListeSousTachesSaisie();
         rafraichirBadgeStatutVisuel();
+        rafraichirPucesGraphiques();
+    }
+
+    function rafraichirListeZonesSaisiePuce() {
+        const ctn = document.getElementById('listeZonesPuceActiveContainer');
+        if (!ctn) return;
+
+        if (zonesPuceTemporairesTableau.length === 0) {
+            ctn.innerHTML = "<span style='font-style:italic; font-size:12px; color:#888;'>Aucune zone délimitée pour ce point.</span>";
+            return;
+        }
+
+        ctn.innerHTML = zonesPuceTemporairesTableau.map((z, idx) => `
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; border:1px solid #dadce0; padding:6px 10px; border-radius:6px; margin-bottom:4px; font-size:12px;">
+                <span>📐 <strong>Zone ${idx + 1}</strong> (${z.type === 'rect' ? 'Rectangle' : 'Polygone ' + z.points.length + ' points'})</span>
+                <button type="button" class="btn btn-small btn-danger" style="padding:2px 6px; font-size:11px;" onclick="supprimerZonePuceSaisie(${idx})">🗑️ Effacer</button>
+            </div>
+        `).join('');
+    }
+
+    function supprimerZonePuceSaisie(idx) {
+        zonesPuceTemporairesTableau.splice(idx, 1);
+        rafraichirListeZonesSaisiePuce();
         rafraichirPucesGraphiques();
     }
 
@@ -2509,6 +2673,7 @@
     function changerStatutPuceTerrain(nouveauStatut) {
         statutPuceTemporaire = nouveauStatut;
         rafraichirBadgeStatutVisuel();
+        rafraichirPucesGraphiques();
     }
 
     function rafraichirBadgeStatutVisuel() {
@@ -2567,6 +2732,7 @@
             p.zonePrecis = document.getElementById('zonePuceInput').value.trim(); 
             p.photos = [...photosPuceTemporairesTableau]; 
             p.taches = [...tachesPuceTemporairesTableau];
+            p.zones = [...zonesPuceTemporairesTableau];
             p.entreprises = Array.from(document.querySelectorAll('#zoneEntreprisesPuceCheckboxes input:checked')).map(i => i.value);
             p.statut = statutPuceTemporaire;
             p.resolue = (statutPuceTemporaire === "resolue");
@@ -2615,7 +2781,9 @@
             if (!voirLevees && st === "resolue") return;
 
             const nbPics = p.photos ? p.photos.length : 0;
+            const nbZones = p.zones ? p.zones.length : 0;
             const zoneAffichee = p.zonePrecis ? ` — <b>${p.zonePrecis}</b>` : '';
+            const badgeZonesText = nbZones > 0 ? ` <span style="font-size:11px; color:#1a73e8; font-weight:bold;">[📐 ${nbZones} zone(s)]</span>` : '';
             
             let labelStatut = '<span class="status-badge active">Active</span>';
             let styleLigne = '';
@@ -2646,7 +2814,7 @@
             html += `
                 <tr class="clickable-row" ${styleLigne} onclick="selectionnerPuceDepuisTableau(${p.id})">
                     <td><b>Puce ${p.numero}${gyroIcone}</b></td>
-                    <td>${p.niveauNom}${zoneAffichee}</td>
+                    <td>${p.niveauNom}${zoneAffichee}${badgeZonesText}</td>
                     <td>${nbPics > 0 ? `📷 (${nbPics})` : 'Non'}</td>
                     <td>${labelStatut}</td>
                     <td>${tachesHtml}${entGlobale}${obsText}</td>
@@ -2735,6 +2903,12 @@
                 img.src = niv.plan;
                 ctn.appendChild(img);
 
+                const svgPdfOverlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svgPdfOverlay.setAttribute("class", "plan-svg-overlay");
+                svgPdfOverlay.setAttribute("viewBox", "0 0 100 100");
+                svgPdfOverlay.setAttribute("preserveAspectRatio", "none");
+                let svgPdfContent = "";
+
                 if(chantierActuel.puces) {
                     chantierActuel.puces.forEach(p => {
                         if (p.niveauNom === niv.nom) {
@@ -2742,6 +2916,16 @@
                             if (!inclureActives && st === "active") return;
                             if (!inclureEnCours && st === "en_cours") return;
                             if (!inclureLevees && st === "resolue") return;
+
+                            const couleurZone = obtenirCouleurHexaParStatut(st);
+                            (p.zones || []).forEach(z => {
+                                if (z.type === 'rect') {
+                                    svgPdfContent += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="0.8"></rect>`;
+                                } else if (z.type === 'poly' && z.points) {
+                                    const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
+                                    svgPdfContent += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="0.8"></polygon>`;
+                                }
+                            });
 
                             let classPin = '';
                             if (st === "en_cours") classPin = ' progress';
@@ -2764,6 +2948,9 @@
                         }
                     });
                 }
+
+                svgPdfOverlay.innerHTML = svgPdfContent;
+                ctn.appendChild(svgPdfOverlay);
 
                 blockNiveau.appendChild(ctn); 
                 pdfPlansMultiples.appendChild(blockNiveau);
