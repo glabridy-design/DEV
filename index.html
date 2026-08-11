@@ -95,7 +95,7 @@
         /* Overlay vectoriel SVG pour le tracé des zones */
         .plan-svg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
         .plan-svg-overlay polygon, .plan-svg-overlay rect { pointer-events: auto; cursor: pointer; transition: fill-opacity 0.2s; }
-        .plan-svg-overlay polygon:hover, .plan-svg-overlay rect:hover { fill-opacity: 0.55 !important; }
+        .plan-svg-overlay polygon:hover, .plan-svg-overlay rect:hover { fill-opacity: 0.65 !important; }
 
         /* Puces sur le plan */
         .pin { position: absolute; width: 22px; height: 22px; background: #d93025; color: white; border-radius: 50%; text-align: center; font-size: 11px; font-weight: bold; line-height: 18px; transform: translate(-50%, -50%); border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; z-index: 6; }
@@ -218,7 +218,7 @@
 <div class="app-container">
 
     <div id="pageAccueil" class="section active">
-        <h1>Rapport de visite V2</h1>
+        <h1>Rapport de visite V3</h1>
         
         <div class="config-box">
             <strong>🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
@@ -386,16 +386,29 @@
                     <button type="button" class="btn btn-small btn-success" style="flex:1;" onclick="changerStatutPuceTerrain('resolue')">🟢 Levée</button>
                 </div>
 
-                <!-- SECTION DEDIEE AUX ZONES APPLICABLES POUR CETTE PUCE -->
+                <!-- SECTION PERSONNALISATION & TRACÉ DE ZONES -->
                 <div style="background:#fff; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin-bottom:15px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                        <h4 style="margin:0; color:#1a73e8;">📐 Zones rattachées à cette remarque</h4>
+                        <h4 style="margin:0; color:#1a73e8;">📐 Zones associées sur le plan</h4>
                         <div style="display:flex; gap:6px;">
                             <button type="button" class="btn btn-small" style="background:#1a73e8; font-size:12px;" onclick="demarrerTraceZone('rect')">🟩 Tracé Rectangle</button>
-                            <button type="button" class="btn btn-small" style="background:#6f42c1; font-size:12px;" onclick="demarrerTraceZone('poly')">🔷 Tracé Polygone libre</button>
+                            <button type="button" class="btn btn-small" style="background:#6f42c1; font-size:12px;" onclick="demarrerTraceZone('poly')">🔷 Tracé Polygone</button>
                         </div>
                     </div>
-                    <p style="font-size:12px; color:#666; margin:6px 0 0 0;">Si la remarque concerne une surface (mur, couloir...), tracez la zone directement sur le plan.</p>
+                    
+                    <!-- Réglages visuels des zones (Couleur & Bordure) -->
+                    <div style="display:flex; gap:15px; align-items:center; margin-top:10px; flex-wrap:wrap; background:#f8f9fa; padding:8px; border-radius:6px; border:1px solid #e0e0e0;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <label style="margin:0; font-size:12px;">Couleur :</label>
+                            <input type="color" id="zoneColorPicker" value="#d93025" style="width:30px; height:28px; border:none; cursor:pointer; background:none;" onchange="mettreAJourStyleZoneSaisie()">
+                        </div>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <label style="margin:0; font-size:12px;">Épaisseur Bordure :</label>
+                            <input type="range" id="zoneBorderWidthRange" min="1" max="8" value="2" style="width:70px;" oninput="mettreAJourStyleZoneSaisie()">
+                            <span id="zoneBorderWidthBadge" style="font-size:11px; font-weight:bold; color:#1a73e8;">2px</span>
+                        </div>
+                    </div>
+
                     <div id="zoneSaisieInformationStatus" style="display:none; font-size:13px; font-weight:bold; color:#d93025; background:#fce8e6; padding:8px; border-radius:6px; margin-top:8px;"></div>
                     <div id="listeZonesPuceActiveContainer" style="margin-top:10px;"></div>
                 </div>
@@ -652,6 +665,7 @@
     let photosPuceTemporairesTableau = []; 
     let tachesPuceTemporairesTableau = [];
     let zonesPuceTemporairesTableau = []; // Zones associées à la puce en cours d'édition
+    let indexZoneEnEdition = null; // Stocke l'index de la zone en cours de ré-édition
     let chantierActuel = null; 
     let indexNiveauActuel = 0; 
     let puceSelectionneeId = null;
@@ -2346,33 +2360,85 @@
     }
     
     /* -------------------------------------------------------------
-       LOGIQUE DE TRACE ET D'INTERACTION AVEC LES ZONES DE PUCE
+       LOGIQUE DE TRACÉ ET RÉ-ÉDITION DE ZONES (COULEURS & BORDURES)
     ------------------------------------------------------------- */
     function demarrerTraceZone(type) {
         if (!puceSelectionneeId) return alert("Sélectionnez d'abord une puce.");
         modeDessinZoneActif = type;
+        indexZoneEnEdition = null;
         pointsZoneEnCours = [];
         const infoDiv = document.getElementById('zoneSaisieInformationStatus');
         infoDiv.style.display = 'block';
         if (type === 'rect') {
             infoDiv.innerText = "🟩 Cliquez pour poser le coin Supérieur-Gauche, puis le coin Inférieur-Droit du rectangle.";
         } else {
-            infoDiv.innerHTML = "🔷 Cliquez sur le plan pour ajouter des sommets. <button type='button' class='btn btn-small btn-success' style='padding:2px 8px; font-size:11px;' onclick='finaliserTracePolygoneZone(event)'>Terminer le polygone ✔</button>";
+            infoDiv.innerHTML = "🔷 Cliquez sur le plan pour poser les sommets. <button type='button' class='btn btn-small btn-success' style='padding:2px 8px; font-size:11px;' onclick='finaliserTracePolygoneZone(event)'>Valider ce polygone ✔</button>";
         }
+    }
+
+    function reEditerZonePuceIndex(idxZone) {
+        const z = zonesPuceTemporairesTableau[idxZone];
+        if (!z) return;
+
+        indexZoneEnEdition = idxZone;
+        modeDessinZoneActif = z.type;
+        pointsZoneEnCours = z.points ? [...z.points] : [];
+
+        // Mise à jour des sélecteurs de style
+        if (z.couleur) document.getElementById('zoneColorPicker').value = z.couleur;
+        if (z.epaisseur) {
+            document.getElementById('zoneBorderWidthRange').value = z.epaisseur;
+            document.getElementById('zoneBorderWidthBadge').innerText = z.epaisseur + 'px';
+        }
+
+        const infoDiv = document.getElementById('zoneSaisieInformationStatus');
+        infoDiv.style.display = 'block';
+        infoDiv.innerHTML = `✏️ Ré-édition Zone ${idxZone + 1} (${z.type === 'rect' ? 'Rectangle' : 'Polygone'}). Cliquez sur le plan pour remplacer les points. <button type='button' class='btn btn-small btn-success' style='padding:2px 8px; font-size:11px;' onclick='finaliserTracePolygoneZone(event)'>Enregistrer modification ✔</button>`;
+
+        rafraichirPucesGraphiques();
+    }
+
+    function mettreAJourStyleZoneSaisie() {
+        const couleur = document.getElementById('zoneColorPicker').value;
+        const epaisseur = parseInt(document.getElementById('zoneBorderWidthRange').value);
+        document.getElementById('zoneBorderWidthBadge').innerText = epaisseur + 'px';
+
+        if (indexZoneEnEdition !== null && zonesPuceTemporairesTableau[indexZoneEnEdition]) {
+            zonesPuceTemporairesTableau[indexZoneEnEdition].couleur = couleur;
+            zonesPuceTemporairesTableau[indexZoneEnEdition].epaisseur = epaisseur;
+        }
+        rafraichirPucesGraphiques();
     }
 
     function finaliserTracePolygoneZone(event) {
         if (event) event.stopPropagation();
         if (pointsZoneEnCours.length < 3) {
-            alert("Il faut au moins 3 points pour valider une zone polygonale.");
+            alert("Il faut au moins 3 sommets pour valider une zone polygonale.");
             return;
         }
-        zonesPuceTemporairesTableau.push({ type: 'poly', points: [...pointsZoneEnCours] });
+
+        const couleur = document.getElementById('zoneColorPicker').value;
+        const epaisseur = parseInt(document.getElementById('zoneBorderWidthRange').value);
+
+        const nouvelleZoneObj = {
+            type: 'poly',
+            points: [...pointsZoneEnCours],
+            couleur: couleur,
+            epaisseur: epaisseur
+        };
+
+        if (indexZoneEnEdition !== null) {
+            zonesPuceTemporairesTableau[indexZoneEnEdition] = nouvelleZoneObj;
+        } else {
+            zonesPuceTemporairesTableau.push(nouvelleZoneObj);
+        }
+
         annulerOuFinirTraceZone();
     }
 
     function annulerOuFinirTraceZone() {
         modeDessinZoneActif = null;
+        indexZoneEnEdition = null;
         pointsZoneEnCours = [];
         document.getElementById('zoneSaisieInformationStatus').style.display = 'none';
         rafraichirListeZonesSaisiePuce();
@@ -2385,6 +2451,9 @@
         const x = parseFloat((((event.clientX - rect.left) / rect.width) * 100).toFixed(2));
         const y = parseFloat((((event.clientY - rect.top) / rect.height) * 100).toFixed(2));
 
+        const couleur = document.getElementById('zoneColorPicker').value;
+        const epaisseur = parseInt(document.getElementById('zoneBorderWidthRange').value);
+
         if (modeDessinZoneActif === 'rect') {
             pointsZoneEnCours.push({ x, y });
             if (pointsZoneEnCours.length === 2) {
@@ -2393,12 +2462,20 @@
                 const yMin = Math.min(pointsZoneEnCours[0].y, pointsZoneEnCours[1].y);
                 const yMax = Math.max(pointsZoneEnCours[0].y, pointsZoneEnCours[1].y);
 
-                zonesPuceTemporairesTableau.push({
+                const nouvelleZoneObj = {
                     type: 'rect',
                     x: xMin, y: yMin,
                     w: Math.max(1, xMax - xMin),
-                    h: Math.max(1, yMax - yMin)
-                });
+                    h: Math.max(1, yMax - yMin),
+                    couleur: couleur,
+                    epaisseur: epaisseur
+                };
+
+                if (indexZoneEnEdition !== null) {
+                    zonesPuceTemporairesTableau[indexZoneEnEdition] = nouvelleZoneObj;
+                } else {
+                    zonesPuceTemporairesTableau.push(nouvelleZoneObj);
+                }
                 annulerOuFinirTraceZone();
             } else {
                 rafraichirPucesGraphiques();
@@ -2495,16 +2572,18 @@
                 if (!voirEnCours && st === "en_cours") return;
                 if (!voirLevees && st === "resolue") return;
 
-                const couleurZone = obtenirCouleurHexaParStatut(st);
                 const pZones = (p.id === puceSelectionneeId) ? zonesPuceTemporairesTableau : (p.zones || []);
 
                 // Rendu des zones rattachées à la puce
                 pZones.forEach((z) => {
+                    const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
+                    const epaisseurBorder = z.epaisseur || 2;
+
                     if (z.type === 'rect') {
-                        elementsSvg += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="0.8" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></rect>`;
+                        elementsSvg += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></rect>`;
                     } else if (z.type === 'poly' && z.points && z.points.length >= 3) {
                         const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
-                        elementsSvg += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="0.8" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></polygon>`;
+                        elementsSvg += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></polygon>`;
                     }
                 });
 
@@ -2531,12 +2610,14 @@
 
         // Rendu temporaire pendant le tracé en cours
         if (modeDessinZoneActif && pointsZoneEnCours.length > 0) {
-            const coulDraft = "#1a73e8";
+            const coulDraft = document.getElementById('zoneColorPicker').value || "#1a73e8";
+            const epDraft = document.getElementById('zoneBorderWidthRange').value || 2;
+
             if (modeDessinZoneActif === 'poly') {
                 const ptsPolyDraft = pointsZoneEnCours.map(pt => `${pt.x},${pt.y}`).join(' ');
-                elementsSvg += `<polyline points="${ptsPolyDraft}" fill="none" stroke="${coulDraft}" stroke-width="1" stroke-dasharray="2,2"></polyline>`;
+                elementsSvg += `<polyline points="${ptsPolyDraft}" fill="none" stroke="${coulDraft}" stroke-width="${epDraft}" stroke-dasharray="2,2"></polyline>`;
                 pointsZoneEnCours.forEach(pt => {
-                    elementsSvg += `<circle cx="${pt.x}" cy="${pt.y}" r="1.2" fill="${coulDraft}"></circle>`;
+                    elementsSvg += `<circle cx="${pt.x}" cy="${pt.y}" r="1.5" fill="${coulDraft}"></circle>`;
                 });
             } else if (modeDessinZoneActif === 'rect') {
                 elementsSvg += `<circle cx="${pointsZoneEnCours[0].x}" cy="${pointsZoneEnCours[0].y}" r="1.5" fill="${coulDraft}"></circle>`;
@@ -2567,6 +2648,7 @@
         photosPuceTemporairesTableau = [...p.photos];
         tachesPuceTemporairesTableau = JSON.parse(JSON.stringify(p.taches));
         zonesPuceTemporairesTableau = JSON.parse(JSON.stringify(p.zones));
+        indexZoneEnEdition = null;
 
         const entSelect = document.getElementById('nouvelleTacheEntrepriseSelect');
         entSelect.innerHTML = `<option value="">-- Entreprise responsable --</option>` + 
@@ -2590,14 +2672,18 @@
 
         ctn.innerHTML = zonesPuceTemporairesTableau.map((z, idx) => `
             <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; border:1px solid #dadce0; padding:6px 10px; border-radius:6px; margin-bottom:4px; font-size:12px;">
-                <span>📐 <strong>Zone ${idx + 1}</strong> (${z.type === 'rect' ? 'Rectangle' : 'Polygone ' + z.points.length + ' points'})</span>
-                <button type="button" class="btn btn-small btn-danger" style="padding:2px 6px; font-size:11px;" onclick="supprimerZonePuceSaisie(${idx})">🗑️ Effacer</button>
+                <span>📐 <strong>Zone ${idx + 1}</strong> (${z.type === 'rect' ? 'Rectangle' : 'Polygone ' + (z.points ? z.points.length : 0) + ' points'}) <span style="display:inline-block; width:12px; height:12px; background:${z.couleur || '#d93025'}; border-radius:50%; vertical-align:middle; margin-left:4px;"></span></span>
+                <div style="display:flex; gap:4px;">
+                    <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:11px; background:#1a73e8;" onclick="reEditerZonePuceIndex(${idx})">✏️ Éditer</button>
+                    <button type="button" class="btn btn-small btn-danger" style="padding:2px 6px; font-size:11px;" onclick="supprimerZonePuceSaisie(${idx})">🗑️</button>
+                </div>
             </div>
         `).join('');
     }
 
     function supprimerZonePuceSaisie(idx) {
         zonesPuceTemporairesTableau.splice(idx, 1);
+        if (indexZoneEnEdition === idx) indexZoneEnEdition = null;
         rafraichirListeZonesSaisiePuce();
         rafraichirPucesGraphiques();
     }
@@ -2917,13 +3003,14 @@
                             if (!inclureEnCours && st === "en_cours") return;
                             if (!inclureLevees && st === "resolue") return;
 
-                            const couleurZone = obtenirCouleurHexaParStatut(st);
                             (p.zones || []).forEach(z => {
+                                const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
+                                const epaisseurBorder = z.epaisseur || 2;
                                 if (z.type === 'rect') {
-                                    svgPdfContent += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="0.8"></rect>`;
+                                    svgPdfContent += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></rect>`;
                                 } else if (z.type === 'poly' && z.points) {
                                     const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
-                                    svgPdfContent += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="0.8"></polygon>`;
+                                    svgPdfContent += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></polygon>`;
                                 }
                             });
 
