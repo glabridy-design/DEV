@@ -133,10 +133,14 @@
         .gantt-slider { width: 130px; cursor: pointer; }
         .gantt-badge-val { font-size: 12px; font-weight: bold; color: #1a73e8; min-width: 35px; }
 
+        /* GALERIE ET CARTES PHOTOS */
         .photo-gallery-wrapper { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; min-height: 90px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f8f9fa; }
-        .photo-gallery-item { position: relative; width: 85px; height: 85px; border-radius: 6px; border: 1px solid #dadce0; background-size: cover; background-position: center; }
-        .photo-gallery-del-btn { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; background: #d93025; color: white; border-radius: 50%; font-size: 12px; font-weight: bold; text-align: center; line-height: 20px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
-        .photo-gallery-edit-btn { position: absolute; bottom: -6px; right: -6px; width: 24px; height: 24px; background: #1a73e8; color: white; border-radius: 50%; font-size: 12px; text-align: center; line-height: 22px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        .photo-gallery-item { position: relative; width: 95px; height: 95px; border-radius: 6px; border: 1px solid #dadce0; background-size: cover; background-position: center; cursor: pointer; }
+        .photo-gallery-item.archived { opacity: 0.45; filter: grayscale(80%); border-style: dashed; }
+        .photo-gallery-del-btn { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; background: #d93025; color: white; border-radius: 50%; font-size: 12px; font-weight: bold; text-align: center; line-height: 20px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 2; }
+        .photo-gallery-edit-btn { position: absolute; bottom: -6px; right: -6px; width: 24px; height: 24px; background: #1a73e8; color: white; border-radius: 50%; font-size: 12px; text-align: center; line-height: 22px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 2; }
+        .photo-gallery-archive-btn { position: absolute; top: -6px; left: -6px; background: #5f6368; color: white; border-radius: 12px; font-size: 10px; font-weight: bold; padding: 2px 5px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 2; }
+        .photo-gallery-archive-btn.is-archived { background: #e67e22; }
 
         .entreprises-selection-list { max-height: 120px; overflow-y: auto; background: white; border: 1px solid #dadce0; border-radius: 8px; padding: 10px; margin-top: 5px; }
         .entreprise-checkbox-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 14px; cursor: pointer; }
@@ -152,6 +156,17 @@
         .sketch-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
         .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; cursor: pointer; box-shadow: 0 0 3px rgba(0,0,0,0.5); }
         .color-btn.selected { transform: scale(1.2); border-color: #1a73e8; }
+
+        /* VISIONNEUSE PHOTO GRAND ÉCRAN TABLETTE */
+        .photo-viewer-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
+        .photo-viewer-container { position: relative; max-width: 90vw; max-height: 80vh; display: flex; align-items: center; justify-content: center; }
+        .photo-viewer-img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
+        .photo-viewer-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.25); color: white; border: none; font-size: 28px; font-weight: bold; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; backdrop-filter: blur(4px); transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
+        .photo-viewer-nav-btn:hover { background: rgba(255,255,255,0.5); }
+        .photo-viewer-prev { left: -25px; }
+        .photo-viewer-next { right: -25px; }
+        .photo-viewer-close-btn { position: absolute; top: -45px; right: 0; background: #d93025; color: white; border: none; border-radius: 20px; padding: 6px 16px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .photo-viewer-counter { color: white; margin-top: 15px; font-size: 14px; font-weight: bold; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 12px; }
 
         @media screen and (max-width: 600px) {
             .app-container { margin: 0; padding: 12px; border-radius: 0; }
@@ -171,13 +186,15 @@
             .btn-delete-card { position: static; display: block; width: 100%; margin-top: 10px; text-align: center; }
 
             .pin { width: 24px; height: 22px; font-size: 11px; line-height: 20px; }
+            .photo-viewer-prev { left: 5px; }
+            .photo-viewer-next { right: 5px; }
         }
 
         @media print {
             @page { size: portrait; margin: 0 !important; }
             body { background: white; color: black; font-size: 10pt; padding: 5mm !important; }
             .app-container { max-width: 100%; margin: 0; padding: 0; box-shadow: none; border: none; }
-            .section, .nav-bar, .no-print, form, button, input, textarea, select, .config-box, .tabs-container, .map-filters-box, .print-options-box, .gantt-pilotage-control { display: none !important; }
+            .section, .nav-bar, .no-print, form, button, input, textarea, select, .config-box, .tabs-container, .map-filters-box, .print-options-box, .gantt-pilotage-control, .photo-viewer-overlay { display: none !important; }
             #printTemplate { display: block !important; }
             .page-break { page-break-before: always; break-before: page; }
             h1 { font-size: 13pt !important; margin: 5px 0 !important; border-bottom: 2px solid #333; padding-bottom: 2px; }
@@ -420,19 +437,21 @@
                 <label for="zonePuceInput">Localisation Spécifique (Pièce / Zone) :</label>
                 <input type="text" id="zonePuceInput" placeholder="Ex: Logement 102, Couloir, Gaine technique...">
 
+                <!-- SECTION DES TÂCHES / ACTIONS CORRECTIVES -->
                 <div style="background:#fff; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin: 15px 0;">
                     <h4 style="margin: 0 0 8px 0; color:#1a73e8;">📋 Actions à mener / Tâches associées</h4>
-                    <p style="font-size:12px; color:#666; margin-top:0;">Définissez les tâches, entreprises responsables et échéances précises pour cette puce.</p>
+                    <p style="font-size:12px; color:#666; margin-top:0;">Définissez les tâches, entreprises responsables, statut et échéances précises pour cette puce.</p>
 
                     <div id="listeSousTachesContainer"></div>
 
                     <div style="background:#f8f9fa; border:1px dashed #ccc; padding:10px; border-radius:6px; margin-top:10px;">
-                        <span style="font-size:13px; font-weight:bold; color:#333;">+ Ajouter une action corrective</span>
+                        <span style="font-size:13px; font-weight:bold; color:#333;" id="labelSousTacheFormTitle">+ Ajouter une action corrective</span>
                         <div class="flex-row" style="margin-top:6px;">
                             <input type="text" id="nouvelleTacheDescInput" placeholder="Action à réaliser..." style="font-size:13px; padding:8px;">
                             <select id="nouvelleTacheEntrepriseSelect" style="font-size:13px; padding:8px; flex:1; min-width:140px;"></select>
                             <input type="date" id="nouvelleTacheEcheanceInput" style="font-size:13px; padding:8px; width:auto;">
-                            <button type="button" class="btn btn-small btn-success" style="padding:8px 12px;" onclick="ajouterTachePuceActive()">+ Ajouter</button>
+                            <button type="button" id="btnAjouterOuEditerTache" class="btn btn-small btn-success" style="padding:8px 12px;" onclick="ajouterOuValiderEditerTachePuceActive()">+ Ajouter</button>
+                            <button type="button" id="btnAnnulerEditerTache" class="btn btn-small" style="padding:8px 12px; background:#5f6368; display:none;" onclick="annulerModeEditionTache()">Annuler</button>
                         </div>
                     </div>
                 </div>
@@ -510,6 +529,17 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- MODALE VISIONNEUSE PHOTO GRAND FORMAT (TABLETTE) -->
+<div id="photoViewerModalOverlay" class="photo-viewer-overlay" onclick="fermerVisionneusePhotoGrandFormat()">
+    <div class="photo-viewer-container" onclick="event.stopPropagation()">
+        <button type="button" class="photo-viewer-close-btn" onclick="fermerVisionneusePhotoGrandFormat()">✖ Fermer</button>
+        <button type="button" class="photo-viewer-nav-btn photo-viewer-prev" onclick="naviguerPhotoViewer(-1)">◀</button>
+        <img id="photoViewerModalImg" class="photo-viewer-img" src="" alt="Photo grand format">
+        <button type="button" class="photo-viewer-nav-btn photo-viewer-next" onclick="naviguerPhotoViewer(1)">▶</button>
+    </div>
+    <div id="photoViewerModalCounter" class="photo-viewer-counter">1 / 1</div>
 </div>
 
 <div id="photoAnnotationModalOverlay" class="sketch-modal-overlay">
@@ -662,8 +692,9 @@
     let niveauxTemporaires = []; 
     let planEnCoursDeChargementBase64 = ""; 
     let planDirectTerrainBase64 = "";
-    let photosPuceTemporairesTableau = []; 
+    let photosPuceTemporairesTableau = []; // Stocke désormais des objets { src, archivee: false }
     let tachesPuceTemporairesTableau = [];
+    let indexTacheEnEdition = null; // Stocke l'index de la tâche en cours d'édition
     let zonesPuceTemporairesTableau = []; // Zones associées à la puce en cours d'édition
     let indexZoneEnEdition = null; // Stocke l'index de la zone en cours de ré-édition
     let chantierActuel = null; 
@@ -689,6 +720,9 @@
     let couleurPinceauPhoto = '#d93025';
     let taillePinceauPhoto = 5;
 
+    // Variables pour la visionneuse photo grand format
+    let indexPhotoViewerActif = 0;
+
     let estEnTrainDeSynchroniser = false;
     let modificationsEnAttente = false;
 
@@ -699,6 +733,14 @@
             return chantierActuel.driveUrl.trim();
         }
         return DEFAULT_GOOGLE_DRIVE_URL;
+    }
+
+    // Normalisation d'un objet photo (support rétrocompatible string vs object)
+    function normaliserPhotoPuce(pic) {
+        if (typeof pic === 'string') {
+            return { src: pic, archivee: false };
+        }
+        return pic || { src: '', archivee: false };
     }
 
     function convertirDxfTextEnSvgDataUrl(dxfText) {
@@ -872,6 +914,16 @@
                 fermerMenuActions();
             }
         });
+
+        // Touches clavier pour la visionneuse photo
+        document.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('photoViewerModalOverlay');
+            if (modal && modal.style.display === 'flex') {
+                if (e.key === 'ArrowLeft') naviguerPhotoViewer(-1);
+                if (e.key === 'ArrowRight') naviguerPhotoViewer(1);
+                if (e.key === 'Escape') fermerVisionneusePhotoGrandFormat();
+            }
+        });
     });
 
     function normaliserStatutPuce(p) {
@@ -887,7 +939,7 @@
     }
 
     function evaluerRetardTache(tache) {
-        if (tache.faite) return { enRetard: false, joursRetard: 0 };
+        if (tache.statut === "resolue" || tache.faite) return { enRetard: false, joursRetard: 0 };
         if (!tache.echeance) return { enRetard: false, joursRetard: 0 };
 
         const dateAujourdhui = new Date();
@@ -1262,7 +1314,10 @@
         pucesCopie.forEach((p) => {
             if (p.photos && p.photos.length > 0) {
                 const nouveauxChemins = [];
-                p.photos.forEach((photoDataUrl, idxPhoto) => {
+                p.photos.forEach((photoObjRaw, idxPhoto) => {
+                    const photoObj = normaliserPhotoPuce(photoObjRaw);
+                    const photoDataUrl = photoObj.src;
+
                     if (photoDataUrl && photoDataUrl.startsWith('data:')) {
                         const ext = photoDataUrl.includes('image/avif') ? 'avif' : (photoDataUrl.includes('image/webp') ? 'webp' : 'jpg');
                         const nomFichierPhoto = `puce_${p.numero}_photo_${idxPhoto + 1}.${ext}`;
@@ -1271,9 +1326,9 @@
                         const bytes = convertirDataUrlEnUint8Array(photoDataUrl);
                         zip.file(cheminRelatif, bytes);
 
-                        nouveauxChemins.push(cheminRelatif);
+                        nouveauxChemins.push({ src: cheminRelatif, archivee: photoObj.archivee || false });
                     } else {
-                        nouveauxChemins.push(photoDataUrl);
+                        nouveauxChemins.push(photoObj);
                     }
                 });
                 p.photos = nouveauxChemins;
@@ -1412,16 +1467,19 @@
                 for (let p of pucesAInjecter) {
                     if (p.photos && p.photos.length > 0) {
                         const photosReconstituees = [];
-                        for (let pPath of p.photos) {
-                            if (pPath.startsWith('photos/')) {
+                        for (let pObjRaw of p.photos) {
+                            const pObj = normaliserPhotoPuce(pObjRaw);
+                            const pPath = pObj.src;
+
+                            if (pPath && pPath.startsWith('photos/')) {
                                 const photoFileInZip = zip.file(pPath);
                                 if (photoFileInZip) {
                                     const base64Str = await photoFileInZip.async("base64");
                                     const mime = pPath.endsWith('.avif') ? 'image/avif' : (pPath.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
-                                    photosReconstituees.push(`data:${mime};base64,${base64Str}`);
+                                    photosReconstituees.push({ src: `data:${mime};base64,${base64Str}`, archivee: pObj.archivee || false });
                                 }
                             } else {
-                                photosReconstituees.push(pPath);
+                                photosReconstituees.push(pObj);
                             }
                         }
                         p.photos = photosReconstituees;
@@ -1459,10 +1517,12 @@
 
         pucesAInjecter.forEach(p => {
             if (p.photo && (!p.photos || p.photos.length === 0)) {
-                p.photos = [p.photo];
+                p.photos = [normaliserPhotoPuce(p.photo)];
                 delete p.photo;
             }
             if(!p.photos) p.photos = [];
+            else p.photos = p.photos.map(pic => normaliserPhotoPuce(pic));
+
             if(!p.taches) p.taches = [];
             if(!p.zones) p.zones = [];
             p.statut = normaliserStatutPuce(p);
@@ -2268,9 +2328,11 @@
         canvas.addEventListener('touchend', stopperDessinPhoto);
     }
 
-    function ouvrirAnnotationPhoto(indexPhoto) {
+    function ouvrirAnnotationPhoto(indexPhoto, event) {
+        if(event) event.stopPropagation();
         indexPhotoAnnoteeEnCours = indexPhoto;
-        const photoSrc = photosPuceTemporairesTableau[indexPhoto];
+        const pObj = normaliserPhotoPuce(photosPuceTemporairesTableau[indexPhoto]);
+        const photoSrc = pObj.src;
         if(!photoSrc) return;
 
         const img = new Image();
@@ -2342,10 +2404,47 @@
         const canvas = document.getElementById('photoAnnotateCanvas');
 
         const annotatedDataUrl = canvas.toDataURL('image/webp', 0.85);
-        photosPuceTemporairesTableau[indexPhotoAnnoteeEnCours] = annotatedDataUrl;
+        if (photosPuceTemporairesTableau[indexPhotoAnnoteeEnCours]) {
+            photosPuceTemporairesTableau[indexPhotoAnnoteeEnCours].src = annotatedDataUrl;
+        }
 
         rafraichirAffichageGaleriePhotosSaisie();
         fermerFenetreAnnotationPhoto();
+    }
+
+    /* -------------------------------------------------------------
+       LOGIQUE VISIONNEUSE PHOTO GRAND FORMAT ET ARCHIVAGE
+    ------------------------------------------------------------- */
+    function ouvrirVisionneusePhotoGrandFormat(indexPhoto) {
+        if (photosPuceTemporairesTableau.length === 0) return;
+        indexPhotoViewerActif = indexPhoto;
+        afficherPhotoDansVisionneuse();
+        document.getElementById('photoViewerModalOverlay').style.display = 'flex';
+    }
+
+    function afficherPhotoDansVisionneuse() {
+        const photoObj = normaliserPhotoPuce(photosPuceTemporairesTableau[indexPhotoViewerActif]);
+        document.getElementById('photoViewerModalImg').src = photoObj.src;
+        document.getElementById('photoViewerModalCounter').innerText = `${indexPhotoViewerActif + 1} / ${photosPuceTemporairesTableau.length}${photoObj.archivee ? ' (📦 ARCHIVÉE)' : ''}`;
+    }
+
+    function naviguerPhotoViewer(direction) {
+        const total = photosPuceTemporairesTableau.length;
+        if (total === 0) return;
+        indexPhotoViewerActif = (indexPhotoViewerActif + direction + total) % total;
+        afficherPhotoDansVisionneuse();
+    }
+
+    function fermerVisionneusePhotoGrandFormat() {
+        document.getElementById('photoViewerModalOverlay').style.display = 'none';
+    }
+
+    function basculerArchivagePhotoPuce(index, event) {
+        if (event) event.stopPropagation();
+        if (photosPuceTemporairesTableau[index]) {
+            photosPuceTemporairesTableau[index].archivee = !photosPuceTemporairesTableau[index].archivee;
+            rafraichirAffichageGaleriePhotosSaisie();
+        }
     }
 
     function chargerPlanEtPucesDuNiveauActuel() {
@@ -2547,7 +2646,6 @@
         document.getElementById('zoneSaisiePuce').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    // Calcul du centre (barycentre) d'une zone pour le tracé de la ligne de liaison
     function calculerCentreZone(z) {
         if (z.type === 'rect') {
             return { x: z.x + (z.w / 2), y: z.y + (z.h / 2) };
@@ -2558,7 +2656,7 @@
         }
         return null;
     }
-    
+
     function rafraichirPucesGraphiques() {
         const container = document.getElementById('planContainer');
         const svgOverlay = document.getElementById('planSvgOverlay');
@@ -2589,7 +2687,6 @@
                 // Rendu des zones et lignes de liaison
                 pZones.forEach((z) => {
                     const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
-                    // Conversion de l'épaisseur pour l'échelle SVG %
                     const epaisseurBorder = z.epaisseur ? (z.epaisseur * 0.15) : 0.4;
 
                     if (z.type === 'rect') {
@@ -2599,7 +2696,6 @@
                         elementsSvg += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></polygon>`;
                     }
 
-                    // Ligne continue très fine reliant la puce à sa zone
                     const centre = calculerCentreZone(z);
                     if (centre) {
                         elementsSvg += `<line x1="${p.x}" y1="${p.y}" x2="${centre.x}" y2="${centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85"></line>`;
@@ -2656,18 +2752,22 @@
         document.getElementById('zoneEntreprisesPuceCheckboxes').innerHTML = (chantierActuel.entreprises || []).map(e => `<label class="entreprise-checkbox-item"><input type="checkbox" value="${e}" ${(p.entreprises || []).includes(e)?'checked':''}> ${e}</label>`).join('');
 
         if (p.photo && (!p.photos || p.photos.length === 0)) {
-            p.photos = [p.photo];
+            p.photos = [normaliserPhotoPuce(p.photo)];
             delete p.photo;
         }
         if (!p.photos) p.photos = [];
-        if (!p.taches) p.taches = [];
-        if (!p.zones) p.zones = [];
+        photosPuceTemporairesTableau = p.photos.map(pic => normaliserPhotoPuce(pic));
 
-        statutPuceTemporaire = normaliserStatutPuce(p);
-        photosPuceTemporairesTableau = [...p.photos];
+        if (!p.taches) p.taches = [];
         tachesPuceTemporairesTableau = JSON.parse(JSON.stringify(p.taches));
+        indexTacheEnEdition = null;
+        annulerModeEditionTache();
+
+        if (!p.zones) p.zones = [];
         zonesPuceTemporairesTableau = JSON.parse(JSON.stringify(p.zones));
         indexZoneEnEdition = null;
+
+        statutPuceTemporaire = normaliserStatutPuce(p);
 
         const entSelect = document.getElementById('nouvelleTacheEntrepriseSelect');
         entSelect.innerHTML = `<option value="">-- Entreprise responsable --</option>` + 
@@ -2707,6 +2807,9 @@
         rafraichirPucesGraphiques();
     }
 
+    /* -------------------------------------------------------------
+       LOGIQUE GESTION & ÉDITION DES TÂCHES ET STATUTS
+    ------------------------------------------------------------- */
     function rafraichirListeSousTachesSaisie() {
         const ctn = document.getElementById('listeSousTachesContainer');
         if (tachesPuceTemporairesTableau.length === 0) {
@@ -2715,22 +2818,36 @@
         }
 
         ctn.innerHTML = tachesPuceTemporairesTableau.map((t, idx) => {
+            if (!t.statut) t.statut = t.faite ? "resolue" : "a_faire";
+
             const evalRetard = evaluerRetardTache(t);
             const badgeRetard = evalRetard.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalRetard.joursRetard}j)</span>` : '';
             const formatEcheance = t.echeance ? t.echeance.split("-").reverse().join("/") : "Non définie";
 
+            let labelTacheStatut = '<span class="status-badge active" style="font-size:10px;">🔴 À faire</span>';
+            if (t.statut === "en_cours") labelTacheStatut = '<span class="status-badge progress" style="font-size:10px;">🟠 En cours</span>';
+            else if (t.statut === "resolue") labelTacheStatut = '<span class="status-badge resolved" style="font-size:10px;">🟢 Réalisée</span>';
+
             return `
-                <div class="task-item-card ${t.faite ? 'done' : ''}">
+                <div class="task-item-card ${t.statut === 'resolue' ? 'done' : ''}">
                     <div class="task-item-header">
-                        <label class="filter-checkbox-label" style="font-size:13px;">
-                            <input type="checkbox" ${t.faite ? 'checked' : ''} onchange="basculerEtatSousTache(${idx}, this.checked)">
-                            <strong style="${t.faite ? 'text-decoration:line-through; color:#888;' : ''}">${t.description}</strong>
-                        </label>
-                        <div>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            ${labelTacheStatut}
+                            <strong style="${t.statut === 'resolue' ? 'text-decoration:line-through; color:#888;' : ''}">${t.description}</strong>
+                        </div>
+                        <div style="display:flex; gap:4px; align-items:center;">
                             ${badgeRetard}
+                            <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:11px; background:#1a73e8;" onclick="reEditerTachePuceIndex(${idx})">✏️ Éditer</button>
                             <button type="button" class="btn btn-small btn-danger" style="padding:2px 6px; font-size:11px;" onclick="supprimerSousTacheIndex(${idx})">🗑️</button>
                         </div>
                     </div>
+
+                    <div style="display:flex; gap:6px; margin: 6px 0; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:10px; background:${t.statut==='a_faire'?'#c0392b':'#e0e0e0'}; color:${t.statut==='a_faire'?'white':'#333'};" onclick="changerStatutSousTache(${idx}, 'a_faire')">🔴 À faire</button>
+                        <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:10px; background:${t.statut==='en_cours'?'#d35400':'#e0e0e0'}; color:${t.statut==='en_cours'?'white':'#333'};" onclick="changerStatutSousTache(${idx}, 'en_cours')">🟠 En cours</button>
+                        <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:10px; background:${t.statut==='resolue'?'#1e8449':'#e0e0e0'}; color:${t.statut==='resolue'?'white':'#333'};" onclick="changerStatutSousTache(${idx}, 'resolue')">🟢 Réalisée</button>
+                    </div>
+
                     <div style="font-size:12px; color:#5f6368; display:flex; gap:15px; flex-wrap:wrap;">
                         <span>🏢 <strong>${t.entreprise || 'Non assignée'}</strong></span>
                         <span>📅 Créée le : ${t.dateCreation}</span>
@@ -2741,37 +2858,71 @@
         }).join('');
     }
 
-    function ajouterTachePuceActive() {
+    function changerStatutSousTache(index, nouveauStatut) {
+        if (tachesPuceTemporairesTableau[index]) {
+            tachesPuceTemporairesTableau[index].statut = nouveauStatut;
+            tachesPuceTemporairesTableau[index].faite = (nouveauStatut === "resolue");
+            rafraichirListeSousTachesSaisie();
+        }
+    }
+
+    function reEditerTachePuceIndex(idx) {
+        const t = tachesPuceTemporairesTableau[idx];
+        if (!t) return;
+
+        indexTacheEnEdition = idx;
+        document.getElementById('nouvelleTacheDescInput').value = t.description || "";
+        document.getElementById('nouvelleTacheEntrepriseSelect').value = t.entreprise || "";
+        document.getElementById('nouvelleTacheEcheanceInput').value = t.echeance || "";
+
+        document.getElementById('labelSousTacheFormTitle').innerText = `✏️ Modifier l'action N° ${idx + 1}`;
+        document.getElementById('btnAjouterOuEditerTache').innerText = "✔ Valider la modification";
+        document.getElementById('btnAjouterOuEditerTache').className = "btn btn-small btn-warning";
+        document.getElementById('btnAnnulerEditerTache').style.display = "inline-block";
+    }
+
+    function annulerModeEditionTache() {
+        indexTacheEnEdition = null;
+        document.getElementById('nouvelleTacheDescInput').value = "";
+        document.getElementById('nouvelleTacheEcheanceInput').value = "";
+        document.getElementById('nouvelleTacheEntrepriseSelect').value = "";
+
+        document.getElementById('labelSousTacheFormTitle').innerText = "+ Ajouter une action corrective";
+        document.getElementById('btnAjouterOuEditerTache').innerText = "+ Ajouter";
+        document.getElementById('btnAjouterOuEditerTache').className = "btn btn-small btn-success";
+        document.getElementById('btnAnnulerEditerTache').style.display = "none";
+    }
+
+    function ajouterOuValiderEditerTachePuceActive() {
         const desc = document.getElementById('nouvelleTacheDescInput').value.trim();
         const ent = document.getElementById('nouvelleTacheEntrepriseSelect').value;
         const ech = document.getElementById('nouvelleTacheEcheanceInput').value;
 
         if (!desc) return alert("Veuillez saisir une description pour cette action.");
 
-        tachesPuceTemporairesTableau.push({
-            id: Date.now(),
-            description: desc,
-            entreprise: ent,
-            dateCreation: new Date().toLocaleDateString('fr-FR'),
-            echeance: ech,
-            faite: false
-        });
-
-        document.getElementById('nouvelleTacheDescInput').value = "";
-        document.getElementById('nouvelleTacheEcheanceInput').value = "";
-
-        rafraichirListeSousTachesSaisie();
-    }
-
-    function basculerEtatSousTache(indexTache, estCochee) {
-        if (tachesPuceTemporairesTableau[indexTache]) {
-            tachesPuceTemporairesTableau[indexTache].faite = estCochee;
-            rafraichirListeSousTachesSaisie();
+        if (indexTacheEnEdition !== null && tachesPuceTemporairesTableau[indexTacheEnEdition]) {
+            tachesPuceTemporairesTableau[indexTacheEnEdition].description = desc;
+            tachesPuceTemporairesTableau[indexTacheEnEdition].entreprise = ent;
+            tachesPuceTemporairesTableau[indexTacheEnEdition].echeance = ech;
+        } else {
+            tachesPuceTemporairesTableau.push({
+                id: Date.now(),
+                description: desc,
+                entreprise: ent,
+                dateCreation: new Date().toLocaleDateString('fr-FR'),
+                echeance: ech,
+                statut: 'a_faire',
+                faite: false
+            });
         }
+
+        annulerModeEditionTache();
+        rafraichirListeSousTachesSaisie();
     }
 
     function supprimerSousTacheIndex(indexTache) {
         tachesPuceTemporairesTableau.splice(indexTache, 1);
+        if (indexTacheEnEdition === indexTache) annulerModeEditionTache();
         rafraichirListeSousTachesSaisie();
     }
 
@@ -2801,7 +2952,7 @@
             const r = new FileReader(); 
             r.onload = (e) => { 
                 compresserImage(e.target.result, 1000, 1000).then(imgCompressee => { 
-                    photosPuceTemporairesTableau.push(imgCompressee); 
+                    photosPuceTemporairesTableau.push({ src: imgCompressee, archivee: false }); 
                     rafraichirAffichageGaleriePhotosSaisie(); 
                 }); 
             };
@@ -2816,15 +2967,22 @@
             ctn.innerHTML = "Aucune photo enregistrée pour ce constat";
             return;
         }
-        ctn.innerHTML = photosPuceTemporairesTableau.map((pic, idx) => `
-            <div class="photo-gallery-item" style="background-image: url(${pic});">
-                <div class="photo-gallery-del-btn" onclick="supprimerPhotoDeLaZoneSaisie(${idx})" title="Supprimer">×</div>
-                <div class="photo-gallery-edit-btn" onclick="ouvrirAnnotationPhoto(${idx})" title="Dessiner / Annoter">✏️</div>
-            </div>
-        `).join('');
+        ctn.innerHTML = photosPuceTemporairesTableau.map((picRaw, idx) => {
+            const pic = normaliserPhotoPuce(picRaw);
+            return `
+                <div class="photo-gallery-item ${pic.archivee ? 'archived' : ''}" style="background-image: url(${pic.src});" onclick="ouvrirVisionneusePhotoGrandFormat(${idx})">
+                    <div class="photo-gallery-archive-btn ${pic.archivee ? 'is-archived' : ''}" onclick="basculerArchivagePhotoPuce(${idx}, event)" title="${pic.archivee ? 'Restaurer pour le PDF' : 'Archiver (Masquer du PDF)'}">
+                        ${pic.archivee ? '📦' : '👁️'}
+                    </div>
+                    <div class="photo-gallery-del-btn" onclick="supprimerPhotoDeLaZoneSaisie(${idx}, event)" title="Supprimer">×</div>
+                    <div class="photo-gallery-edit-btn" onclick="ouvrirAnnotationPhoto(${idx}, event)" title="Dessiner / Annoter">✏️</div>
+                </div>
+            `;
+        }).join('');
     }
 
-    function supprimerPhotoDeLaZoneSaisie(index) {
+    function supprimerPhotoDeLaZoneSaisie(index, event) {
+        if (event) event.stopPropagation();
         photosPuceTemporairesTableau.splice(index, 1); 
         rafraichirAffichageGaleriePhotosSaisie();
     }
@@ -2878,7 +3036,7 @@
 
         let html = "";
         chantierActuel.puces.forEach(p => {
-            if (p.photo && (!p.photos || p.photos.length === 0)) { p.photos = [p.photo]; delete p.photo; }
+            if (p.photo && (!p.photos || p.photos.length === 0)) { p.photos = [normaliserPhotoPuce(p.photo)]; delete p.photo; }
             const st = normaliserStatutPuce(p);
 
             if (!voirActives && st === "active") return;
@@ -2907,8 +3065,12 @@
                     const evalR = evaluerRetardTache(t);
                     const bRetard = evalR.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalR.joursRetard}j)</span>` : '';
                     const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
-                    const etatIcone = t.faite ? '✅' : '⏳';
-                    return `<div style="font-size:12px; margin-bottom:3px;">${etatIcone} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
+
+                    let labelSubT = '🔴';
+                    if (t.statut === "en_cours") labelSubT = '🟠';
+                    else if (t.statut === "resolue" || t.faite) labelSubT = '🟢';
+
+                    return `<div style="font-size:12px; margin-bottom:3px;">${labelSubT} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
                 }).join('') + `</div>`;
             }
 
@@ -3199,8 +3361,12 @@
                             const evalR = evaluerRetardTache(t);
                             const bRetard = evalR.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalR.joursRetard}j)</span>` : '';
                             const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
-                            const etatIcone = t.faite ? '✅' : '⏳';
-                            return `<div style="font-size:9pt; margin-bottom:2px;">${etatIcone} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
+
+                            let labelSubT = '🔴';
+                            if (t.statut === "en_cours") labelSubT = '🟠';
+                            else if (t.statut === "resolue" || t.faite) labelSubT = '🟢';
+
+                            return `<div style="font-size:9pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
                         }).join('') + `</div>`;
                     }
 
@@ -3214,6 +3380,7 @@
             blockTableau.style.display = "none";
         }
 
+        // REPORTAGE PHOTO EN FIN DE RAPPORT (EXCLUSION DES PHOTOS ARCHIVÉES)
         const blockPhotos = document.getElementById('pdfPhotosSection');
         if (imprimerPhotos && chantierActuel.puces) {
             blockPhotos.style.display = "block";
@@ -3225,7 +3392,7 @@
             let collectionToutesPhotosImprimables = [];
 
             pucesTriees.forEach(p => {
-                if (p.photo && (!p.photos || p.photos.length === 0)) { p.photos = [p.photo]; delete p.photo; }
+                if (p.photo && (!p.photos || p.photos.length === 0)) { p.photos = [normaliserPhotoPuce(p.photo)]; delete p.photo; }
                 const st = normaliserStatutPuce(p);
 
                 if (!inclureActives && st === "active") return;
@@ -3233,13 +3400,16 @@
                 if (!inclureLevees && st === "resolue") return;
 
                 if (p.photos && p.photos.length > 0) {
-                    p.photos.forEach((photoData, indexPhoto) => {
+                    // FILTRE DES PHOTOS ARCHIVÉES
+                    const photosValidesPdf = p.photos.map(pic => normaliserPhotoPuce(pic)).filter(pObj => !pObj.archivee);
+
+                    photosValidesPdf.forEach((photoObj, indexPhoto) => {
                         collectionToutesPhotosImprimables.push({
-                            src: photoData,
+                            src: photoObj.src,
                             numero: p.numero,
                             niveau: p.niveauNom + (p.zonePrecis ? ` (${p.zonePrecis})` : ''),
                             statut: st,
-                            labelIndex: p.photos.length > 1 ? ` (${indexPhoto + 1}/${p.photos.length})` : ''
+                            labelIndex: photosValidesPdf.length > 1 ? ` (${indexPhoto + 1}/${photosValidesPdf.length})` : ''
                         });
                     });
                 }
