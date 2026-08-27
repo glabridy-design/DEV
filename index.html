@@ -14,15 +14,15 @@
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; color: #333; }
         .app-container { max-width: 900px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        
+
         h1, h2, h3 { color: #1a73e8; margin-top: 0; }
         .section { display: none; }
         .section.active { display: block; }
-        
+
         /* Navigation principale */
         .nav-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; flex-wrap: wrap; }
         .btn-back { background: #5f6368; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-        
+
         /* Badges d'état de synchronisation */
         .sync-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #e8f0fe; color: #1a73e8; border: 1px solid #b4cff7; }
         .sync-status-badge.synced { background: #e6f4ea; color: #137333; border-color: #a8dab5; }
@@ -54,10 +54,10 @@
         label { display: block; margin: 14px 0 6px; font-weight: 600; font-size: 14px; color: #4a4a4a; }
         input[type="text"], input[type="date"], select, textarea { width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 16px; background: #f8f9fa; transition: border 0.2s; }
         input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus { border-color: #1a73e8; background: white; outline: none; }
-        
+
         .flex-row { display: flex; gap: 10px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
         .flex-row input { flex: 1; min-width: 180px; }
-        
+
         .btn { background: #1a73e8; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: bold; width: 100%; margin-top: 15px; text-align: center; }
         .btn:hover { background: #1557b0; }
         .btn-success { background: #28a745; }
@@ -67,11 +67,11 @@
         .btn-warning { background: #e67e22; color: white; }
         .btn-warning:hover { background: #d35400; }
         .btn-small { width: auto; display: inline-block; padding: 8px 15px; font-size: 14px; margin: 0; }
-        
+
         .chantier-card { position: relative; background: #fff; border: 1px solid #dadce0; padding: 20px; border-radius: 8px; margin-bottom: 15px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.02); transition: transform 0.2s, box-shadow 0.2s; }
         .chantier-card:hover { transform: translateY(-2px); box-shadow: 0 5px 12px rgba(0,0,0,0.08); border-color: #1a73e8; }
         .enterprise-badge { display: inline-flex; align-items: center; gap: 5px; background: #e8f0fe; color: #1a73e8; padding: 4px 10px; border-radius: 12px; margin: 4px 4px 0 0; font-size: 13px; font-weight: 500; }
-        
+
         .btn-delete-card { position: absolute; top: 15px; right: 15px; background: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
         .btn-delete-card:hover { background: #d93025; color: white; border-color: #d93025; }
 
@@ -91,7 +91,7 @@
         .plan-wrapper { position: relative; width: 100%; overflow: auto; background: #eaeaea; border: 2px dashed #ccc; border-radius: 8px; margin-top: 10px; text-align: center; }
         .plan-container { position: relative; display: inline-block; max-width: 100%; }
         .plan-img { display: block; max-width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
-        
+
         /* Overlay vectoriel SVG pour le tracé des zones */
         .plan-svg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
         .plan-svg-overlay polygon, .plan-svg-overlay rect { pointer-events: auto; cursor: pointer; transition: fill-opacity 0.2s; }
@@ -114,7 +114,7 @@
         .table-remarques th { background: #f1f3f4; }
         .table-remarques tr.clickable-row { cursor: pointer; transition: background 0.15s; }
         .table-remarques tr.clickable-row:hover { background-color: #edf2fa !important; }
-        
+
         .gantt-chart-container { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 15px; margin-top: 15px; overflow-x: auto; }
         .gantt-row { display: flex; flex-direction: column; border-bottom: 1px solid #f1f3f4; padding: 12px 0; font-size: 14px; }
         .gantt-row:last-child { border-bottom: none; }
@@ -144,7 +144,7 @@
         .note-card { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .note-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
         .note-sketch-img { max-width: 100%; max-height: 250px; border: 1px solid #ccc; border-radius: 6px; margin-top: 10px; display: block; background: #fff; }
-        
+
         .sketch-modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 10px; }
         .sketch-modal-card { background: white; border-radius: 12px; padding: 15px; width: 100%; max-width: 650px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 95vh; overflow-y: auto; }
         .sketch-canvas-container { border: 2px dashed #999; border-radius: 8px; background: white; touch-action: none; margin: 10px 0; overflow: hidden; text-align: center; width: 100%; }
@@ -162,11 +162,11 @@
             .dropdown-container { width: 100%; }
             .btn-dropdown { width: 100%; text-align: center; }
             .dropdown-menu { width: 100%; left: 0; right: 0; }
-            
+
             .tabs-container { flex-direction: column; }
             .tab-button { width: 100%; border-radius: 6px; margin-bottom: 4px; text-align: left; padding: 10px 14px; }
             .tab-button.active { border-bottom: none; border-left: 4px solid white; }
-            
+
             .chantier-card { padding: 15px; }
             .btn-delete-card { position: static; display: block; width: 100%; margin-top: 10px; text-align: center; }
 
@@ -219,7 +219,7 @@
 
     <div id="pageAccueil" class="section active">
         <h1>Rapport de visite V3</h1>
-        
+
         <div class="config-box">
             <strong>🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
             <div style="margin-top: 8px; display: flex; gap: 5px; flex-wrap: wrap;">
@@ -236,7 +236,7 @@
             <button class="btn" style="flex:1; background: #0b57d0; min-width:180px;" onclick="document.getElementById('importLocalFileInput').click()">📁 Importer un chantier (.json)</button>
             <input type="file" id="importLocalFileInput" accept=".json" style="display:none;" onchange="importerFichierChantierLocal(event)">
         </div>
-        
+
         <h2 style="margin-top: 35px; border-bottom: 2px solid #1a73e8; padding-bottom: 5px;">Vos chantiers en cours</h2>
         <div id="listeChantiers"></div>
     </div>
@@ -285,7 +285,7 @@
                 <span id="syncStatusIcon">🟢</span>
                 <span id="syncStatusText">Config à jour</span>
             </div>
-            
+
             <div class="dropdown-container no-print">
                 <button class="btn-dropdown" onclick="basculerMenuActions(event)">⚙️ Actions &amp; Exports ▾</button>
                 <div id="dropdownMenuActions" class="dropdown-menu">
@@ -301,7 +301,7 @@
             </div>
             <input type="file" id="importHistoriquePucesInput" accept=".zip,.json" style="display:none;" onchange="injecterHistoriqueRemarquesJson(event)">
         </div>
-        
+
         <h1 id="viewNom">---</h1>
         <div style="margin-bottom:15px; font-size:14px; color:#5f6368;">
             <span style="margin-right:15px;"><strong>Ref :</strong> <span id="viewRef">---</span></span>
@@ -395,7 +395,7 @@
                             <button type="button" class="btn btn-small" style="background:#6f42c1; font-size:12px;" onclick="demarrerTraceZone('poly')">🔷 Tracé Polygone</button>
                         </div>
                     </div>
-                    
+
                     <!-- Réglages visuels des zones (Couleur & Bordure) -->
                     <div style="display:flex; gap:15px; align-items:center; margin-top:10px; flex-wrap:wrap; background:#f8f9fa; padding:8px; border-radius:6px; border:1px solid #e0e0e0;">
                         <div style="display:flex; align-items:center; gap:6px;">
@@ -423,7 +423,7 @@
                 <div style="background:#fff; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin: 15px 0;">
                     <h4 style="margin: 0 0 8px 0; color:#1a73e8;">📋 Actions à mener / Tâches associées</h4>
                     <p style="font-size:12px; color:#666; margin-top:0;">Définissez les tâches, entreprises responsables et échéances précises pour cette puce.</p>
-                    
+
                     <div id="listeSousTachesContainer"></div>
 
                     <div style="background:#f8f9fa; border:1px dashed #ccc; padding:10px; border-radius:6px; margin-top:10px;">
@@ -483,7 +483,7 @@
         <div id="tabNotes" class="tab-content">
             <h2>📝 Bloc-notes Libre &amp; Croquis Terrain (SVG)</h2>
             <p style="font-size: 14px; color:#5f6368;">Consignez vos consignes, directives de réunion ou schémas vectoriels à la main et liez-les optionnellement à un constat du plan.</p>
-            
+
             <button type="button" class="btn btn-success" style="margin-bottom: 20px; width: auto;" onclick="ajouterNouvelleNote()">+ Nouvelle note</button>
             <div id="listeNotesContainer"></div>
         </div>
@@ -491,7 +491,7 @@
         <div id="tabGantt" class="tab-content">
             <h2>📅 Planning prévisionnel Gantt (MS Project)</h2>
             <p style="font-size: 14px; color:#5f6368;">Importez le fichier de planification `.xml` généré depuis MS Project pour afficher et mettre à jour l'avancement chronologique.</p>
-            
+
             <div style="background:#f8f9fa; border:1px solid #dadce0; padding:15px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                 <button type="button" class="btn btn-small" style="background:#24292e; margin:0;" onclick="document.getElementById('importGanttXmlInput').click()">📥 Importer XML MS Project</button>
                 <input type="file" id="importGanttXmlInput" accept=".xml" style="display:none;" onchange="importerFichierGanttXml(event)">
@@ -519,7 +519,7 @@
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 <span style="font-size:13px; font-weight:bold;">Couleur :</span>
                 <input type="color" id="photoColorPicker" value="#d93025" style="width:34px; height:32px; border:1px solid #ccc; border-radius:6px; cursor:pointer; padding:0; background:none;" onchange="choisirCouleurPinceauPhoto(this.value, null)" title="Choisir une couleur">
-                
+
                 <div class="color-btn selected" style="background:#d93025;" onclick="choisirCouleurPinceauPhoto('#d93025', this)" title="Rouge (Défaut)"></div>
                 <div class="color-btn" style="background:#f1c40f;" onclick="choisirCouleurPinceauPhoto('#f1c40f', this)" title="Jaune"></div>
                 <div class="color-btn" style="background:#1a73e8;" onclick="choisirCouleurPinceauPhoto('#1a73e8', this)" title="Bleu"></div>
@@ -533,7 +533,7 @@
             </div>
             <button type="button" class="btn btn-small btn-danger" onclick="reinitialiserPhotoOriginale()">Réinitialiser Photo</button>
         </div>
-        
+
         <div class="sketch-canvas-container">
             <canvas id="photoAnnotateCanvas"></canvas>
         </div>
@@ -552,7 +552,7 @@
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 <span style="font-size:13px; font-weight:bold;">Couleur :</span>
                 <input type="color" id="sketchColorPicker" value="#000000" style="width:34px; height:32px; border:1px solid #ccc; border-radius:6px; cursor:pointer; padding:0; background:none;" onchange="choisirCouleurPinceau(this.value, null)" title="Choisir une couleur sur la palette">
-                
+
                 <div class="color-btn selected" style="background:black;" onclick="choisirCouleurPinceau('#000000', this)" title="Noir"></div>
                 <div class="color-btn" style="background:#d93025;" onclick="choisirCouleurPinceau('#d93025', this)" title="Rouge"></div>
                 <div class="color-btn" style="background:#1a73e8;" onclick="choisirCouleurPinceau('#1a73e8', this)" title="Bleu"></div>
@@ -566,7 +566,7 @@
             </div>
             <button type="button" class="btn btn-small btn-danger" onclick="effacerToutCanvasCroquis()">Effacer tout</button>
         </div>
-        
+
         <div class="sketch-canvas-container">
             <canvas id="sketchCanvas" width="550" height="320"></canvas>
         </div>
@@ -839,7 +839,7 @@
         document.getElementById('cloudUser').value = localStorage.getItem('git_user') || '';
         document.getElementById('cloudRepo').value = localStorage.getItem('git_repo') || '';
         document.getElementById('cloudToken').value = localStorage.getItem('git_token') || '';
-        
+
         const legacyData = localStorage.getItem('liste_chantiers_pwa');
         if (legacyData) {
             try {
@@ -991,7 +991,7 @@
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
-        
+
         document.getElementById(tabId).classList.add('active');
         const clickedBtn = Array.from(document.querySelectorAll('.tab-button')).find(b => b.getAttribute('onclick').includes(tabId));
         if(clickedBtn) clickedBtn.classList.add('active');
@@ -1249,7 +1249,7 @@
     async function exporterRapportDuJourIncr() {
         fermerMenuActions();
         if(!chantierActuel) return alert("Aucun chantier actif sélectionné.");
-        
+
         const dateAujourdhui = new Date().toLocaleDateString('fr-FR').replace(/\//g, "-");
         const nomDossierChantier = obtenirNomDossierChantier(chantierActuel.nom);
         const nomSousDossierRapport = `Rapport_visite_${dateAujourdhui}`;
@@ -1267,7 +1267,7 @@
                         const ext = photoDataUrl.includes('image/avif') ? 'avif' : (photoDataUrl.includes('image/webp') ? 'webp' : 'jpg');
                         const nomFichierPhoto = `puce_${p.numero}_photo_${idxPhoto + 1}.${ext}`;
                         const cheminRelatif = `photos/${nomFichierPhoto}`;
-                        
+
                         const bytes = convertirDataUrlEnUint8Array(photoDataUrl);
                         zip.file(cheminRelatif, bytes);
 
@@ -1306,7 +1306,7 @@
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
         const zipNomFichierLocal = `${nomDossierChantier}_${nomSousDossierRapport}.zip`;
-        
+
         const urlBlob = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
         a.href = urlBlob;
@@ -1332,7 +1332,7 @@
     function ouvrirGoogleDriveRapports() {
         fermerMenuActions();
         if(!chantierActuel) return alert("Veuillez sélectionner un chantier actif.");
-        
+
         const driveUrl = obtenirLienDriveActuel();
         if (confirm("🌐 Pour fusionner un rapport Cloud Google Drive :\n\n1. Téléchargez le fichier ZIP de la visite depuis votre Google Drive.\n2. Ensuite, sélectionnez-le dans la fenêtre d'importation qui va s'ouvrir.\n\nOuvrir le dossier Google Drive du chantier maintenant ?")) {
             window.open(driveUrl, '_blank');
@@ -1347,7 +1347,7 @@
     async function reinitialiserToutesLesPucesEtRemarques() {
         fermerMenuActions();
         if(!chantierActuel) return;
-        
+
         const totalPuces = chantierActuel.puces ? chantierActuel.puces.length : 0;
         if(totalPuces === 0) {
             return alert("ℹ️ Le rapport de ce chantier ne contient actuellement aucune puce ou remarque.");
@@ -1363,9 +1363,9 @@
 
                 const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
                 if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-                
+
                 await sauvegarderUnChantierDansIndexedDB(chantierActuel);
-                
+
                 rafraichirPucesGraphiques();
                 rafraichirTableauRemarques();
                 notifierModificationLocale();
@@ -1398,7 +1398,7 @@
             if (file.name.endsWith('.zip')) {
                 const zip = await JSZip.loadAsync(file);
                 const rapportJsonFile = zip.file("rapport.json");
-                
+
                 if (!rapportJsonFile) {
                     return alert("❌ Fichier 'rapport.json' introuvable à la racine de cette archive ZIP.");
                 }
@@ -1478,7 +1478,7 @@
 
         const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
         if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-        
+
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
 
         chargerPlanEtPucesDuNiveauActuel();
@@ -1497,14 +1497,14 @@
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(e.target.result, "text/xml");
                 const tasksNodes = xmlDoc.getElementsByTagName("Task");
-                
+
                 let listeTachesParsees = [];
-                
+
                 for(let i = 0; i < tasksNodes.length; i++) {
                     const task = tasksNodes[i];
                     const nameNode = task.getElementsByTagName("Name")[0];
                     if(!nameNode) continue;
-                    
+
                     const name = nameNode.textContent;
                     const uid = task.getElementsByTagName("UID")[0]?.textContent || i;
                     const start = task.getElementsByTagName("Start")[0]?.textContent || "";
@@ -1528,7 +1528,7 @@
                 chantierActuel.planning = listeTachesParsees;
                 const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
                 if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-                
+
                 await sauvegarderUnChantierDansIndexedDB(chantierActuel);
 
                 summaryTasksRepliees = {};
@@ -1636,7 +1636,7 @@
         document.getElementById(`progressBarVisual-${indexTableau}`).style.width = valEntiere + "%";
         document.getElementById(`progressTextPercent-${indexTableau}`).innerText = valEntiere;
         document.getElementById(`progressBadgeLive-${indexTableau}`).innerText = valEntiere + "%";
-        
+
         notifierModificationLocale();
     }
 
@@ -1644,9 +1644,9 @@
         if(!chantierActuel) return;
         const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
         if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-        
+
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
-        
+
         dessinerPlanningGantt();
         notifierModificationLocale();
         alert("💾 Vos modifications d'avancement de planning ont été enregistrées avec succès !");
@@ -1654,19 +1654,19 @@
 
     async function supprimerPlanningChantierActuelDefinitif() {
         if(!chantierActuel) return;
-        
+
         const conf1 = confirm(`Êtes-vous sûr de vouloir supprimer TOUT le planning associé au chantier "${chantierActuel.nom}" ?`);
         if(conf1) {
             const conf2 = confirm(`⚠️ CETTE ACTION EST IRREVOCABLE : Toutes les modifications d'avancement de cette frise chronologique seront perdues. Confirmer la purge ?`);
             if(conf2) {
                 chantierActuel.planning = []; 
                 summaryTasksRepliees = {};    
-                
+
                 const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
                 if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-                
+
                 await sauvegarderUnChantierDansIndexedDB(chantierActuel);
-                
+
                 dessinerPlanningGantt(); 
                 notifierModificationLocale();
                 alert("🗑️ Le planning a été entièrement effacé de ce chantier ! Vous pouvez à présent charger un nouveau fichier .xml propre.");
@@ -1705,13 +1705,13 @@
 
         const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
         if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-        
+
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
 
         document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="${i}">${n.nom}</option>`).join('');
         indexNiveauActuel = chantierActuel.niveaux.length - 1;
         document.getElementById('selectNiveauVisite').value = indexNiveauActuel;
-        
+
         inputNom.value = "";
         document.getElementById('planDirectInput').value = "";
         planDirectTerrainBase64 = "";
@@ -1763,7 +1763,7 @@
         try {
             const res = await fetch(urlRoot, { headers: { "Authorization": `token ${token}` } });
             if(!res.ok) throw new Error("Code HTTP " + res.status);
-            
+
             const tousLesElements = await res.json();
             const dossiersChantiers = tousLesElements.filter(item => item.type === "dir");
 
@@ -1790,7 +1790,7 @@
                         delete cObj.surLeCloud;
 
                         const idx = listeTousChantiers.findIndex(x => x.id == cObj.id || x.folderName == d.name);
-                        
+
                         if(idx !== -1) {
                             listeTousChantiers[idx] = {
                                 ...cObj,
@@ -1802,7 +1802,7 @@
                             cObj.notes = [];
                             listeTousChantiers.push(cObj);
                         }
-                        
+
                         const chantierAConserver = idx !== -1 ? listeTousChantiers[idx] : listeTousChantiers[listeTousChantiers.length - 1];
                         await sauvegarderUnChantierDansIndexedDB(chantierAConserver);
                         nbCharges++;
@@ -1866,7 +1866,7 @@
             folderName: obtenirNomDossierChantier(nouveauNom),
             niveaux: niveauxTemporaires, entreprises: entreprisesTemporaires, puces: [], planning: [], notes: []
         };
-        
+
         listeTousChantiers.push(nouveauChantier);
         await sauvegarderUnChantierDansIndexedDB(nouveauChantier);
 
@@ -1893,13 +1893,13 @@
 
     async function supprimerChantierDefinitif(event, idTarget, nomChantier) {
         event.stopPropagation();
-        
+
         const confirmation1 = confirm(`Êtes-vous sûr de vouloir supprimer définitivement le chantier "${nomChantier}" de cet appareil ?`);
         if (confirmation1) {
             const confirmation2 = confirm(`⚠️ ATTENTION : Cette action effacera toutes les puces, photos et plannings associés à ce chantier de manière irréversible. Confirmer ?`);
             if (confirmation2) {
                 listeTousChantiers = listeTousChantiers.filter(c => c.id != idTarget);
-                
+
                 const db = await ouvrirDB();
                 const tx = db.transaction("chantiers", "readwrite");
                 tx.objectStore("chantiers").delete(parseFloat(idTarget) || idTarget);
@@ -1928,7 +1928,7 @@
         document.getElementById('viewLoc').innerText = chantierActuel.localisation || "N/A";
         document.getElementById('viewDriveUrlInput').value = chantierActuel.driveUrl || DEFAULT_GOOGLE_DRIVE_URL;
         document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge">${e}</span>`).join('') || "Aucune entreprise";
-        
+
         if (chantierActuel.niveaux.length > 0) {
             document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="${i}">${n.nom}</option>`).join('');
             indexNiveauActuel = 0;
@@ -1937,7 +1937,7 @@
             document.getElementById('selectNiveauVisite').innerHTML = "<option>Aucun plan/niveau</option>";
             document.getElementById('viewPlanImg').src = "";
         }
-        
+
         document.getElementById('chkAfficherActives').checked = true;
         document.getElementById('chkAfficherEnCours').checked = true;
         document.getElementById('chkAfficherLevees').checked = true;
@@ -1995,7 +1995,7 @@
                     </div>
 
                     <textarea style="width:100%; border:1px solid #dadce0; border-radius:6px; padding:8px; font-size:14px;" rows="3" onchange="enregistrerTexteNote(${idx}, this.value)" placeholder="Saisissez vos observations libres...">${n.texte || ''}</textarea>
-                    
+
                     ${n.croquis ? `
                         <div style="margin-top:10px; position:relative; display:inline-block;">
                             <img src="${n.croquis}" class="note-sketch-img" alt="Croquis SVG">
@@ -2014,7 +2014,7 @@
     function ajouterNouvelleNote() {
         if(!chantierActuel) return;
         if(!chantierActuel.notes) chantierActuel.notes = [];
-        
+
         chantierActuel.notes.unshift({
             id: Date.now(),
             texte: "",
@@ -2062,7 +2062,7 @@
     async function sauvegarderLocalEtMettreAJourNotes(rafraichirRendu = true) {
         const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
         if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-        
+
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
         if(rafraichirRendu) rafraichirVueNotes();
         notifierModificationLocale();
@@ -2091,7 +2091,7 @@
             e.preventDefault();
             estEnTrainDeDessiner = true;
             const pos = obtenirPosRelAtive(e);
-            
+
             traitEnCours = {
                 color: couleurPinceauCourante,
                 size: taillePinceauCourante,
@@ -2144,18 +2144,18 @@
     function ouvrirCanvasPourNote(indexNote) {
         idNoteCroquisEnCours = indexNote;
         polygonesCroquisActuel = [];
-        
+
         const canvas = document.getElementById('sketchCanvas');
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
+
         couleurPinceauCourante = '#000000';
         taillePinceauCourante = parseInt(document.getElementById('sketchBrushSize').value || 3);
-        
+
         const picker = document.getElementById('sketchColorPicker');
         if(picker) picker.value = '#000000';
-        
+
         document.querySelectorAll('.sketch-tools .color-btn').forEach(b => b.classList.remove('selected'));
         const pastilleNoire = document.querySelector('.sketch-tools .color-btn');
         if(pastilleNoire) pastilleNoire.classList.add('selected');
@@ -2168,7 +2168,7 @@
         taillePinceauCourante = parseInt(document.getElementById('sketchBrushSize').value || 3);
         document.querySelectorAll('.sketch-tools .color-btn').forEach(b => b.classList.remove('selected'));
         if(btnEl) btnEl.classList.add('selected');
-        
+
         const picker = document.getElementById('sketchColorPicker');
         if(picker) picker.value = color;
     }
@@ -2278,7 +2278,7 @@
         img.onload = () => {
             photoBaseImageObj = img;
             const canvas = document.getElementById('photoAnnotateCanvas');
-            
+
             let width = img.width;
             let height = img.height;
             const maxW = 600;
@@ -2288,7 +2288,7 @@
                 width = Math.round(width * ratio);
                 height = Math.round(height * ratio);
             }
-            
+
             canvas.width = width;
             canvas.height = height;
 
@@ -2297,7 +2297,7 @@
 
             couleurPinceauPhoto = '#d93025';
             taillePinceauPhoto = parseInt(document.getElementById('photoBrushSize').value || 5);
-            
+
             const picker = document.getElementById('photoColorPicker');
             if(picker) picker.value = '#d93025';
 
@@ -2313,7 +2313,7 @@
         couleurPinceauPhoto = color;
         document.querySelectorAll('#photoAnnotationModalOverlay .color-btn').forEach(b => b.classList.remove('selected'));
         if(btnEl) btnEl.classList.add('selected');
-        
+
         const picker = document.getElementById('photoColorPicker');
         if(picker) picker.value = color;
     }
@@ -2340,10 +2340,10 @@
     function validerAnnotationPhoto() {
         if(indexPhotoAnnoteeEnCours === null) return;
         const canvas = document.getElementById('photoAnnotateCanvas');
-        
+
         const annotatedDataUrl = canvas.toDataURL('image/webp', 0.85);
         photosPuceTemporairesTableau[indexPhotoAnnoteeEnCours] = annotatedDataUrl;
-        
+
         rafraichirAffichageGaleriePhotosSaisie();
         fermerFenetreAnnotationPhoto();
     }
@@ -2353,12 +2353,12 @@
         document.getElementById('viewPlanImg').src = chantierActuel.niveaux[indexNiveauActuel].plan || "";
         rafraichirPucesGraphiques(); rafraichirTableauRemarques();
     }
-    
+
     function changerDeNiveauSurTerrain() {
         indexNiveauActuel = parseInt(document.getElementById('selectNiveauVisite').value);
         chargerPlanEtPucesDuNiveauActuel();
     }
-    
+
     /* -------------------------------------------------------------
        LOGIQUE DE TRACÉ ET RÉ-ÉDITION DE ZONES (COULEURS & BORDURES)
     ------------------------------------------------------------- */
@@ -2510,7 +2510,7 @@
         }
         const num = chantierActuel.puces.length + 1;
         const nomNivActuel = (chantierActuel.niveaux && chantierActuel.niveaux[indexNiveauActuel]) ? chantierActuel.niveaux[indexNiveauActuel].nom : "Niveau unique";
-        
+
         const nPuce = { 
             id: Date.now(), 
             numero: num, 
@@ -2546,11 +2546,23 @@
         selectionnerPuce(p.id);
         document.getElementById('zoneSaisiePuce').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    // Calcul du centre (barycentre) d'une zone pour le tracé de la ligne de liaison
+    function calculerCentreZone(z) {
+        if (z.type === 'rect') {
+            return { x: z.x + (z.w / 2), y: z.y + (z.h / 2) };
+        } else if (z.type === 'poly' && z.points && z.points.length > 0) {
+            let sumX = 0, sumY = 0;
+            z.points.forEach(pt => { sumX += pt.x; sumY += pt.y; });
+            return { x: sumX / z.points.length, y: sumY / z.points.length };
+        }
+        return null;
+    }
     
     function rafraichirPucesGraphiques() {
         const container = document.getElementById('planContainer');
         const svgOverlay = document.getElementById('planSvgOverlay');
-        
+
         container.querySelectorAll('.pin').forEach(p => p.remove());
         svgOverlay.innerHTML = "";
 
@@ -2567,23 +2579,30 @@
         chantierActuel.puces.forEach(p => {
             if (p.niveauNom === nomNivActuel || !nomNivActuel) {
                 const st = normaliserStatutPuce(p);
-                
+
                 if (!voirActives && st === "active") return;
                 if (!voirEnCours && st === "en_cours") return;
                 if (!voirLevees && st === "resolue") return;
 
                 const pZones = (p.id === puceSelectionneeId) ? zonesPuceTemporairesTableau : (p.zones || []);
 
-                // Rendu des zones rattachées à la puce
+                // Rendu des zones et lignes de liaison
                 pZones.forEach((z) => {
                     const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
-                    const epaisseurBorder = z.epaisseur || 2;
+                    // Conversion de l'épaisseur pour l'échelle SVG %
+                    const epaisseurBorder = z.epaisseur ? (z.epaisseur * 0.15) : 0.4;
 
                     if (z.type === 'rect') {
                         elementsSvg += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></rect>`;
                     } else if (z.type === 'poly' && z.points && z.points.length >= 3) {
                         const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
                         elementsSvg += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></polygon>`;
+                    }
+
+                    // Ligne continue très fine reliant la puce à sa zone
+                    const centre = calculerCentreZone(z);
+                    if (centre) {
+                        elementsSvg += `<line x1="${p.x}" y1="${p.y}" x2="${centre.x}" y2="${centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85"></line>`;
                     }
                 });
 
@@ -2611,22 +2630,22 @@
         // Rendu temporaire pendant le tracé en cours
         if (modeDessinZoneActif && pointsZoneEnCours.length > 0) {
             const coulDraft = document.getElementById('zoneColorPicker').value || "#1a73e8";
-            const epDraft = document.getElementById('zoneBorderWidthRange').value || 2;
+            const epDraft = (document.getElementById('zoneBorderWidthRange').value || 2) * 0.15;
 
             if (modeDessinZoneActif === 'poly') {
                 const ptsPolyDraft = pointsZoneEnCours.map(pt => `${pt.x},${pt.y}`).join(' ');
-                elementsSvg += `<polyline points="${ptsPolyDraft}" fill="none" stroke="${coulDraft}" stroke-width="${epDraft}" stroke-dasharray="2,2"></polyline>`;
+                elementsSvg += `<polyline points="${ptsPolyDraft}" fill="none" stroke="${coulDraft}" stroke-width="${epDraft}" stroke-dasharray="0.8,0.8"></polyline>`;
                 pointsZoneEnCours.forEach(pt => {
-                    elementsSvg += `<circle cx="${pt.x}" cy="${pt.y}" r="1.5" fill="${coulDraft}"></circle>`;
+                    elementsSvg += `<circle cx="${pt.x}" cy="${pt.y}" r="0.6" fill="${coulDraft}"></circle>`;
                 });
             } else if (modeDessinZoneActif === 'rect') {
-                elementsSvg += `<circle cx="${pointsZoneEnCours[0].x}" cy="${pointsZoneEnCours[0].y}" r="1.5" fill="${coulDraft}"></circle>`;
+                elementsSvg += `<circle cx="${pointsZoneEnCours[0].x}" cy="${pointsZoneEnCours[0].y}" r="0.6" fill="${coulDraft}"></circle>`;
             }
         }
 
         svgOverlay.innerHTML = elementsSvg;
     }
-    
+
     function selectionnerPuce(id) {
         if(!chantierActuel.puces) return;
         puceSelectionneeId = id; const p = chantierActuel.puces.find(p => p.id === id); if(!p) return;
@@ -2635,7 +2654,7 @@
         document.getElementById('commentairePuce').value = p.commentaire || "";
         document.getElementById('zonePuceInput').value = p.zonePrecis || ""; 
         document.getElementById('zoneEntreprisesPuceCheckboxes').innerHTML = (chantierActuel.entreprises || []).map(e => `<label class="entreprise-checkbox-item"><input type="checkbox" value="${e}" ${(p.entreprises || []).includes(e)?'checked':''}> ${e}</label>`).join('');
-        
+
         if (p.photo && (!p.photos || p.photos.length === 0)) {
             p.photos = [p.photo];
             delete p.photo;
@@ -2740,7 +2759,7 @@
 
         document.getElementById('nouvelleTacheDescInput').value = "";
         document.getElementById('nouvelleTacheEcheanceInput').value = "";
-        
+
         rafraichirListeSousTachesSaisie();
     }
 
@@ -2775,7 +2794,7 @@
             badge.className = "status-badge active";
         }
     }
-    
+
     function chargerPhotoPuceAjoutMultiples(event) {
         const file = event.target.files[0];
         if(file) {
@@ -2809,7 +2828,7 @@
         photosPuceTemporairesTableau.splice(index, 1); 
         rafraichirAffichageGaleriePhotosSaisie();
     }
-    
+
     async function sauvegarderDonniesPuce() {
         if(!chantierActuel.puces) chantierActuel.puces = [];
         const p = chantierActuel.puces.find(p => p.id === puceSelectionneeId);
@@ -2826,33 +2845,33 @@
 
             document.getElementById('zoneSaisiePuce').style.display = 'none'; puceSelectionneeId = null;
             rafraichirTableauRemarques(); rafraichirPucesGraphiques();
-            
+
             const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
             if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-            
+
             await sauvegarderUnChantierDansIndexedDB(chantierActuel);
             notifierModificationLocale();
         }
     }
-    
+
     async function supprimerPuceActuelle() {
         if(!chantierActuel.puces) return;
         chantierActuel.puces = chantierActuel.puces.filter(p => p.id !== puceSelectionneeId);
         chantierActuel.puces.forEach((p, i) => p.numero = i + 1);
         document.getElementById('zoneSaisiePuce').style.display = 'none'; puceSelectionneeId = null;
         rafraichirPucesGraphiques(); rafraichirTableauRemarques();
-        
+
         const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
         if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-        
+
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
         notifierModificationLocale();
     }
-    
+
     function rafraichirTableauRemarques() {
         const tbody = document.getElementById('corpsTableauRemarques');
         if(!chantierActuel || !chantierActuel.puces || chantierActuel.puces.length === 0) { tbody.innerHTML = "<tr><td colspan='7'>Aucune remarque</td></tr>"; return; }
-        
+
         const voirActives = document.getElementById('chkAfficherActives').checked;
         const voirEnCours = document.getElementById('chkAfficherEnCours').checked;
         const voirLevees = document.getElementById('chkAfficherLevees').checked;
@@ -2870,10 +2889,10 @@
             const nbZones = p.zones ? p.zones.length : 0;
             const zoneAffichee = p.zonePrecis ? ` — <b>${p.zonePrecis}</b>` : '';
             const badgeZonesText = nbZones > 0 ? ` <span style="font-size:11px; color:#1a73e8; font-weight:bold;">[📐 ${nbZones} zone(s)]</span>` : '';
-            
+
             let labelStatut = '<span class="status-badge active">Active</span>';
             let styleLigne = '';
-            
+
             if (st === "en_cours") {
                 labelStatut = '<span class="status-badge progress">En cours</span>';
                 styleLigne = 'style="background: #fffdf9;"';
@@ -2911,7 +2930,7 @@
         });
         tbody.innerHTML = html || "<tr><td colspan='7'>Aucune réserve ne correspond aux filtres actifs</td></tr>";
     }
-    
+
     async function ajouterEntrepriseDirectTerrain() {
         const input = document.getElementById('nomEntrepriseTerrainInput');
         const nom = input.value.trim();
@@ -2946,7 +2965,7 @@
         const imprimerGantt = document.getElementById('printOptGantt').checked;
         const imprimerTableau = document.getElementById('printOptTableau').checked;
         const imprimerPhotos = document.getElementById('printOptPhotos').checked;
-        
+
         const inclureActives = document.getElementById('printOptRemarquesActives').checked;
         const inclureEnCours = document.getElementById('printOptRemarquesEnCours').checked;
         const inclureLevees = document.getElementById('printOptRemarquesLevees').checked;
@@ -2971,14 +2990,14 @@
             chantierActuel.niveaux.forEach((niv, idxNiveau) => {
                 const blockNiveau = document.createElement('div'); 
                 blockNiveau.style.marginBottom = "20px";
-                
+
                 if (idxNiveau < chantierActuel.niveaux.length - 1) {
                     blockNiveau.style.pageBreakAfter = "always";
                     blockNiveau.style.breakAfter = "page";
                 }
 
                 blockNiveau.innerHTML = `<h3 style="border-bottom: 1px solid #333; padding-bottom: 5px; margin-top:15px; font-size:11pt;">Niveau : ${niv.nom}</h3>`;
-                
+
                 const ctn = document.createElement('div'); 
                 ctn.className = "plan-container"; 
                 ctn.style.border = "1px solid #ccc"; 
@@ -3005,12 +3024,17 @@
 
                             (p.zones || []).forEach(z => {
                                 const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
-                                const epaisseurBorder = z.epaisseur || 2;
+                                const epaisseurBorder = z.epaisseur ? (z.epaisseur * 0.15) : 0.4;
                                 if (z.type === 'rect') {
                                     svgPdfContent += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></rect>`;
                                 } else if (z.type === 'poly' && z.points) {
                                     const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
                                     svgPdfContent += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></polygon>`;
+                                }
+
+                                const centre = calculerCentreZone(z);
+                                if (centre) {
+                                    svgPdfContent += `<line x1="${p.x}" y1="${p.y}" x2="${centre.x}" y2="${centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85"></line>`;
                                 }
                             });
 
@@ -3104,7 +3128,7 @@
                 const weight = t.isSummary ? "bold" : "normal";
                 const formatStart = t.start ? t.start.split("-").reverse().join("/") : "N/A";
                 const formatFinish = t.finish ? t.finish.split("-").reverse().join("/") : "N/A";
-                
+
                 let enRetard = false;
                 if (!t.isSummary && t.finish && t.percent < 100) {
                     const dateFinTache = new Date(t.finish);
@@ -3143,7 +3167,7 @@
 
             const pdfCorpsTableau = document.getElementById('pdfCorpsTableau'); pdfCorpsTableau.innerHTML = "";
             const pucesTriees = [...chantierActuel.puces].sort((a,b) => a.numero - b.numero);
-            
+
             let targetPuces = pucesTriees.filter(p => {
                 const st = normaliserStatutPuce(p);
                 if (!inclureActives && st === "active") return false;
@@ -3199,11 +3223,11 @@
             const photoPagesContainer = document.getElementById('pdfPhotoPagesContainer'); photoPagesContainer.innerHTML = "";
             const pucesTriees = [...chantierActuel.puces].sort((a,b) => a.numero - b.numero);
             let collectionToutesPhotosImprimables = [];
-            
+
             pucesTriees.forEach(p => {
                 if (p.photo && (!p.photos || p.photos.length === 0)) { p.photos = [p.photo]; delete p.photo; }
                 const st = normaliserStatutPuce(p);
-                
+
                 if (!inclureActives && st === "active") return;
                 if (!inclureEnCours && st === "en_cours") return;
                 if (!inclureLevees && st === "resolue") return;
