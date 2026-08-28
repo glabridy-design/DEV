@@ -115,24 +115,6 @@
         .table-remarques tr.clickable-row { cursor: pointer; transition: background 0.15s; }
         .table-remarques tr.clickable-row:hover { background-color: #edf2fa !important; }
 
-        .gantt-chart-container { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 15px; margin-top: 15px; overflow-x: auto; }
-        .gantt-row { display: flex; flex-direction: column; border-bottom: 1px solid #f1f3f4; padding: 12px 0; font-size: 14px; }
-        .gantt-row:last-child { border-bottom: none; }
-        .gantt-row.collapsed-child { display: none !important; }
-        .gantt-row-main { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 10px; flex-wrap: wrap; }
-        .gantt-col-name { width: 100%; max-width: 300px; padding-right: 15px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .gantt-col-name.summary-clickable { cursor: pointer; user-select: none; }
-        .gantt-col-name.summary-clickable:hover { color: #1a73e8; text-decoration: underline; }
-        .gantt-col-bar-container { flex: 1; display: flex; align-items: center; gap: 10px; justify-content: flex-end; min-width: 250px; }
-        .gantt-progress-track { width: 140px; height: 16px; background: #e8eaed; border-radius: 8px; overflow: hidden; position: relative; }
-        .gantt-progress-bar { height: 100%; background: #1a73e8; border-radius: 8px 0 0 8px; transition: width 0.3s; }
-        .gantt-progress-bar.summary { background: #24292e; }
-        .gantt-progress-bar.late { background: #d93025; }
-        .gantt-dates { font-size: 11px; color: #5f6368; white-space: nowrap; width: 140px; text-align: right; }
-        .gantt-pilotage-control { display: flex; align-items: center; gap: 10px; margin-top: 8px; background: #f8f9fa; padding: 6px 12px; border-radius: 6px; width: fit-content; border: 1px solid #e0e0e0; }
-        .gantt-slider { width: 130px; cursor: pointer; }
-        .gantt-badge-val { font-size: 12px; font-weight: bold; color: #1a73e8; min-width: 35px; }
-
         /* GALERIE ET CARTES PHOTOS */
         .photo-gallery-wrapper { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; min-height: 90px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f8f9fa; }
         .photo-gallery-item { position: relative; width: 95px; height: 95px; border-radius: 6px; border: 1px solid #dadce0; background-size: cover; background-position: center; cursor: pointer; }
@@ -194,7 +176,7 @@
             @page { size: portrait; margin: 0 !important; }
             body { background: white; color: black; font-size: 10pt; padding: 5mm !important; }
             .app-container { max-width: 100%; margin: 0; padding: 0; box-shadow: none; border: none; }
-            .section, .nav-bar, .no-print, form, button, input, textarea, select, .config-box, .tabs-container, .map-filters-box, .print-options-box, .gantt-pilotage-control, .photo-viewer-overlay { display: none !important; }
+            .section, .nav-bar, .no-print, form, button, input, textarea, select, .config-box, .tabs-container, .map-filters-box, .print-options-box, .photo-viewer-overlay { display: none !important; }
             #printTemplate { display: block !important; }
             .page-break { page-break-before: always; break-before: page; }
             h1 { font-size: 13pt !important; margin: 5px 0 !important; border-bottom: 2px solid #333; padding-bottom: 2px; }
@@ -205,13 +187,6 @@
             .pdf-table { width: 100%; border-collapse: collapse; margin-top: 10px; page-break-inside: avoid; }
             .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 6px; font-size: 9pt; text-align: left; }
             .pdf-table th { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .gantt-print-row { border-bottom: 1px solid #000; padding: 4px 0; display: flex; align-items: center; page-break-inside: avoid; }
-            .gantt-print-row.collapsed-child { display: none !important; }
-            .gantt-print-text { width: 45%; font-size: 9pt; }
-            .gantt-print-bar-box { width: 55%; display: flex; align-items: center; gap: 8px; }
-            .gantt-print-track { flex: 1; height: 10px; background: #eee; border: 1px solid #ccc; }
-            .gantt-print-bar { height: 100%; background: #555; }
-            .gantt-print-bar.late { background-color: #990000 !important; }
             .photo-grid-table { width: 100%; border-collapse: separate; border-spacing: 10px; page-break-inside: avoid; }
             .photo-grid-table td { width: 50%; vertical-align: top; border: 1px solid #ddd; padding: 8px; text-align: center; background: #fff; page-break-inside: avoid; }
             .photo-grid-img { width: 100%; height: 160px; object-fit: contain; background: #fafafa; display: block; margin-bottom: 6px; border: 1px solid #eee; }
@@ -224,7 +199,7 @@
             .status-badge.active { background-color: #ffcccc !important; color: #900 !important; }
             .status-badge.progress { background-color: #fdebd0 !important; color: #d35400 !important; border: 1px solid #d35400 !important; }
             .status-badge.resolved { background-color: #ccffcc !important; color: #060 !important; }
-            .status-badge.late-task { background-color: #ffcccc !important; color: #d93025 !important; border: 1px solid #d93025 !important; }
+            .status-badge.late-task { background-color: #ffcccc !important; color: #d93025 !important; border: 1px solid #f5b7b1 !important; }
             .first-page-only { page-break-inside: avoid; }
         }
         #printTemplate { display: none; }
@@ -328,7 +303,6 @@
         <div class="tabs-container no-print">
             <button class="tab-button active" onclick="switchTab('tabTerrain')">🏗️ Saisie Terrain</button>
             <button class="tab-button" onclick="switchTab('tabNotes')">📝 Notes &amp; Croquis</button>
-            <button class="tab-button" onclick="switchTab('tabGantt')">📅 Planning &amp; Gantt (Pilotage)</button>
         </div>
 
         <div id="tabTerrain" class="tab-content active">
@@ -340,6 +314,16 @@
                     <button type="button" class="btn btn-small" style="background:#1a73e8;" onclick="mettreAJourLienDriveChantier()">💾 Enregistrer</button>
                     <button type="button" class="btn btn-small btn-success" onclick="ouvrirDossierDriveDirectement()">📁 Ouvrir le Drive</button>
                 </div>
+            </div>
+
+            <!-- MODULE RÉCAPITULATIF DES ÉVOLUTIONS ET ALERTES RETARDS -->
+            <div style="background:#fff; border:1px solid #b4cff7; padding:15px; border-radius:8px; margin-bottom:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
+                <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+                    <h3 style="margin:0; font-size:15px; color:#1a73e8;">📝 Synthèse des évolutions &amp; Alertes retards</h3>
+                    <button type="button" class="btn btn-small" style="background:#1a73e8; font-size:12px;" onclick="regenererSyntheseEvolutionsTexte()">🔄 Régénérer la synthèse</button>
+                </div>
+                <p style="font-size:12px; color:#666; margin-top:0;">Ce texte récapitule automatiquement les changements depuis le dernier export ainsi que les actions en retard. Vous pouvez le modifier avant impression.</p>
+                <textarea id="syntheseEvolutionsInput" rows="5" style="width:100%; border:1px solid #dadce0; border-radius:6px; padding:10px; font-size:13px; line-height:1.5; background:#f8f9fa;" onchange="enregistrerModifTexteSyntheseManuelle()"></textarea>
             </div>
 
             <label>Entreprises associées :</label>
@@ -484,10 +468,38 @@
 
             <div class="print-options-box no-print">
                 <h3 style="color:#0b57d0; font-size:14px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">⚙️ Options d'impression du rapport PDF</h3>
+                
+                <!-- MODE D'EXPORTATION : GLOBAL OU PAR ENTREPRISE -->
+                <div style="background:#fff; border:1px solid #b4cff7; padding:10px; border-radius:6px; margin-bottom:15px;">
+                    <span style="font-size:13px; font-weight:bold; color:#1a73e8;">🎯 Mode d'export PDF :</span>
+                    <div style="display:flex; gap:20px; margin-top:6px; flex-wrap:wrap;">
+                        <label class="filter-checkbox-label">
+                            <input type="radio" name="radioModeExportPdf" value="global" checked onchange="basculerModeExportPdf(this.value)">
+                            📄 PDF Global (Toutes entreprises)
+                        </label>
+                        <label class="filter-checkbox-label">
+                            <input type="radio" name="radioModeExportPdf" value="entreprise" onchange="basculerModeExportPdf(this.value)">
+                            🏢 PDF Séparés par Entreprise (Filtrés)
+                        </label>
+                    </div>
+
+                    <!-- LISTE DE SÉLECTION DES ENTREPRISES À IMPRIMER -->
+                    <div id="blocSelectionEntreprisesPdf" style="display:none; margin-top:10px; border-top:1px dashed #ccc; padding-top:8px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span style="font-size:12px; font-weight:bold;">Cochez les entreprises à exporter :</span>
+                            <div style="display:flex; gap:6px;">
+                                <button type="button" class="btn btn-small" style="padding:2px 8px; font-size:11px;" onclick="cocherToutesEntreprisesExport(true)">Tout cocher</button>
+                                <button type="button" class="btn btn-small" style="padding:2px 8px; font-size:11px; background:#5f6368;" onclick="cocherToutesEntreprisesExport(false)">Tout décocher</button>
+                            </div>
+                        </div>
+                        <div id="listeCheckboxesEntreprisesExport" style="display:flex; flex-wrap:wrap; gap:12px; background:#f8f9fa; padding:8px; border-radius:6px; border:1px solid #dadce0;"></div>
+                    </div>
+                </div>
+
                 <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom: 10px;">
+                    <label class="filter-checkbox-label"><input type="checkbox" id="printOptSynthese" checked> 📝 Imprimer la synthèse &amp; alertes retards (Page 1)</label>
                     <label class="filter-checkbox-label"><input type="checkbox" id="printOptPlans" checked> 🗺️ Imprimer les plans</label>
                     <label class="filter-checkbox-label"><input type="checkbox" id="printOptNotes" checked> 📝 Imprimer les notes et croquis</label>
-                    <label class="filter-checkbox-label"><input type="checkbox" id="printOptGantt" checked> 📅 Imprimer le Gantt</label>
                     <label class="filter-checkbox-label"><input type="checkbox" id="printOptTableau" checked> 📊 Imprimer le tableau</label>
                     <label class="filter-checkbox-label"><input type="checkbox" id="printOptPhotos" checked> 📷 Imprimer le reportage photo</label>
                 </div>
@@ -505,28 +517,6 @@
 
             <button type="button" class="btn btn-success" style="margin-bottom: 20px; width: auto;" onclick="ajouterNouvelleNote()">+ Nouvelle note</button>
             <div id="listeNotesContainer"></div>
-        </div>
-
-        <div id="tabGantt" class="tab-content">
-            <h2>📅 Planning prévisionnel Gantt (MS Project)</h2>
-            <p style="font-size: 14px; color:#5f6368;">Importez le fichier de planification `.xml` généré depuis MS Project pour afficher et mettre à jour l'avancement chronologique.</p>
-
-            <div style="background:#f8f9fa; border:1px solid #dadce0; padding:15px; border-radius:8px; margin-bottom:20px; display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                <button type="button" class="btn btn-small" style="background:#24292e; margin:0;" onclick="document.getElementById('importGanttXmlInput').click()">📥 Importer XML MS Project</button>
-                <input type="file" id="importGanttXmlInput" accept=".xml" style="display:none;" onchange="importerFichierGanttXml(event)">
-                <span id="ganttStatusLabel" style="font-size:13px; color:#666; font-style:italic;">Aucun planning chargé.</span>
-            </div>
-
-            <div id="ganttChartArea" style="display:none;">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; gap: 8px; flex-wrap: wrap;">
-                    <h3 style="margin:0;">Frise Chronologique des Tâches</h3>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn btn-small btn-danger" onclick="supprimerPlanningChantierActuelDefinitif()" style="margin:0;">Effacer ce planning 🗑️</button>
-                        <button class="btn btn-small btn-success" onclick="sauvegarderAvancementsGanttEnLocal()" style="margin:0;">💾 Sauvegarder les avancements</button>
-                    </div>
-                </div>
-                <div id="ganttVisualContainer" class="gantt-chart-container"></div>
-            </div>
         </div>
     </div>
 </div>
@@ -627,7 +617,7 @@
     </div>
 
     <div style="margin-bottom: 25px; padding-top: 10px;">
-        <h1 style="margin: 0 0 20px 0; font-size: 14pt; text-align: center; font-weight: bold; letter-spacing: 0.5px;">RAPPORT DE VISITE</h1>
+        <h1 id="pdfTitrePrincipalDoc" style="margin: 0 0 20px 0; font-size: 14pt; text-align: center; font-weight: bold; letter-spacing: 0.5px;">RAPPORT DE VISITE</h1>
         <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: #fafafa; border: 1px solid #ddd;">
             <tr>
                 <td style="width: 50%; padding: 12px; border: none; font-size: 11pt; line-height: 1.5; vertical-align: top;">
@@ -640,6 +630,12 @@
                 </td>
             </tr>
         </table>
+    </div>
+
+    <!-- ZONE DE SYNTHÈSE PDF PAGE 1 -->
+    <div id="pdfSyntheseBlock" style="margin-bottom: 25px; display:none;">
+        <h3 style="font-size: 11pt; font-weight: bold; margin-bottom: 8px; color: #1a73e8;">Synthèse des évolutions &amp; Alertes retards</h3>
+        <div id="pdfSyntheseTexteContent" style="font-size: 10pt; color: #333; line-height: 1.5; background: #f8f9fa; border: 1px solid #dadce0; border-radius: 6px; padding: 12px; white-space: pre-wrap;">---</div>
     </div>
 
     <div style="margin-bottom: 25px;">
@@ -658,14 +654,9 @@
         <div id="pdfNotesContainer" style="margin-top:15px;"></div>
     </div>
 
-    <div id="pdfGanttSection" class="page-break" style="display:none;">
-        <h2 id="pdfHeaderGantt">3. Planning de réalisation (MS Project)</h2>
-        <div id="pdfGanttContainer" style="margin-top:15px; border-top:1px solid #000;"></div>
-    </div>
-
     <div id="pdfTableauSection">
         <div class="page-break"></div>
-        <h2 id="pdfTitreRemarques">4. Tableau des constatations et remarques</h2>
+        <h2 id="pdfTitreRemarques">3. Tableau des constatations et remarques</h2>
         <table class="pdf-table">
             <thead>
                 <tr>
@@ -681,7 +672,7 @@
 
     <div id="pdfPhotosSection">
         <div class="page-break"></div>
-        <h2 id="pdfTitrePhotos">5. Reportage photographique</h2>
+        <h2 id="pdfTitrePhotos">4. Reportage photographique</h2>
         <div id="pdfPhotoPagesContainer"></div>
     </div>
 </div>
@@ -692,7 +683,7 @@
     let niveauxTemporaires = []; 
     let planEnCoursDeChargementBase64 = ""; 
     let planDirectTerrainBase64 = "";
-    let photosPuceTemporairesTableau = []; // Stocke désormais des objets { src, archivee: false }
+    let photosPuceTemporairesTableau = []; // Stocke des objets { src, archivee: false }
     let tachesPuceTemporairesTableau = [];
     let indexTacheEnEdition = null; // Stocke l'index de la tâche en cours d'édition
     let zonesPuceTemporairesTableau = []; // Zones associées à la puce en cours d'édition
@@ -701,7 +692,6 @@
     let indexNiveauActuel = 0; 
     let puceSelectionneeId = null;
     let statutPuceTemporaire = "active"; 
-    let summaryTasksRepliees = {};
 
     // Variables pour le mode de dessin de zone sur le plan
     let modeDessinZoneActif = null; // null, 'rect', 'poly'
@@ -963,6 +953,111 @@
         return p.taches.some(t => evaluerRetardTache(t).enRetard);
     }
 
+    /* -------------------------------------------------------------
+       LOGIQUE D'EXPORTATION ET IMPRESSION PDF PAR ENTREPRISE
+    ------------------------------------------------------------- */
+    function basculerModeExportPdf(mode) {
+        const blocEntreprises = document.getElementById('blocSelectionEntreprisesPdf');
+        if (mode === 'entreprise') {
+            blocEntreprises.style.display = 'block';
+            rafraichirCheckboxesEntreprisesExport();
+        } else {
+            blocEntreprises.style.display = 'none';
+        }
+    }
+
+    function rafraichirCheckboxesEntreprisesExport() {
+        const ctn = document.getElementById('listeCheckboxesEntreprisesExport');
+        if (!ctn || !chantierActuel) return;
+
+        const entreprises = chantierActuel.entreprises || [];
+        if (entreprises.length === 0) {
+            ctn.innerHTML = "<span style='font-size:12px; color:#888;'>Aucune entreprise enregistrée sur ce chantier.</span>";
+            return;
+        }
+
+        ctn.innerHTML = entreprises.map((e, idx) => `
+            <label class="filter-checkbox-label" style="font-size:12px;">
+                <input type="checkbox" class="chk-entreprise-export" value="${e}" checked>
+                🏢 ${e}
+            </label>
+        `).join('');
+    }
+
+    function cocherToutesEntreprisesExport(cocher) {
+        document.querySelectorAll('.chk-entreprise-export').forEach(chk => chk.checked = cocher);
+    }
+
+    function puceConcerneEntreprise(p, nomEntreprise) {
+        if (!nomEntreprise) return true;
+        // Vérification dans les entreprises globales de la puce
+        if (p.entreprises && p.entreprises.includes(nomEntreprise)) return true;
+        // Vérification dans les tâches associées
+        if (p.taches && p.taches.some(t => t.entreprise === nomEntreprise)) return true;
+        return false;
+    }
+
+    /* -------------------------------------------------------------
+       ALGORITHME DE GÉNÉRATION AUTOMATIQUE DE LA SYNTHÈSE DES ÉVOLUTIONS
+    ------------------------------------------------------------- */
+    function genererSyntheseEvolutionsChantier(entrepriseFiltre = null) {
+        if (!chantierActuel) return "";
+
+        let lignesSynthese = [];
+        let puces = chantierActuel.puces || [];
+
+        if (entrepriseFiltre) {
+            puces = puces.filter(p => puceConcerneEntreprise(p, entrepriseFiltre));
+        }
+
+        // 1. Analyse des puces globales et statuts
+        const actives = puces.filter(p => normaliserStatutPuce(p) === "active");
+        const enCours = puces.filter(p => normaliserStatutPuce(p) === "en_cours");
+        const levees = puces.filter(p => normaliserStatutPuce(p) === "resolue");
+
+        const entText = entrepriseFiltre ? ` pour le lot ${entrepriseFiltre}` : '';
+        lignesSynthese.push(`• Bilan des constatations${entText} : ${puces.length} point(s) enregistré(s) au total (${actives.length} actif(s), ${enCours.length} en cours, ${levees.length} levé(s)).`);
+
+        // 2. Détection dynamique des actions en retard
+        let retardsDetail = [];
+        puces.forEach(p => {
+            const st = normaliserStatutPuce(p);
+            if (st !== "resolue" && p.taches && p.taches.length > 0) {
+                p.taches.forEach(t => {
+                    if (!entrepriseFiltre || t.entreprise === entrepriseFiltre) {
+                        const evalR = evaluerRetardTache(t);
+                        if (evalR.enRetard) {
+                            retardsDetail.push(`Puce N°${p.numero} (${p.niveauNom}${p.zonePrecis ? ' - ' + p.zonePrecis : ''}) : "${t.description}" [Lot ${t.entreprise || 'Non assigné'}] - ${evalR.joursRetard} jour(s) de retard (Échéance: ${t.echeance.split("-").reverse().join("/")})`);
+                        }
+                    }
+                });
+            }
+        });
+
+        if (retardsDetail.length > 0) {
+            lignesSynthese.push(`\n🚨 ALERTES RETARDS (${retardsDetail.length} action(s) en dépassement d'échéance) :`);
+            retardsDetail.forEach(r => lignesSynthese.push(`  - ${r}`));
+        } else {
+            lignesSynthese.push(`\n✅ Aucune action en retard d'échéance à ce jour.`);
+        }
+
+        return lignesSynthese.join('\n');
+    }
+
+    function regenererSyntheseEvolutionsTexte() {
+        if (!chantierActuel) return;
+        const texteAuto = genererSyntheseEvolutionsChantier();
+        chantierActuel.syntheseManuel = texteAuto;
+        document.getElementById('syntheseEvolutionsInput').value = texteAuto;
+        notifierModificationLocale();
+    }
+
+    function enregistrerModifTexteSyntheseManuelle() {
+        if (!chantierActuel) return;
+        chantierActuel.syntheseManuel = document.getElementById('syntheseEvolutionsInput').value;
+        notifierModificationLocale();
+    }
+
     function convertirTexteEnBase64Utf8(texteData) {
         const bytes = new TextEncoder().encode(texteData);
         let binStr = "";
@@ -1195,8 +1290,7 @@
                 driveUrl: chantierActuel.driveUrl || DEFAULT_GOOGLE_DRIVE_URL,
                 folderName: nomDossier,
                 niveaux: chantierActuel.niveaux || [],
-                entreprises: chantierActuel.entreprises || [],
-                planning: chantierActuel.planning || []
+                entreprises: chantierActuel.entreprises || []
             };
 
             const base64Data = convertirTexteEnBase64Utf8(JSON.stringify(configSeuleChantier, null, 2));
@@ -1547,193 +1641,6 @@
         alert(`🎯 Succès ! ${pucesAInjecter.length} puces et ${notesAInjecter.length} note(s) ont été fusionnées sur vos plans.`);
     }
 
-    function importerFichierGanttXml(event) {
-        const file = event.target.files[0];
-        if(!file || !chantierActuel) return;
-
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-            try {
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(e.target.result, "text/xml");
-                const tasksNodes = xmlDoc.getElementsByTagName("Task");
-
-                let listeTachesParsees = [];
-
-                for(let i = 0; i < tasksNodes.length; i++) {
-                    const task = tasksNodes[i];
-                    const nameNode = task.getElementsByTagName("Name")[0];
-                    if(!nameNode) continue;
-
-                    const name = nameNode.textContent;
-                    const uid = task.getElementsByTagName("UID")[0]?.textContent || i;
-                    const start = task.getElementsByTagName("Start")[0]?.textContent || "";
-                    const finish = task.getElementsByTagName("Finish")[0]?.textContent || "";
-                    const percent = task.getElementsByTagName("PercentComplete")[0]?.textContent || "0";
-                    const isSummary = task.getElementsByTagName("Summary")[0]?.textContent === "1" || task.getElementsByTagName("Summary")[0]?.textContent === "true";
-                    const outlineLevel = parseInt(task.getElementsByTagName("OutlineLevel")[0]?.textContent || "1");
-
-                    const cleanStart = start.split("T")[0];
-                    const cleanFinish = finish.split("T")[0];
-
-                    listeTachesParsees.push({
-                        uid, name, start: cleanStart, finish: cleanFinish, percent: parseInt(percent), isSummary, outlineLevel
-                    });
-                }
-
-                if(listeTachesParsees.length === 0) {
-                    return alert("⚠️ Aucune tâche valide trouvée dans ce fichier XML MS Project.");
-                }
-
-                chantierActuel.planning = listeTachesParsees;
-                const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
-                if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-
-                await sauvegarderUnChantierDansIndexedDB(chantierActuel);
-
-                summaryTasksRepliees = {};
-
-                dessinerPlanningGantt();
-                notifierModificationLocale();
-                alert(`📅 Succès ! Planning importé : ${listeTachesParsees.length} tâches chargées.`);
-            } catch(err) {
-                alert("❌ Erreur de lecture du fichier XML. Assurez-vous d'avoir enregistré sous le format 'XML Microsoft Project' (.xml).");
-            }
-        };
-        reader.readAsText(file);
-        event.target.value = "";
-    }
-
-    function basculerAffichageDossierGantt(uid) {
-        summaryTasksRepliees[uid] = !summaryTasksRepliees[uid];
-        dessinerPlanningGantt();
-    }
-
-    function dessinerPlanningGantt() {
-        const visualCtn = document.getElementById('ganttVisualContainer');
-        const statusLabel = document.getElementById('ganttStatusLabel');
-        const ganttArea = document.getElementById('ganttChartArea');
-
-        if(!chantierActuel || !chantierActuel.planning || chantierActuel.planning.length === 0) {
-            visualCtn.innerHTML = "";
-            statusLabel.innerText = "Aucun planning chargé.";
-            ganttArea.style.display = "none";
-            return;
-        }
-
-        statusLabel.innerText = `Planning opérationnel (${chantierActuel.planning.length} tâches)`;
-        ganttArea.style.display = "block";
-
-        const dateReferenceDuJour = new Date("2026-07-15");
-
-        let html = "";
-        let ignorerJusqu_a_OutlineLevel = 999;
-
-        chantierActuel.planning.forEach((t, localIdx) => {
-            let estMasqueParUnParent = false;
-            if (t.outlineLevel > ignorerJusqu_a_OutlineLevel) {
-                estMasqueParUnParent = true;
-            } else {
-                ignorerJusqu_a_OutlineLevel = 999; 
-            }
-
-            if (t.isSummary && summaryTasksRepliees[t.uid]) {
-                ignorerJusqu_a_OutlineLevel = t.outlineLevel;
-            }
-
-            const indent = (t.outlineLevel - 1) * 15;
-            const textStyle = t.isSummary ? "font-weight: bold; color: #1a73e8;" : "font-weight: normal;";
-            const formatStart = t.start ? t.start.split("-").reverse().join("/") : "N/A";
-            const formatFinish = t.finish ? t.finish.split("-").reverse().join("/") : "N/A";
-
-            let enRetard = false;
-            if (!t.isSummary && t.finish && t.percent < 100) {
-                const dateFinTache = new Date(t.finish);
-                if (dateFinTache < dateReferenceDuJour) {
-                    enRetard = true;
-                }
-            }
-
-            let barStyleClass = "gantt-progress-bar";
-            if (t.isSummary) barStyleClass += " summary";
-            else if (enRetard) barStyleClass += " late";
-
-            const estReplie = summaryTasksRepliees[t.uid] || false;
-            const iconeDossier = t.isSummary ? (estReplie ? '📁 ➕' : '📂 ➖') : '📋';
-
-            html += `
-                <div class="gantt-row ${estMasqueParUnParent ? 'collapsed-child' : ''}">
-                    <div class="gantt-row-main">
-                        <div class="gantt-col-name ${t.isSummary ? 'summary-clickable' : ''}" style="padding-left: ${indent}px; ${textStyle}" ${t.isSummary ? `onclick="basculerAffichageDossierGantt('${t.uid}')"` : ''}>
-                            ${iconeDossier} ${t.name} ${enRetard ? '<span class="status-badge late-task">🚨 EN RETARD</span>' : ''}
-                        </div>
-                        <div class="gantt-col-bar-container">
-                            <div class="gantt-progress-track">
-                                <div id="progressBarVisual-${localIdx}" class="${barStyleClass}" style="width: ${t.percent}%"></div>
-                            </div>
-                            <span class="gantt-dates" style="${t.isSummary ? 'font-weight:bold;' : ''}">
-                                <span id="progressTextPercent-${localIdx}">${t.percent}</span>% (${formatStart} au ${formatFinish})
-                            </span>
-                        </div>
-                    </div>
-                    ${!t.isSummary ? `
-                    <div class="gantt-pilotage-control">
-                        <span style="font-size:12px; color:#5f6368; font-weight:600;">Ajuster avancement :</span>
-                        <input type="range" class="gantt-slider" min="0" max="100" value="${t.percent}" oninput="ajusterAvancementTacheDepuisLeTerrain(this.value, ${localIdx})">
-                        <span id="progressBadgeLive-${localIdx}" class="gantt-badge-val">${t.percent}%</span>
-                    </div>
-                    ` : ''}
-                </div>
-            `;
-        });
-        visualCtn.innerHTML = html;
-    }
-
-    function ajusterAvancementTacheDepuisLeTerrain(nouvelleValeur, indexTableau) {
-        const valEntiere = parseInt(nouvelleValeur);
-        chantierActuel.planning[indexTableau].percent = valEntiere;
-
-        document.getElementById(`progressBarVisual-${indexTableau}`).style.width = valEntiere + "%";
-        document.getElementById(`progressTextPercent-${indexTableau}`).innerText = valEntiere;
-        document.getElementById(`progressBadgeLive-${indexTableau}`).innerText = valEntiere + "%";
-
-        notifierModificationLocale();
-    }
-
-    async function sauvegarderAvancementsGanttEnLocal() {
-        if(!chantierActuel) return;
-        const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
-        if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-
-        await sauvegarderUnChantierDansIndexedDB(chantierActuel);
-
-        dessinerPlanningGantt();
-        notifierModificationLocale();
-        alert("💾 Vos modifications d'avancement de planning ont été enregistrées avec succès !");
-    }
-
-    async function supprimerPlanningChantierActuelDefinitif() {
-        if(!chantierActuel) return;
-
-        const conf1 = confirm(`Êtes-vous sûr de vouloir supprimer TOUT le planning associé au chantier "${chantierActuel.nom}" ?`);
-        if(conf1) {
-            const conf2 = confirm(`⚠️ CETTE ACTION EST IRREVOCABLE : Toutes les modifications d'avancement de cette frise chronologique seront perdues. Confirmer la purge ?`);
-            if(conf2) {
-                chantierActuel.planning = []; 
-                summaryTasksRepliees = {};    
-
-                const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
-                if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
-
-                await sauvegarderUnChantierDansIndexedDB(chantierActuel);
-
-                dessinerPlanningGantt(); 
-                notifierModificationLocale();
-                alert("🗑️ Le planning a été entièrement effacé de ce chantier ! Vous pouvez à présent charger un nouveau fichier .xml propre.");
-            }
-        }
-    }
-
     function chargerImagePlanNiveauDirectTerrain(event) {
         const file = event.target.files[0];
         if (file) {
@@ -1924,7 +1831,7 @@
             localisation: document.getElementById('localisation').value.trim(),
             driveUrl: driveUrlSaisi || DEFAULT_GOOGLE_DRIVE_URL,
             folderName: obtenirNomDossierChantier(nouveauNom),
-            niveaux: niveauxTemporaires, entreprises: entreprisesTemporaires, puces: [], planning: [], notes: []
+            niveaux: niveauxTemporaires, entreprises: entreprisesTemporaires, puces: [], notes: []
         };
 
         listeTousChantiers.push(nouveauChantier);
@@ -1956,7 +1863,7 @@
 
         const confirmation1 = confirm(`Êtes-vous sûr de vouloir supprimer définitivement le chantier "${nomChantier}" de cet appareil ?`);
         if (confirmation1) {
-            const confirmation2 = confirm(`⚠️ ATTENTION : Cette action effacera toutes les puces, photos et plannings associés à ce chantier de manière irréversible. Confirmer ?`);
+            const confirmation2 = confirm(`⚠️ ATTENTION : Cette action effacera toutes les puces et photos associées à ce chantier de manière irréversible. Confirmer ?`);
             if (confirmation2) {
                 listeTousChantiers = listeTousChantiers.filter(c => c.id != idTarget);
 
@@ -1981,13 +1888,16 @@
         if(!chantierActuel.puces) chantierActuel.puces = [];
         if(!chantierActuel.niveaux) chantierActuel.niveaux = [];
         if(!chantierActuel.entreprises) chantierActuel.entreprises = [];
-        if(!chantierActuel.planning) chantierActuel.planning = [];
 
         document.getElementById('viewNom').innerText = chantierActuel.nom || "Sans nom";
         document.getElementById('viewRef').innerText = chantierActuel.reference || "N/A";
         document.getElementById('viewLoc').innerText = chantierActuel.localisation || "N/A";
         document.getElementById('viewDriveUrlInput').value = chantierActuel.driveUrl || DEFAULT_GOOGLE_DRIVE_URL;
         document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge">${e}</span>`).join('') || "Aucune entreprise";
+
+        // Initialisation du texte de synthèse automatique s'il n'existe pas encore
+        const texteAutoSynthese = chantierActuel.syntheseManuel || genererSyntheseEvolutionsChantier();
+        document.getElementById('syntheseEvolutionsInput').value = texteAutoSynthese;
 
         if (chantierActuel.niveaux.length > 0) {
             document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="${i}">${n.nom}</option>`).join('');
@@ -2002,20 +1912,22 @@
         document.getElementById('chkAfficherEnCours').checked = true;
         document.getElementById('chkAfficherLevees').checked = true;
 
+        document.getElementById('printOptSynthese').checked = true;
         document.getElementById('printOptPlans').checked = true;
         document.getElementById('printOptNotes').checked = true;
-        document.getElementById('printOptGantt').checked = true;
         document.getElementById('printOptTableau').checked = true;
         document.getElementById('printOptPhotos').checked = true;
         document.getElementById('printOptRemarquesActives').checked = true;
         document.getElementById('printOptRemarquesEnCours').checked = true;
         document.getElementById('printOptRemarquesLevees').checked = true;
 
-        summaryTasksRepliees = {};
+        // Réinitialisation du mode d'export
+        const radioGlobal = document.querySelector('input[name="radioModeExportPdf"][value="global"]');
+        if (radioGlobal) radioGlobal.checked = true;
+        basculerModeExportPdf('global');
 
         switchTab('tabTerrain');
         rafraichirVueNotes();
-        dessinerPlanningGantt();
         changerPage('pageChantierDetails');
     }
 
@@ -3118,13 +3030,49 @@
 
     function fermerChantierActuel() { chantierActuel = null; changerPage('pageAccueil'); }
 
+    /* -------------------------------------------------------------
+       FONCTION PRINCIPALE D'IMPRESSION ET EXPORT PDF PAR ENTREPRISE
+    ------------------------------------------------------------- */
     function declencherImpression() {
         fermerMenuActions();
         if (!chantierActuel) return;
 
+        const modeExport = document.querySelector('input[name="radioModeExportPdf"]:checked')?.value || 'global';
+
+        if (modeExport === 'entreprise') {
+            const checkboxesCochees = Array.from(document.querySelectorAll('.chk-entreprise-export:checked')).map(c => c.value);
+            if (checkboxesCochees.length === 0) {
+                return alert("⚠️ Veuillez cocher au moins une entreprise à exporter.");
+            }
+
+            // Lancement séquentiel des impressions par entreprise
+            lancerImpressionSequentielleEntreprises(checkboxesCochees, 0);
+        } else {
+            // Mode global unique
+            genererEtImprimerDocPdf(null);
+        }
+    }
+
+    function lancerImpressionSequentielleEntreprises(listeEntreprises, indexCourant) {
+        if (indexCourant >= listeEntreprises.length) return;
+
+        const nomEnt = listeEntreprises[indexCourant];
+        genererEtImprimerDocPdf(nomEnt);
+
+        // Si plusieurs entreprises sélectionnées, on attend la fermeture de la fenêtre avant d'enchaîner
+        if (indexCourant + 1 < listeEntreprises.length) {
+            setTimeout(() => {
+                if (confirm(`▶ Passer à l'impression de l'entreprise suivante (${listeEntreprises[indexCourant + 1]}) ?`)) {
+                    lancerImpressionSequentielleEntreprises(listeEntreprises, indexCourant + 1);
+                }
+            }, 800);
+        }
+    }
+
+    function genererEtImprimerDocPdf(entrepriseFiltre = null) {
+        const imprimerSynthese = document.getElementById('printOptSynthese').checked;
         const imprimerPlans = document.getElementById('printOptPlans').checked;
         const imprimerNotes = document.getElementById('printOptNotes').checked;
-        const imprimerGantt = document.getElementById('printOptGantt').checked;
         const imprimerTableau = document.getElementById('printOptTableau').checked;
         const imprimerPhotos = document.getElementById('printOptPhotos').checked;
 
@@ -3132,14 +3080,38 @@
         const inclureEnCours = document.getElementById('printOptRemarquesEnCours').checked;
         const inclureLevees = document.getElementById('printOptRemarquesLevees').checked;
 
+        // Mise à jour du titre du document
+        const elTitrePrincipal = document.getElementById('pdfTitrePrincipalDoc');
+        if (entrepriseFiltre) {
+            elTitrePrincipal.innerText = `RAPPORT DE VISITE — DESTINÉ À : ${entrepriseFiltre.toUpperCase()}`;
+        } else {
+            elTitrePrincipal.innerText = "RAPPORT DE VISITE";
+        }
+
         document.querySelectorAll('#printTemplate #pdfNomChantier').forEach(el => el.innerText = chantierActuel.nom);
         document.querySelectorAll('#printTemplate #pdfRefChantier').forEach(el => el.innerText = chantierActuel.reference);
         document.querySelectorAll('#printTemplate #pdfLocChantier').forEach(el => el.innerText = chantierActuel.localisation);
         document.querySelectorAll('#printTemplate #pdfDateVisite').forEach(el => el.innerText = new Date().toLocaleDateString('fr-FR'));
-        document.getElementById('pdfEntreprises').innerText = (chantierActuel.entreprises || []).join(', ') || "Aucune entreprise spécifiée";
+        
+        if (entrepriseFiltre) {
+            document.getElementById('pdfEntreprises').innerText = `Lot ciblé : ${entrepriseFiltre}`;
+        } else {
+            document.getElementById('pdfEntreprises').innerText = (chantierActuel.entreprises || []).join(', ') || "Aucune entreprise spécifiée";
+        }
+
+        // Injection du bloc de synthèse sur la page 1 du PDF
+        const blockPdfSynthese = document.getElementById('pdfSyntheseBlock');
+        if (imprimerSynthese) {
+            blockPdfSynthese.style.display = "block";
+            const texteSyntheseAffiche = entrepriseFiltre ? genererSyntheseEvolutionsChantier(entrepriseFiltre) : (document.getElementById('syntheseEvolutionsInput').value || genererSyntheseEvolutionsChantier());
+            document.getElementById('pdfSyntheseTexteContent').innerText = texteSyntheseAffiche;
+        } else {
+            blockPdfSynthese.style.display = "none";
+        }
 
         let compteurChapitreIndex = 1;
 
+        // SECTION PLANS DE SITUATION
         const blockPlans = document.getElementById('pdfPlansSection');
         if (imprimerPlans && chantierActuel.niveaux) {
             blockPlans.style.display = "block";
@@ -3179,6 +3151,9 @@
                 if(chantierActuel.puces) {
                     chantierActuel.puces.forEach(p => {
                         if (p.niveauNom === niv.nom) {
+                            // Filtre par entreprise si spécifiée
+                            if (entrepriseFiltre && !puceConcerneEntreprise(p, entrepriseFiltre)) return;
+
                             const st = normaliserStatutPuce(p);
                             if (!inclureActives && st === "active") return;
                             if (!inclureEnCours && st === "en_cours") return;
@@ -3232,9 +3207,17 @@
             blockPlans.style.display = "none";
         }
 
+        // SECTION NOTES ET CROQUIS
         const pdfNotesSection = document.getElementById('pdfNotesSection');
         const pdfNotesContainer = document.getElementById('pdfNotesContainer');
-        const notesImprimables = (chantierActuel.notes || []).filter(n => n.inclurePdf);
+        const notesImprimables = (chantierActuel.notes || []).filter(n => {
+            if (!n.inclurePdf) return false;
+            if (entrepriseFiltre && n.puceLieeId) {
+                const puceLiee = (chantierActuel.puces || []).find(p => p.id == n.puceLieeId);
+                if (puceLiee && !puceConcerneEntreprise(puceLiee, entrepriseFiltre)) return false;
+            }
+            return true;
+        });
 
         if (imprimerNotes && notesImprimables.length > 0) {
             pdfNotesSection.style.display = "block";
@@ -3265,62 +3248,7 @@
             pdfNotesSection.style.display = "none";
         }
 
-        const pdfGanttSection = document.getElementById('pdfGanttSection');
-        if (imprimerGantt && chantierActuel.planning && chantierActuel.planning.length > 0) {
-            pdfGanttSection.style.display = "block";
-            document.getElementById('pdfHeaderGantt').innerText = `${compteurChapitreIndex}. Planning de réalisation (MS Project)`;
-            compteurChapitreIndex++;
-
-            const pdfGanttContainer = document.getElementById('pdfGanttContainer');
-            pdfGanttContainer.innerHTML = "";
-            let ganttHtml = "";
-            const dateReferenceDuJour = new Date("2026-07-15");
-
-            let ignorerJusqu_a_OutlineLevel = 999;
-
-            chantierActuel.planning.forEach(t => {
-                if (t.outlineLevel > ignorerJusqu_a_OutlineLevel) return;
-                else ignorerJusqu_a_OutlineLevel = 999;
-
-                if (t.isSummary && summaryTasksRepliees[t.uid]) {
-                    ignorerJusqu_a_OutlineLevel = t.outlineLevel;
-                }
-
-                const indent = (t.outlineLevel - 1) * 15;
-                const weight = t.isSummary ? "bold" : "normal";
-                const formatStart = t.start ? t.start.split("-").reverse().join("/") : "N/A";
-                const formatFinish = t.finish ? t.finish.split("-").reverse().join("/") : "N/A";
-
-                let enRetard = false;
-                if (!t.isSummary && t.finish && t.percent < 100) {
-                    const dateFinTache = new Date(t.finish);
-                    if (dateFinTache < dateReferenceDuJour) enRetard = true;
-                }
-
-                let pBarClass = "gantt-print-bar";
-                if (enRetard) pBarClass += " late";
-
-                ganttHtml += `
-                    <div class="gantt-print-row">
-                        <div class="gantt-print-text" style="padding-left:${indent}px; font-weight:${weight};">
-                            ${t.isSummary ? '📁' : '📋'} ${t.name} ${enRetard ? '(🚨 RETARD)' : ''}
-                        </div>
-                        <div class="gantt-print-bar-box">
-                            <div class="gantt-print-track">
-                                <div class="${pBarClass}" style="width:${t.percent}%;"></div>
-                            </div>
-                            <span style="font-size:8.5pt; font-weight:${weight}; white-space:nowrap;">
-                                ${t.percent}% (${formatStart} - ${formatFinish})
-                            </span>
-                        </div>
-                    </div>
-                `;
-            });
-            pdfGanttContainer.innerHTML = ganttHtml;
-        } else {
-            pdfGanttSection.style.display = "none";
-        }
-
+        // SECTION TABLEAU DES REMARQUES
         const blockTableau = document.getElementById('pdfTableauSection');
         if (imprimerTableau && chantierActuel.puces) {
             blockTableau.style.display = "block";
@@ -3331,6 +3259,8 @@
             const pucesTriees = [...chantierActuel.puces].sort((a,b) => a.numero - b.numero);
 
             let targetPuces = pucesTriees.filter(p => {
+                if (entrepriseFiltre && !puceConcerneEntreprise(p, entrepriseFiltre)) return false;
+
                 const st = normaliserStatutPuce(p);
                 if (!inclureActives && st === "active") return false;
                 if (!inclureEnCours && st === "en_cours") return false;
@@ -3339,7 +3269,7 @@
             });
 
             if(targetPuces.length === 0) {
-                pdfCorpsTableau.innerHTML = `<tr><td colspan="4" style="text-align:center;">Aucune réserve filtrée à imprimer.</td></tr>`;
+                pdfCorpsTableau.innerHTML = `<tr><td colspan="4" style="text-align:center;">Aucune réserve filtrée à imprimer pour cette sélection.</td></tr>`;
             } else {
                 targetPuces.forEach(p => {
                     const tr = document.createElement('tr');
@@ -3357,17 +3287,21 @@
 
                     let pdfTachesHtml = "";
                     if (p.taches && p.taches.length > 0) {
-                        pdfTachesHtml = `<div style="margin-bottom:4px;">` + p.taches.map(t => {
-                            const evalR = evaluerRetardTache(t);
-                            const bRetard = evalR.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalR.joursRetard}j)</span>` : '';
-                            const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
+                        const tachesFiltreesPdf = entrepriseFiltre ? p.taches.filter(t => !t.entreprise || t.entreprise === entrepriseFiltre) : p.taches;
+                        
+                        if (tachesFiltreesPdf.length > 0) {
+                            pdfTachesHtml = `<div style="margin-bottom:4px;">` + tachesFiltreesPdf.map(t => {
+                                const evalR = evaluerRetardTache(t);
+                                const bRetard = evalR.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalR.joursRetard}j)</span>` : '';
+                                const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
 
-                            let labelSubT = '🔴';
-                            if (t.statut === "en_cours") labelSubT = '🟠';
-                            else if (t.statut === "resolue" || t.faite) labelSubT = '🟢';
+                                let labelSubT = '🔴';
+                                if (t.statut === "en_cours") labelSubT = '🟠';
+                                else if (t.statut === "resolue" || t.faite) labelSubT = '🟢';
 
-                            return `<div style="font-size:9pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
-                        }).join('') + `</div>`;
+                                return `<div style="font-size:9pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
+                            }).join('') + `</div>`;
+                        }
                     }
 
                     const gyroIconePdf = puceAUnRetardAction(p) ? ' 🚨' : '';
@@ -3380,7 +3314,7 @@
             blockTableau.style.display = "none";
         }
 
-        // REPORTAGE PHOTO EN FIN DE RAPPORT (EXCLUSION DES PHOTOS ARCHIVÉES)
+        // SECTION REPORTAGE PHOTO (EXCLUSION DES PHOTOS ARCHIVÉES)
         const blockPhotos = document.getElementById('pdfPhotosSection');
         if (imprimerPhotos && chantierActuel.puces) {
             blockPhotos.style.display = "block";
@@ -3392,6 +3326,8 @@
             let collectionToutesPhotosImprimables = [];
 
             pucesTriees.forEach(p => {
+                if (entrepriseFiltre && !puceConcerneEntreprise(p, entrepriseFiltre)) return;
+
                 if (p.photo && (!p.photos || p.photos.length === 0)) { p.photos = [normaliserPhotoPuce(p.photo)]; delete p.photo; }
                 const st = normaliserStatutPuce(p);
 
@@ -3416,7 +3352,7 @@
             });
 
             if (collectionToutesPhotosImprimables.length === 0) {
-                photoPagesContainer.innerHTML = "<p style='font-style:italic;'>Aucune photographie filtrée à imprimer.</p>";
+                photoPagesContainer.innerHTML = "<p style='font-style:italic;'>Aucune photographie filtrée à imprimer pour cette sélection.</p>";
             } else {
                 const PHOTOS_PAR_PAGE = 6; const nbPages = Math.ceil(collectionToutesPhotosImprimables.length / PHOTOS_PAR_PAGE);
                 for (let pageIdx = 0; pageIdx < nbPages; pageIdx++) {
@@ -3443,6 +3379,7 @@
         } else {
             blockPhotos.style.display = "none";
         }
+
         setTimeout(() => { window.print(); }, 300);
     }
 </script>
