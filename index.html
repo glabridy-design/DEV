@@ -3111,98 +3111,116 @@
 
         let compteurChapitreIndex = 1;
 
-        // SECTION PLANS DE SITUATION
+        // SECTION PLANS DE SITUATION (MASQUAGE DES PLANS SANS PUCES DE L'ENTREPRISE EN MODE FILTRÉ)
         const blockPlans = document.getElementById('pdfPlansSection');
         if (imprimerPlans && chantierActuel.niveaux) {
-            blockPlans.style.display = "block";
-            document.getElementById('pdfHeaderPlans').innerText = `${compteurChapitreIndex}. Plans de situation & Implantation des puces`;
-            compteurChapitreIndex++;
-
             const pdfPlansMultiples = document.getElementById('pdfPlansMultiples'); 
             pdfPlansMultiples.innerHTML = "";
 
-            chantierActuel.niveaux.forEach((niv, idxNiveau) => {
-                const blockNiveau = document.createElement('div'); 
-                blockNiveau.style.marginBottom = "20px";
-
-                if (idxNiveau < chantierActuel.niveaux.length - 1) {
-                    blockNiveau.style.pageBreakAfter = "always";
-                    blockNiveau.style.breakAfter = "page";
-                }
-
-                blockNiveau.innerHTML = `<h3 style="border-bottom: 1px solid #333; padding-bottom: 5px; margin-top:15px; font-size:11pt;">Niveau : ${niv.nom}</h3>`;
-
-                const ctn = document.createElement('div'); 
-                ctn.className = "plan-container"; 
-                ctn.style.border = "1px solid #ccc"; 
-                ctn.style.padding = "5px";
-
-                const img = document.createElement('img'); 
-                img.className = "plan-img"; 
-                img.src = niv.plan;
-                ctn.appendChild(img);
-
-                const svgPdfOverlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                svgPdfOverlay.setAttribute("class", "plan-svg-overlay");
-                svgPdfOverlay.setAttribute("viewBox", "0 0 100 100");
-                svgPdfOverlay.setAttribute("preserveAspectRatio", "none");
-                let svgPdfContent = "";
-
-                if(chantierActuel.puces) {
-                    chantierActuel.puces.forEach(p => {
-                        if (p.niveauNom === niv.nom) {
-                            // Filtre par entreprise si spécifiée
-                            if (entrepriseFiltre && !puceConcerneEntreprise(p, entrepriseFiltre)) return;
-
-                            const st = normaliserStatutPuce(p);
-                            if (!inclureActives && st === "active") return;
-                            if (!inclureEnCours && st === "en_cours") return;
-                            if (!inclureLevees && st === "resolue") return;
-
-                            (p.zones || []).forEach(z => {
-                                const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
-                                const epaisseurBorder = z.epaisseur ? (z.epaisseur * 0.15) : 0.4;
-                                if (z.type === 'rect') {
-                                    svgPdfContent += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></rect>`;
-                                } else if (z.type === 'poly' && z.points) {
-                                    const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
-                                    svgPdfContent += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></polygon>`;
-                                }
-
-                                const centre = calculerCentreZone(z);
-                                if (centre) {
-                                    svgPdfContent += `<line x1="${p.x}" y1="${p.y}" x2="${centre.x}" y2="${centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85"></line>`;
-                                }
-                            });
-
-                            let classPin = '';
-                            if (st === "en_cours") classPin = ' progress';
-                            else if (st === "resolue") classPin = ' resolved';
-
-                            const pin = document.createElement('div'); 
-                            pin.className = 'pin' + classPin; 
-                            pin.style.left = p.x + '%'; 
-                            pin.style.top = p.y + '%'; 
-                            pin.innerText = p.numero;
-
-                            if (puceAUnRetardAction(p)) {
-                                const badgeAlertPdf = document.createElement('span');
-                                badgeAlertPdf.className = 'pin-late-badge';
-                                badgeAlertPdf.innerText = '🚨';
-                                pin.appendChild(badgeAlertPdf);
-                            }
-
-                            ctn.appendChild(pin);
-                        }
-                    });
-                }
-
-                svgPdfOverlay.innerHTML = svgPdfContent;
-                ctn.appendChild(svgPdfOverlay);
-
-                blockNiveau.appendChild(ctn); 
-                pdfPlansMultiples.appendChild(blockNiveau);
+            // Filtrage des niveaux : en mode entreprise, on ne garde que les niveaux ayant au moins une puce concernée
+            const niveauxAAfficher = chantierActuel.niveaux.filter(niv => {
+                if (!entrepriseFiltre) return true;
+                if (!chantierActuel.puces) return false;
+                return chantierActuel.puces.some(p => {
+                    if (p.niveauNom !== niv.nom) return false;
+                    const st = normaliserStatutPuce(p);
+                    if (!inclureActives && st === "active") return false;
+                    if (!inclureEnCours && st === "en_cours") return false;
+                    if (!inclureLevees && st === "resolue") return false;
+                    return puceConcerneEntreprise(p, entrepriseFiltre);
+                });
             });
+
+            if (niveauxAAfficher.length > 0) {
+                blockPlans.style.display = "block";
+                document.getElementById('pdfHeaderPlans').innerText = `${compteurChapitreIndex}. Plans de situation & Implantation des puces`;
+                compteurChapitreIndex++;
+
+                niveauxAAfficher.forEach((niv, idxNiveau) => {
+                    const blockNiveau = document.createElement('div'); 
+                    blockNiveau.style.marginBottom = "20px";
+
+                    if (idxNiveau < niveauxAAfficher.length - 1) {
+                        blockNiveau.style.pageBreakAfter = "always";
+                        blockNiveau.style.breakAfter = "page";
+                    }
+
+                    blockNiveau.innerHTML = `<h3 style="border-bottom: 1px solid #333; padding-bottom: 5px; margin-top:15px; font-size:11pt;">Niveau : ${niv.nom}</h3>`;
+
+                    const ctn = document.createElement('div'); 
+                    ctn.className = "plan-container"; 
+                    ctn.style.border = "1px solid #ccc"; 
+                    ctn.style.padding = "5px";
+
+                    const img = document.createElement('img'); 
+                    img.className = "plan-img"; 
+                    img.src = niv.plan;
+                    ctn.appendChild(img);
+
+                    const svgPdfOverlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                    svgPdfOverlay.setAttribute("class", "plan-svg-overlay");
+                    svgPdfOverlay.setAttribute("viewBox", "0 0 100 100");
+                    svgPdfOverlay.setAttribute("preserveAspectRatio", "none");
+                    let svgPdfContent = "";
+
+                    if(chantierActuel.puces) {
+                        chantierActuel.puces.forEach(p => {
+                            if (p.niveauNom === niv.nom) {
+                                // Filtre par entreprise si spécifiée
+                                if (entrepriseFiltre && !puceConcerneEntreprise(p, entrepriseFiltre)) return;
+
+                                const st = normaliserStatutPuce(p);
+                                if (!inclureActives && st === "active") return;
+                                if (!inclureEnCours && st === "en_cours") return;
+                                if (!inclureLevees && st === "resolue") return;
+
+                                (p.zones || []).forEach(z => {
+                                    const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
+                                    const epaisseurBorder = z.epaisseur ? (z.epaisseur * 0.15) : 0.4;
+                                    if (z.type === 'rect') {
+                                        svgPdfContent += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></rect>`;
+                                    } else if (z.type === 'poly' && z.points) {
+                                        const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
+                                        svgPdfContent += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></polygon>`;
+                                    }
+
+                                    const centre = calculerCentreZone(z);
+                                    if (centre) {
+                                        svgPdfContent += `<line x1="${p.x}" y1="${p.y}" x2="${centre.x}" y2="${centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85"></line>`;
+                                    }
+                                });
+
+                                let classPin = '';
+                                if (st === "en_cours") classPin = ' progress';
+                                else if (st === "resolue") classPin = ' resolved';
+
+                                const pin = document.createElement('div'); 
+                                pin.className = 'pin' + classPin; 
+                                pin.style.left = p.x + '%'; 
+                                pin.style.top = p.y + '%'; 
+                                pin.innerText = p.numero;
+
+                                if (puceAUnRetardAction(p)) {
+                                    const badgeAlertPdf = document.createElement('span');
+                                    badgeAlertPdf.className = 'pin-late-badge';
+                                    badgeAlertPdf.innerText = '🚨';
+                                    pin.appendChild(badgeAlertPdf);
+                                }
+
+                                ctn.appendChild(pin);
+                            }
+                        });
+                    }
+
+                    svgPdfOverlay.innerHTML = svgPdfContent;
+                    ctn.appendChild(svgPdfOverlay);
+
+                    blockNiveau.appendChild(ctn); 
+                    pdfPlansMultiples.appendChild(blockNiveau);
+                });
+            } else {
+                blockPlans.style.display = "none";
+            }
         } else {
             blockPlans.style.display = "none";
         }
