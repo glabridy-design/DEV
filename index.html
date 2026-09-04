@@ -131,7 +131,19 @@
         .note-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
         .note-sketch-img { max-width: 100%; max-height: 250px; border: 1px solid #ccc; border-radius: 6px; margin-top: 10px; display: block; background: #fff; }
 
-        .sketch-modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 10px; }
+        /* FENÊTRES MODALES : MASQUÉES STRICTEMENT PAR DÉFAUT ÉCRAN ET IMPRESSION */
+        .sketch-modal-overlay, .photo-viewer-overlay { 
+            display: none !important; 
+            position: fixed; 
+            top: 0; left: 0; right: 0; bottom: 0; 
+            background: rgba(0,0,0,0.6); 
+            z-index: 1000; 
+            align-items: center; 
+            justify-content: center; 
+            padding: 10px; 
+        }
+        .photo-viewer-overlay { background: rgba(0,0,0,0.9); z-index: 2000; flex-direction: column; }
+
         .sketch-modal-card { background: white; border-radius: 12px; padding: 15px; width: 100%; max-width: 650px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 95vh; overflow-y: auto; }
         .sketch-canvas-container { border: 2px dashed #999; border-radius: 8px; background: white; touch-action: none; margin: 10px 0; overflow: hidden; text-align: center; width: 100%; }
         #sketchCanvas, #photoAnnotateCanvas { background: #fff; cursor: crosshair; display: block; margin: 0 auto; max-width: 100%; height: auto; }
@@ -139,8 +151,6 @@
         .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; cursor: pointer; box-shadow: 0 0 3px rgba(0,0,0,0.5); }
         .color-btn.selected { transform: scale(1.2); border-color: #1a73e8; }
 
-        /* VISIONNEUSE PHOTO GRAND ÉCRAN TABLETTE */
-        .photo-viewer-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
         .photo-viewer-container { position: relative; max-width: 90vw; max-height: 80vh; display: flex; align-items: center; justify-content: center; }
         .photo-viewer-img { max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); }
         .photo-viewer-nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.25); color: white; border: none; font-size: 28px; font-weight: bold; width: 50px; height: 50px; border-radius: 50%; cursor: pointer; backdrop-filter: blur(4px); transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
@@ -189,7 +199,12 @@
                 print-color-adjust: exact !important;
             }
             .app-container { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
-            .section, .nav-bar, .no-print, form, button, input, textarea, select, .config-box, .tabs-container, .map-filters-box, .print-options-box, .photo-viewer-overlay, .sketch-modal-overlay { display: none !important; }
+            
+            /* MASQUAGE COMPLET DE L'IHM ET DES FENÊTRES MODALES */
+            .section, .nav-bar, .no-print, form, button, input, textarea, select, .config-box, .tabs-container, .map-filters-box, .print-options-box, .photo-viewer-overlay, .sketch-modal-overlay { 
+                display: none !important; 
+            }
+
             #printTemplate { display: block !important; width: 100% !important; }
             
             .page-break { 
@@ -217,8 +232,19 @@
                 margin: 0 auto !important;
             }
             
-            .plan-img { 
+            /* DIMENTIONNEMENT DU PLAN SELON LE MODE D'EXPORTATION */
+            /* Mode Entreprise : Plan compact pour faire tenir le tableau sous le plan */
+            .mode-entreprise .plan-img { 
                 max-height: 135mm !important; 
+                width: auto !important; 
+                max-width: 100% !important; 
+                object-fit: contain !important; 
+                display: block; 
+                margin: 0 auto; 
+            }
+            /* Mode Global : Plan pleine page pour une lisibilité maximale */
+            .mode-global .plan-img { 
+                max-height: 240mm !important; 
                 width: auto !important; 
                 max-width: 100% !important; 
                 object-fit: contain !important; 
@@ -3247,6 +3273,16 @@
         const dateSanitized = formaterSanitizedChaine(dateVisiteTexteFr);
         const chantierSanitized = formaterSanitizedChaine(chantierActuel.nom);
 
+        // APPLICATION DES CLASSES CSS D'EXPRESSION DE TAILLE DE PLAN
+        const printTemplateElem = document.getElementById('printTemplate');
+        if (entrepriseFiltre) {
+            printTemplateElem.classList.remove('mode-global');
+            printTemplateElem.classList.add('mode-entreprise');
+        } else {
+            printTemplateElem.classList.remove('mode-entreprise');
+            printTemplateElem.classList.add('mode-global');
+        }
+
         // NOMMAGE AUTOMATIQUE DU FICHIER PDF GÉNÉRÉ
         if (entrepriseFiltre) {
             const entSanitized = formaterSanitizedChaine(entrepriseFiltre);
@@ -3458,7 +3494,7 @@
                 blockPlans.style.display = "none";
             }
         } 
-        // MODE GLOBAL (DOCUMENT COMPLET INITIAL)
+        // MODE GLOBAL (DOCUMENT COMPLET INITIAL AVEC PLAN PLEINE PAGE)
         else {
             if (imprimerPlans && chantierActuel.niveaux) {
                 blockPlans.style.display = "block";
