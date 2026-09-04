@@ -183,9 +183,9 @@
             h2 { font-size: 11pt !important; margin: 8px 0 4px 0 !important; border-bottom: 1px solid #333; padding-bottom: 2px; }
             h3 { font-size: 10pt !important; margin: 5px 0 !important; border-bottom: 1px solid #666; padding-bottom: 2px; }
             .plan-wrapper, .plan-container { page-break-inside: avoid !important; break-inside: avoid !important; max-width: 100% !important; }
-            .plan-img { max-height: 200mm !important; width: auto !important; max-width: 100% !important; object-fit: contain !important; display: block; margin: 0 auto; }
-            .pdf-table { width: 100%; border-collapse: collapse; margin-top: 10px; page-break-inside: avoid; }
-            .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 6px; font-size: 9pt; text-align: left; }
+            .plan-img { max-height: 180mm !important; width: auto !important; max-width: 100% !important; object-fit: contain !important; display: block; margin: 0 auto; }
+            .pdf-table { width: 100%; border-collapse: collapse; margin-top: 8px; page-break-inside: avoid; }
+            .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 5px; font-size: 8.5pt; text-align: left; }
             .pdf-table th { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .photo-grid-table { width: 100%; border-collapse: separate; border-spacing: 10px; page-break-inside: avoid; }
             .photo-grid-table td { width: 50%; vertical-align: top; border: 1px solid #ddd; padding: 8px; text-align: center; background: #fff; page-break-inside: avoid; }
@@ -210,7 +210,7 @@
 <div class="app-container">
 
     <div id="pageAccueil" class="section active">
-        <h1>Rapport de visite V3</h1>
+        <h1>Rapport de visite V3.3</h1>
 
         <div class="config-box">
             <strong>🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
@@ -3002,7 +3002,7 @@
                 </tr>
             `;
         });
-        tbody.innerHTML = html || "<tr><td colspan='7'>Aucune réserve ne correspond aux filtres actifs</td></tr>";
+        tbody.innerHTML = html || "<tr><td colspan='7'>Aucune remarque ne correspond aux filtres actifs</td></tr>";
     }
 
     async function ajouterEntrepriseDirectTerrain() {
@@ -3111,36 +3111,192 @@
 
         let compteurChapitreIndex = 1;
 
-        // SECTION PLANS DE SITUATION (MASQUAGE DES PLANS SANS PUCES DE L'ENTREPRISE EN MODE FILTRÉ)
         const blockPlans = document.getElementById('pdfPlansSection');
-        if (imprimerPlans && chantierActuel.niveaux) {
-            const pdfPlansMultiples = document.getElementById('pdfPlansMultiples'); 
-            pdfPlansMultiples.innerHTML = "";
+        const blockTableauGlobal = document.getElementById('pdfTableauSection');
 
-            // Filtrage des niveaux : en mode entreprise, on ne garde que les niveaux ayant au moins une puce concernée
-            const niveauxAAfficher = chantierActuel.niveaux.filter(niv => {
-                if (!entrepriseFiltre) return true;
-                if (!chantierActuel.puces) return false;
-                return chantierActuel.puces.some(p => {
-                    if (p.niveauNom !== niv.nom) return false;
-                    const st = normaliserStatutPuce(p);
-                    if (!inclureActives && st === "active") return false;
-                    if (!inclureEnCours && st === "en_cours") return false;
-                    if (!inclureLevees && st === "resolue") return false;
-                    return puceConcerneEntreprise(p, entrepriseFiltre);
+        // MODE EXPORT PAR ENTREPRISE (COMPACT : PLAN + TABLEAU DU NIVEAU SUR LA MÊME PAGE)
+        if (entrepriseFiltre) {
+            blockTableauGlobal.style.display = "none"; // Désactivation du grand tableau global séparé
+
+            if (imprimerPlans && chantierActuel.niveaux) {
+                const pdfPlansMultiples = document.getElementById('pdfPlansMultiples'); 
+                pdfPlansMultiples.innerHTML = "";
+
+                // Filtrage strict : Niveaux ayant des puces NON LEVÉES concernant l'entreprise
+                const niveauxAAfficher = chantierActuel.niveaux.filter(niv => {
+                    if (!chantierActuel.puces) return false;
+                    return chantierActuel.puces.some(p => {
+                        if (p.niveauNom !== niv.nom) return false;
+                        const st = normaliserStatutPuce(p);
+                        // Exclure purement et simplement les puces levées en mode entreprise
+                        if (st === "resolue") return false;
+                        return puceConcerneEntreprise(p, entrepriseFiltre);
+                    });
                 });
-            });
 
-            if (niveauxAAfficher.length > 0) {
+                if (niveauxAAfficher.length > 0) {
+                    blockPlans.style.display = "block";
+                    document.getElementById('pdfHeaderPlans').innerText = `${compteurChapitreIndex}. Plans & Réserves par Niveau`;
+                    compteurChapitreIndex++;
+
+                    niveauxAAfficher.forEach((niv, idxNiveau) => {
+                        const blockNiveau = document.createElement('div'); 
+                        blockNiveau.style.marginBottom = "20px";
+
+                        if (idxNiveau < niveauxAAfficher.length - 1) {
+                            blockNiveau.style.pageBreakAfter = "always";
+                            blockNiveau.style.breakAfter = "page";
+                        }
+
+                        blockNiveau.innerHTML = `<h3 style="border-bottom: 1px solid #333; padding-bottom: 4px; margin-top:10px; font-size:11pt;">Niveau : ${niv.nom}</h3>`;
+
+                        const ctn = document.createElement('div'); 
+                        ctn.className = "plan-container"; 
+                        ctn.style.border = "1px solid #ccc"; 
+                        ctn.style.padding = "5px";
+
+                        const img = document.createElement('img'); 
+                        img.className = "plan-img"; 
+                        img.src = niv.plan;
+                        ctn.appendChild(img);
+
+                        const svgPdfOverlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                        svgPdfOverlay.setAttribute("class", "plan-svg-overlay");
+                        svgPdfOverlay.setAttribute("viewBox", "0 0 100 100");
+                        svgPdfOverlay.setAttribute("preserveAspectRatio", "none");
+                        let svgPdfContent = "";
+
+                        // Puces filtrées non levées du niveau pour cette entreprise
+                        const pucesNiveauEnt = (chantierActuel.puces || []).filter(p => {
+                            if (p.niveauNom !== niv.nom) return false;
+                            if (!puceConcerneEntreprise(p, entrepriseFiltre)) return false;
+                            const st = normaliserStatutPuce(p);
+                            return st !== "resolue"; // On bannit les résolues
+                        }).sort((a,b) => a.numero - b.numero);
+
+                        pucesNiveauEnt.forEach(p => {
+                            const st = normaliserStatutPuce(p);
+
+                            (p.zones || []).forEach(z => {
+                                const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
+                                const epaisseurBorder = z.epaisseur ? (z.epaisseur * 0.15) : 0.4;
+                                if (z.type === 'rect') {
+                                    svgPdfContent += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></rect>`;
+                                } else if (z.type === 'poly' && z.points) {
+                                    const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
+                                    svgPdfContent += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></polygon>`;
+                                }
+
+                                const centre = calculerCentreZone(z);
+                                if (centre) {
+                                    svgPdfContent += `<line x1="${p.x}" y1="${p.y}" x2="${centre.x}" y2="${centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85"></line>`;
+                                }
+                            });
+
+                            let classPin = st === "en_cours" ? ' progress' : '';
+                            const pin = document.createElement('div'); 
+                            pin.className = 'pin' + classPin; 
+                            pin.style.left = p.x + '%'; 
+                            pin.style.top = p.y + '%'; 
+                            pin.innerText = p.numero;
+
+                            if (puceAUnRetardAction(p)) {
+                                const badgeAlertPdf = document.createElement('span');
+                                badgeAlertPdf.className = 'pin-late-badge';
+                                badgeAlertPdf.innerText = '🚨';
+                                pin.appendChild(badgeAlertPdf);
+                            }
+
+                            ctn.appendChild(pin);
+                        });
+
+                        svgPdfOverlay.innerHTML = svgPdfContent;
+                        ctn.appendChild(svgPdfOverlay);
+                        blockNiveau.appendChild(ctn);
+
+                        // FUSION DU TABLEAU DES REMARQUES IMMÉDIATEMENT SOUS LE PLAN
+                        if (imprimerTableau && pucesNiveauEnt.length > 0) {
+                            const tableElem = document.createElement('table');
+                            tableElem.className = "pdf-table";
+                            tableElem.style.marginTop = "10px";
+
+                            tableElem.innerHTML = `
+                                <thead>
+                                    <tr>
+                                        <th style="width: 12%; text-align:center;">N° Puce</th>
+                                        <th style="width: 18%; text-align:center;">Localisation</th>
+                                        <th style="width: 12%; text-align:center;">Statut</th>
+                                        <th>Actions à mener &amp; Observations</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            `;
+
+                            const tbodyElem = tableElem.querySelector('tbody');
+
+                            pucesNiveauEnt.forEach(p => {
+                                const tr = document.createElement('tr');
+                                const st = normaliserStatutPuce(p);
+
+                                let badgeHtml = '<span class="status-badge active">Active</span>';
+                                if (st === "en_cours") {
+                                    badgeHtml = '<span class="status-badge progress">En cours</span>';
+                                    tr.style.backgroundColor = "#fffdf9";
+                                }
+
+                                // Extraction des sous-tâches NON RÉALISÉES pour cette entreprise
+                                let pdfTachesHtml = "";
+                                if (p.taches && p.taches.length > 0) {
+                                    const tachesActivesEnt = p.taches.filter(t => {
+                                        if (t.entreprise && t.entreprise !== entrepriseFiltre) return false;
+                                        return t.statut !== "resolue" && !t.faite; // Retrait des tâches réalisées
+                                    });
+
+                                    if (tachesActivesEnt.length > 0) {
+                                        pdfTachesHtml = `<div style="margin-bottom:4px;">` + tachesActivesEnt.map(t => {
+                                            const evalR = evaluerRetardTache(t);
+                                            const bRetard = evalR.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalR.joursRetard}j)</span>` : '';
+                                            const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
+                                            const labelSubT = t.statut === "en_cours" ? '🟠' : '🔴';
+
+                                            return `<div style="font-size:8.5pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> — Échéance: ${echFmt} ${bRetard}</div>`;
+                                        }).join('') + `</div>`;
+                                    }
+                                }
+
+                                const gyroIconePdf = puceAUnRetardAction(p) ? ' 🚨' : '';
+                                const labelZoneAffiche = p.zonePrecis || 'Zone générale';
+                                tr.innerHTML = `<td style="text-align:center; font-weight:bold;">Puce ${p.numero}${gyroIconePdf}</td><td style="text-align:center;">${labelZoneAffiche}</td><td style="text-align:center;">${badgeHtml}</td><td>${pdfTachesHtml}<div>${p.commentaire || ''}</div></td>`;
+                                tbodyElem.appendChild(tr);
+                            });
+
+                            blockNiveau.appendChild(tableElem);
+                        }
+
+                        pdfPlansMultiples.appendChild(blockNiveau);
+                    });
+                } else {
+                    blockPlans.style.display = "none";
+                }
+            } else {
+                blockPlans.style.display = "none";
+            }
+        } 
+        // MODE GLOBAL (DOCUMENT COMPLET INITIAL)
+        else {
+            if (imprimerPlans && chantierActuel.niveaux) {
                 blockPlans.style.display = "block";
                 document.getElementById('pdfHeaderPlans').innerText = `${compteurChapitreIndex}. Plans de situation & Implantation des puces`;
                 compteurChapitreIndex++;
 
-                niveauxAAfficher.forEach((niv, idxNiveau) => {
+                const pdfPlansMultiples = document.getElementById('pdfPlansMultiples'); 
+                pdfPlansMultiples.innerHTML = "";
+
+                chantierActuel.niveaux.forEach((niv, idxNiveau) => {
                     const blockNiveau = document.createElement('div'); 
                     blockNiveau.style.marginBottom = "20px";
 
-                    if (idxNiveau < niveauxAAfficher.length - 1) {
+                    if (idxNiveau < chantierActuel.niveaux.length - 1) {
                         blockNiveau.style.pageBreakAfter = "always";
                         blockNiveau.style.breakAfter = "page";
                     }
@@ -3166,9 +3322,6 @@
                     if(chantierActuel.puces) {
                         chantierActuel.puces.forEach(p => {
                             if (p.niveauNom === niv.nom) {
-                                // Filtre par entreprise si spécifiée
-                                if (entrepriseFiltre && !puceConcerneEntreprise(p, entrepriseFiltre)) return;
-
                                 const st = normaliserStatutPuce(p);
                                 if (!inclureActives && st === "active") return;
                                 if (!inclureEnCours && st === "en_cours") return;
@@ -3221,8 +3374,65 @@
             } else {
                 blockPlans.style.display = "none";
             }
-        } else {
-            blockPlans.style.display = "none";
+
+            // GRAND TABLEAU GLOBAL
+            if (imprimerTableau && chantierActuel.puces) {
+                blockTableauGlobal.style.display = "block";
+                document.getElementById('pdfTitreRemarques').innerText = `${compteurChapitreIndex}. Tableau des constatations et remarques`;
+                compteurChapitreIndex++;
+
+                const pdfCorpsTableau = document.getElementById('pdfCorpsTableau'); pdfCorpsTableau.innerHTML = "";
+                const pucesTriees = [...chantierActuel.puces].sort((a,b) => a.numero - b.numero);
+
+                let targetPuces = pucesTriees.filter(p => {
+                    const st = normaliserStatutPuce(p);
+                    if (!inclureActives && st === "active") return false;
+                    if (!inclureEnCours && st === "en_cours") return false;
+                    if (!inclureLevees && st === "resolue") return false;
+                    return true;
+                });
+
+                if(targetPuces.length === 0) {
+                    pdfCorpsTableau.innerHTML = `<tr><td colspan="4" style="text-align:center;">Aucune réserve filtrée à imprimer pour cette sélection.</td></tr>`;
+                } else {
+                    targetPuces.forEach(p => {
+                        const tr = document.createElement('tr');
+                        const st = normaliserStatutPuce(p);
+
+                        let badgeHtml = '<span class="status-badge active">Active</span>';
+                        if (st === "en_cours") {
+                            badgeHtml = '<span class="status-badge progress">En cours</span>';
+                            tr.style.backgroundColor = "#fffdf9";
+                        } else if (st === "resolue") {
+                            badgeHtml = '<span class="status-badge resolved">Levée</span>';
+                            tr.style.backgroundColor = "#fafafa";
+                            tr.style.color = "#777";
+                        }
+
+                        let pdfTachesHtml = "";
+                        if (p.taches && p.taches.length > 0) {
+                            pdfTachesHtml = `<div style="margin-bottom:4px;">` + p.taches.map(t => {
+                                const evalR = evaluerRetardTache(t);
+                                const bRetard = evalR.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalR.joursRetard}j)</span>` : '';
+                                const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
+
+                                let labelSubT = '🔴';
+                                if (t.statut === "en_cours") labelSubT = '🟠';
+                                else if (t.statut === "resolue" || t.faite) labelSubT = '🟢';
+
+                                return `<div style="font-size:9pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
+                            }).join('') + `</div>`;
+                        }
+
+                        const gyroIconePdf = puceAUnRetardAction(p) ? ' 🚨' : '';
+                        const labelNiveauZoneAffiche = p.niveauNom + (p.zonePrecis ? ` / ${p.zonePrecis}` : '');
+                        tr.innerHTML = `<td style="text-align:center; font-weight:bold;">Puce ${p.numero}${gyroIconePdf}</td><td style="text-align:center;">${labelNiveauZoneAffiche}</td><td style="text-align:center;">${badgeHtml}</td><td>${pdfTachesHtml}<div>${p.commentaire || ''}</div></td>`;
+                        pdfCorpsTableau.appendChild(tr);
+                    });
+                }
+            } else {
+                blockTableauGlobal.style.display = "none";
+            }
         }
 
         // SECTION NOTES ET CROQUIS
@@ -3232,7 +3442,10 @@
             if (!n.inclurePdf) return false;
             if (entrepriseFiltre && n.puceLieeId) {
                 const puceLiee = (chantierActuel.puces || []).find(p => p.id == n.puceLieeId);
-                if (puceLiee && !puceConcerneEntreprise(puceLiee, entrepriseFiltre)) return false;
+                if (puceLiee) {
+                    if (normaliserStatutPuce(puceLiee) === "resolue") return false; // Exclusion des notes liées à des puces soldées
+                    if (!puceConcerneEntreprise(puceLiee, entrepriseFiltre)) return false;
+                }
             }
             return true;
         });
@@ -3266,73 +3479,7 @@
             pdfNotesSection.style.display = "none";
         }
 
-        // SECTION TABLEAU DES REMARQUES
-        const blockTableau = document.getElementById('pdfTableauSection');
-        if (imprimerTableau && chantierActuel.puces) {
-            blockTableau.style.display = "block";
-            document.getElementById('pdfTitreRemarques').innerText = `${compteurChapitreIndex}. Tableau des constatations et remarques`;
-            compteurChapitreIndex++;
-
-            const pdfCorpsTableau = document.getElementById('pdfCorpsTableau'); pdfCorpsTableau.innerHTML = "";
-            const pucesTriees = [...chantierActuel.puces].sort((a,b) => a.numero - b.numero);
-
-            let targetPuces = pucesTriees.filter(p => {
-                if (entrepriseFiltre && !puceConcerneEntreprise(p, entrepriseFiltre)) return false;
-
-                const st = normaliserStatutPuce(p);
-                if (!inclureActives && st === "active") return false;
-                if (!inclureEnCours && st === "en_cours") return false;
-                if (!inclureLevees && st === "resolue") return false;
-                return true;
-            });
-
-            if(targetPuces.length === 0) {
-                pdfCorpsTableau.innerHTML = `<tr><td colspan="4" style="text-align:center;">Aucune réserve filtrée à imprimer pour cette sélection.</td></tr>`;
-            } else {
-                targetPuces.forEach(p => {
-                    const tr = document.createElement('tr');
-                    const st = normaliserStatutPuce(p);
-
-                    let badgeHtml = '<span class="status-badge active">Active</span>';
-                    if (st === "en_cours") {
-                        badgeHtml = '<span class="status-badge progress">En cours</span>';
-                        tr.style.backgroundColor = "#fffdf9";
-                    } else if (st === "resolue") {
-                        badgeHtml = '<span class="status-badge resolved">Levée</span>';
-                        tr.style.backgroundColor = "#fafafa";
-                        tr.style.color = "#777";
-                    }
-
-                    let pdfTachesHtml = "";
-                    if (p.taches && p.taches.length > 0) {
-                        const tachesFiltreesPdf = entrepriseFiltre ? p.taches.filter(t => !t.entreprise || t.entreprise === entrepriseFiltre) : p.taches;
-                        
-                        if (tachesFiltreesPdf.length > 0) {
-                            pdfTachesHtml = `<div style="margin-bottom:4px;">` + tachesFiltreesPdf.map(t => {
-                                const evalR = evaluerRetardTache(t);
-                                const bRetard = evalR.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalR.joursRetard}j)</span>` : '';
-                                const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
-
-                                let labelSubT = '🔴';
-                                if (t.statut === "en_cours") labelSubT = '🟠';
-                                else if (t.statut === "resolue" || t.faite) labelSubT = '🟢';
-
-                                return `<div style="font-size:9pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
-                            }).join('') + `</div>`;
-                        }
-                    }
-
-                    const gyroIconePdf = puceAUnRetardAction(p) ? ' 🚨' : '';
-                    const labelNiveauZoneAffiche = p.niveauNom + (p.zonePrecis ? ` / ${p.zonePrecis}` : '');
-                    tr.innerHTML = `<td style="text-align:center; font-weight:bold;">Puce ${p.numero}${gyroIconePdf}</td><td style="text-align:center;">${labelNiveauZoneAffiche}</td><td style="text-align:center;">${badgeHtml}</td><td>${pdfTachesHtml}<div>${p.commentaire || ''}</div></td>`;
-                    pdfCorpsTableau.appendChild(tr);
-                });
-            }
-        } else {
-            blockTableau.style.display = "none";
-        }
-
-        // SECTION REPORTAGE PHOTO (EXCLUSION DES PHOTOS ARCHIVÉES)
+        // SECTION REPORTAGE PHOTO (EXCLUSION DES PHOTOS ARCHIVÉES ET DES PUCES LEVÉES EN MODE ENTREPRISE)
         const blockPhotos = document.getElementById('pdfPhotosSection');
         if (imprimerPhotos && chantierActuel.puces) {
             blockPhotos.style.display = "block";
@@ -3344,7 +3491,10 @@
             let collectionToutesPhotosImprimables = [];
 
             pucesTriees.forEach(p => {
-                if (entrepriseFiltre && !puceConcerneEntreprise(p, entrepriseFiltre)) return;
+                if (entrepriseFiltre) {
+                    if (!puceConcerneEntreprise(p, entrepriseFiltre)) return;
+                    if (normaliserStatutPuce(p) === "resolue") return; // On masque les photos des réserves levées pour l'artisan
+                }
 
                 if (p.photo && (!p.photos || p.photos.length === 0)) { p.photos = [normaliserPhotoPuce(p.photo)]; delete p.photo; }
                 const st = normaliserStatutPuce(p);
@@ -3354,7 +3504,6 @@
                 if (!inclureLevees && st === "resolue") return;
 
                 if (p.photos && p.photos.length > 0) {
-                    // FILTRE DES PHOTOS ARCHIVÉES
                     const photosValidesPdf = p.photos.map(pic => normaliserPhotoPuce(pic)).filter(pObj => !pObj.archivee);
 
                     photosValidesPdf.forEach((photoObj, indexPhoto) => {
