@@ -131,6 +131,14 @@
         .note-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
         .note-sketch-img { max-width: 100%; max-height: 250px; border: 1px solid #ccc; border-radius: 6px; margin-top: 10px; display: block; background: #fff; }
 
+        .sketch-modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 10px; }
+        .sketch-modal-card { background: white; border-radius: 12px; padding: 15px; width: 100%; max-width: 650px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 95vh; overflow-y: auto; }
+        .sketch-canvas-container { border: 2px dashed #999; border-radius: 8px; background: white; touch-action: none; margin: 10px 0; overflow: hidden; text-align: center; width: 100%; }
+        #sketchCanvas, #photoAnnotateCanvas { background: #fff; cursor: crosshair; display: block; margin: 0 auto; max-width: 100%; height: auto; }
+        .sketch-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+        .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; cursor: pointer; box-shadow: 0 0 3px rgba(0,0,0,0.5); }
+        .color-btn.selected { transform: scale(1.2); border-color: #1a73e8; }
+
         /* VISIONNEUSE PHOTO GRAND ÉCRAN TABLETTE */
         .photo-viewer-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
         .photo-viewer-container { position: relative; max-width: 90vw; max-height: 80vh; display: flex; align-items: center; justify-content: center; }
@@ -181,7 +189,7 @@
                 print-color-adjust: exact !important;
             }
             .app-container { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
-            .section, .nav-bar, .no-print, form, button, input, textarea, select, .config-box, .tabs-container, .map-filters-box, .print-options-box, .photo-viewer-overlay { display: none !important; }
+            .section, .nav-bar, .no-print, form, button, input, textarea, select, .config-box, .tabs-container, .map-filters-box, .print-options-box, .photo-viewer-overlay, .sketch-modal-overlay { display: none !important; }
             #printTemplate { display: block !important; width: 100% !important; }
             
             .page-break { 
@@ -315,7 +323,7 @@
 <div class="app-container">
 
     <div id="pageAccueil" class="section active">
-        <h1>Rapport de visite V3.5</h1>
+        <h1>Rapport de visite V4</h1>
 
         <div class="config-box">
             <strong>🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
@@ -411,12 +419,20 @@
         </div>
 
         <div id="tabTerrain" class="tab-content active">
-            <!-- GESTION DU LIEN DRIVE DU CHANTIER -->
+            <!-- GESTION DU LIEN DRIVE ET DATE DE VISITE DU CHANTIER -->
             <div style="background:#e8f0fe; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin-bottom:15px;">
-                <label style="margin-top:0; color:#1a73e8; font-size:13px;">🔗 Dossier Google Drive de ce chantier :</label>
-                <div class="flex-row" style="margin-bottom:0;">
-                    <input type="text" id="viewDriveUrlInput" placeholder="https://drive.google.com/drive/folders/..." style="font-size:13px; padding:8px; background:white;">
-                    <button type="button" class="btn btn-small" style="background:#1a73e8;" onclick="mettreAJourLienDriveChantier()">💾 Enregistrer</button>
+                <div class="flex-row" style="margin-bottom:8px;">
+                    <div style="flex:1; min-width:200px;">
+                        <label style="margin-top:0; color:#1a73e8; font-size:13px;">📅 Date de la visite :</label>
+                        <input type="date" id="viewDateVisiteInput" style="font-size:13px; padding:8px; background:white;" onchange="enregistrerDateVisiteTerrain()">
+                    </div>
+                    <div style="flex:2; min-width:250px;">
+                        <label style="margin-top:0; color:#1a73e8; font-size:13px;">🔗 Dossier Google Drive de ce chantier :</label>
+                        <input type="text" id="viewDriveUrlInput" placeholder="https://drive.google.com/drive/folders/..." style="font-size:13px; padding:8px; background:white;">
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px;">
+                    <button type="button" class="btn btn-small" style="background:#1a73e8;" onclick="mettreAJourLienDriveChantier()">💾 Enregistrer paramètres</button>
                     <button type="button" class="btn btn-small btn-success" onclick="ouvrirDossierDriveDirectement()">📁 Ouvrir le Drive</button>
                 </div>
             </div>
@@ -1059,6 +1075,42 @@
     }
 
     /* -------------------------------------------------------------
+       GESTION DE LA DATE DE VISITE
+    ------------------------------------------------------------- */
+    function enregistrerDateVisiteTerrain() {
+        if (!chantierActuel) return;
+        chantierActuel.dateVisite = document.getElementById('viewDateVisiteInput').value;
+        notifierModificationLocale();
+    }
+
+    function demanderEtObtenirDateVisiteExport() {
+        let dateVal = chantierActuel.dateVisite || new Date().toISOString().split('T')[0];
+        const saisie = prompt("📅 Veuillez confirmer la date de la visite pour le rapport (Format: YYYY-MM-DD ou JJ/MM/AAAA) :", dateVal);
+        
+        if (saisie && saisie.trim() !== "") {
+            chantierActuel.dateVisite = saisie.trim();
+            document.getElementById('viewDateVisiteInput').value = saisie.trim();
+            return saisie.trim();
+        }
+        return dateVal;
+    }
+
+    function formaterDateFr(dateStr) {
+        if (!dateStr) return new Date().toLocaleDateString('fr-FR');
+        if (dateStr.includes('-')) {
+            const parts = dateStr.split('-');
+            if (parts.length === 3 && parts[0].length === 4) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+        }
+        return dateStr;
+    }
+
+    function formaterSanitizedChaine(txt) {
+        return (txt || '').replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
+    }
+
+    /* -------------------------------------------------------------
        LOGIQUE D'EXPORTATION ET IMPRESSION PDF PAR ENTREPRISE
     ------------------------------------------------------------- */
     function basculerModeExportPdf(mode) {
@@ -1638,7 +1690,7 @@
 
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
         notifierModificationLocale();
-        alert("💾 Lien Google Drive enregistré pour ce chantier !");
+        alert("💾 Paramètres enregistrés pour ce chantier !");
     }
 
     async function injecterHistoriqueRemarquesJson(event) {
@@ -1935,6 +1987,7 @@
             reference: document.getElementById('reference').value.trim(),
             localisation: document.getElementById('localisation').value.trim(),
             driveUrl: driveUrlSaisi || DEFAULT_GOOGLE_DRIVE_URL,
+            dateVisite: new Date().toISOString().split('T')[0],
             folderName: obtenirNomDossierChantier(nouveauNom),
             niveaux: niveauxTemporaires, entreprises: entreprisesTemporaires, puces: [], notes: []
         };
@@ -1993,11 +2046,13 @@
         if(!chantierActuel.puces) chantierActuel.puces = [];
         if(!chantierActuel.niveaux) chantierActuel.niveaux = [];
         if(!chantierActuel.entreprises) chantierActuel.entreprises = [];
+        if(!chantierActuel.dateVisite) chantierActuel.dateVisite = new Date().toISOString().split('T')[0];
 
         document.getElementById('viewNom').innerText = chantierActuel.nom || "Sans nom";
         document.getElementById('viewRef').innerText = chantierActuel.reference || "N/A";
         document.getElementById('viewLoc').innerText = chantierActuel.localisation || "N/A";
         document.getElementById('viewDriveUrlInput').value = chantierActuel.driveUrl || DEFAULT_GOOGLE_DRIVE_URL;
+        document.getElementById('viewDateVisiteInput').value = chantierActuel.dateVisite;
         document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge">${e}</span>`).join('') || "Aucune entreprise";
 
         // Initialisation du texte de synthèse automatique s'il n'existe pas encore
@@ -3142,6 +3197,9 @@
         fermerMenuActions();
         if (!chantierActuel) return;
 
+        // Demande / Confirmation de la date de la visite avant impression
+        const dateVisiteEffective = demanderEtObtenirDateVisiteExport();
+
         const modeExport = document.querySelector('input[name="radioModeExportPdf"]:checked')?.value || 'global';
 
         if (modeExport === 'entreprise') {
@@ -3151,30 +3209,30 @@
             }
 
             // Lancement séquentiel des impressions par entreprise
-            lancerImpressionSequentielleEntreprises(checkboxesCochees, 0);
+            lancerImpressionSequentielleEntreprises(checkboxesCochees, 0, dateVisiteEffective);
         } else {
             // Mode global unique
-            genererEtImprimerDocPdf(null);
+            genererEtImprimerDocPdf(null, dateVisiteEffective);
         }
     }
 
-    function lancerImpressionSequentielleEntreprises(listeEntreprises, indexCourant) {
+    function lancerImpressionSequentielleEntreprises(listeEntreprises, indexCourant, dateVisiteEffective) {
         if (indexCourant >= listeEntreprises.length) return;
 
         const nomEnt = listeEntreprises[indexCourant];
-        genererEtImprimerDocPdf(nomEnt);
+        genererEtImprimerDocPdf(nomEnt, dateVisiteEffective);
 
         // Si plusieurs entreprises sélectionnées, on attend la fermeture de la fenêtre avant d'enchaîner
         if (indexCourant + 1 < listeEntreprises.length) {
             setTimeout(() => {
                 if (confirm(`▶ Passer à l'impression de l'entreprise suivante (${listeEntreprises[indexCourant + 1]}) ?`)) {
-                    lancerImpressionSequentielleEntreprises(listeEntreprises, indexCourant + 1);
+                    lancerImpressionSequentielleEntreprises(listeEntreprises, indexCourant + 1, dateVisiteEffective);
                 }
             }, 800);
         }
     }
 
-    function genererEtImprimerDocPdf(entrepriseFiltre = null) {
+    function genererEtImprimerDocPdf(entrepriseFiltre = null, dateVisiteVal = null) {
         const imprimerSynthese = document.getElementById('printOptSynthese').checked;
         const imprimerPlans = document.getElementById('printOptPlans').checked;
         const imprimerNotes = document.getElementById('printOptNotes').checked;
@@ -3184,6 +3242,18 @@
         const inclureActives = document.getElementById('printOptRemarquesActives').checked;
         const inclureEnCours = document.getElementById('printOptRemarquesEnCours').checked;
         const inclureLevees = document.getElementById('printOptRemarquesLevees').checked;
+
+        const dateVisiteTexteFr = formaterDateFr(dateVisiteVal || chantierActuel.dateVisite);
+        const dateSanitized = formaterSanitizedChaine(dateVisiteTexteFr);
+        const chantierSanitized = formaterSanitizedChaine(chantierActuel.nom);
+
+        // NOMMAGE AUTOMATIQUE DU FICHIER PDF GÉNÉRÉ
+        if (entrepriseFiltre) {
+            const entSanitized = formaterSanitizedChaine(entrepriseFiltre);
+            document.title = `Rapport_Visite_${chantierSanitized}_${entSanitized}_${dateSanitized}`;
+        } else {
+            document.title = `Rapport_Visite_${chantierSanitized}_Global_${dateSanitized}`;
+        }
 
         // Mise à jour du titre du document
         const elTitrePrincipal = document.getElementById('pdfTitrePrincipalDoc');
@@ -3196,7 +3266,7 @@
         document.querySelectorAll('#printTemplate #pdfNomChantier').forEach(el => el.innerText = chantierActuel.nom);
         document.querySelectorAll('#printTemplate #pdfRefChantier').forEach(el => el.innerText = chantierActuel.reference);
         document.querySelectorAll('#printTemplate #pdfLocChantier').forEach(el => el.innerText = chantierActuel.localisation);
-        document.querySelectorAll('#printTemplate #pdfDateVisite').forEach(el => el.innerText = new Date().toLocaleDateString('fr-FR'));
+        document.querySelectorAll('#printTemplate #pdfDateVisite').forEach(el => el.innerText = dateVisiteTexteFr);
         
         if (entrepriseFiltre) {
             document.getElementById('pdfEntreprises').innerText = `Lot ciblé : ${entrepriseFiltre}`;
