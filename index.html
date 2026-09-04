@@ -131,14 +131,6 @@
         .note-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
         .note-sketch-img { max-width: 100%; max-height: 250px; border: 1px solid #ccc; border-radius: 6px; margin-top: 10px; display: block; background: #fff; }
 
-        .sketch-modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 1000; align-items: center; justify-content: center; padding: 10px; }
-        .sketch-modal-card { background: white; border-radius: 12px; padding: 15px; width: 100%; max-width: 650px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); max-height: 95vh; overflow-y: auto; }
-        .sketch-canvas-container { border: 2px dashed #999; border-radius: 8px; background: white; touch-action: none; margin: 10px 0; overflow: hidden; text-align: center; width: 100%; }
-        #sketchCanvas, #photoAnnotateCanvas { background: #fff; cursor: crosshair; display: block; margin: 0 auto; max-width: 100%; height: auto; }
-        .sketch-tools { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
-        .color-btn { width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; cursor: pointer; box-shadow: 0 0 3px rgba(0,0,0,0.5); }
-        .color-btn.selected { transform: scale(1.2); border-color: #1a73e8; }
-
         /* VISIONNEUSE PHOTO GRAND ÉCRAN TABLETTE */
         .photo-viewer-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; flex-direction: column; padding: 20px; }
         .photo-viewer-container { position: relative; max-width: 90vw; max-height: 80vh; display: flex; align-items: center; justify-content: center; }
@@ -172,35 +164,148 @@
             .photo-viewer-next { right: 5px; }
         }
 
+        /* VERROUILLAGE GÉOMÉTRIQUE STRICT MULTI-NAVIGATEURS POUR IMPRESSION PDF */
         @media print {
-            @page { size: portrait; margin: 0 !important; }
-            body { background: white; color: black; font-size: 10pt; padding: 5mm !important; }
-            .app-container { max-width: 100%; margin: 0; padding: 0; box-shadow: none; border: none; }
+            @page { 
+                size: A4 portrait; 
+                margin: 8mm 8mm 8mm 8mm !important; 
+            }
+            body { 
+                background: white !important; 
+                color: black !important; 
+                font-size: 8.5pt !important; 
+                line-height: 1.3 !important;
+                padding: 0 !important; 
+                margin: 0 !important;
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important;
+            }
+            .app-container { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
             .section, .nav-bar, .no-print, form, button, input, textarea, select, .config-box, .tabs-container, .map-filters-box, .print-options-box, .photo-viewer-overlay { display: none !important; }
-            #printTemplate { display: block !important; }
-            .page-break { page-break-before: always; break-before: page; }
-            h1 { font-size: 13pt !important; margin: 5px 0 !important; border-bottom: 2px solid #333; padding-bottom: 2px; }
-            h2 { font-size: 11pt !important; margin: 8px 0 4px 0 !important; border-bottom: 1px solid #333; padding-bottom: 2px; }
-            h3 { font-size: 10pt !important; margin: 5px 0 !important; border-bottom: 1px solid #666; padding-bottom: 2px; }
-            .plan-wrapper, .plan-container { page-break-inside: avoid !important; break-inside: avoid !important; max-width: 100% !important; }
-            .plan-img { max-height: 180mm !important; width: auto !important; max-width: 100% !important; object-fit: contain !important; display: block; margin: 0 auto; }
-            .pdf-table { width: 100%; border-collapse: collapse; margin-top: 8px; page-break-inside: avoid; }
-            .pdf-table th, .pdf-table td { border: 1px solid #000; padding: 5px; font-size: 8.5pt; text-align: left; }
-            .pdf-table th { background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .photo-grid-table { width: 100%; border-collapse: separate; border-spacing: 10px; page-break-inside: avoid; }
-            .photo-grid-table td { width: 50%; vertical-align: top; border: 1px solid #ddd; padding: 8px; text-align: center; background: #fff; page-break-inside: avoid; }
-            .photo-grid-img { width: 100%; height: 160px; object-fit: contain; background: #fafafa; display: block; margin-bottom: 6px; border: 1px solid #eee; }
-            .photo-grid-caption { font-size: 9pt; font-weight: bold; color: #1a73e8; }
-            .pin { width: 18px !important; height: 18px !important; font-size: 10px !important; line-height: 14px !important; background-color: #d93025 !important; color: white !important; border: 2px solid white !important; transform: translate(-50%, -50%) scale(1) !important; box-shadow: none !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            #printTemplate { display: block !important; width: 100% !important; }
+            
+            .page-break { 
+                page-break-before: always !important; 
+                break-before: page !important; 
+            }
+
+            .pdf-page-block {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                max-height: 270mm !important;
+                width: 100% !important;
+                overflow: hidden !important;
+            }
+
+            h1 { font-size: 12pt !important; margin: 0 0 10px 0 !important; border-bottom: 2px solid #333; padding-bottom: 2px; }
+            h2 { font-size: 10pt !important; margin: 6px 0 4px 0 !important; border-bottom: 1px solid #333; padding-bottom: 2px; }
+            h3 { font-size: 9pt !important; margin: 4px 0 !important; border-bottom: 1px solid #666; padding-bottom: 2px; }
+
+            .plan-wrapper, .plan-container { 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important; 
+                max-width: 100% !important; 
+                text-align: center !important;
+                margin: 0 auto !important;
+            }
+            
+            .plan-img { 
+                max-height: 135mm !important; 
+                width: auto !important; 
+                max-width: 100% !important; 
+                object-fit: contain !important; 
+                display: block; 
+                margin: 0 auto; 
+            }
+
+            .pdf-table { 
+                width: 100% !important; 
+                border-collapse: collapse !important; 
+                margin-top: 6px !important; 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important;
+            }
+            .pdf-table th, .pdf-table td { 
+                border: 1px solid #000 !important; 
+                padding: 4px 6px !important; 
+                font-size: 8pt !important; 
+                text-align: left !important; 
+            }
+            .pdf-table th { 
+                background-color: #eaeded !important; 
+                font-weight: bold !important;
+            }
+
+            /* PLANCHE PHOTO : 8 PHOTOS PAR PAGE (2 COLONNES x 4 LIGNES) */
+            .photo-grid-table { 
+                width: 100% !important; 
+                border-collapse: separate !important; 
+                border-spacing: 6px !important; 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important;
+            }
+            .photo-grid-table td { 
+                width: 50% !important; 
+                vertical-align: top !important; 
+                border: 1px solid #ccc !important; 
+                padding: 4px !important; 
+                text-align: center !important; 
+                background: #fff !important; 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important;
+            }
+            .photo-grid-img { 
+                width: 100% !important; 
+                height: 52mm !important; 
+                object-fit: contain !important; 
+                background: #fafafa !important; 
+                display: block !important; 
+                margin-bottom: 4px !important; 
+                border: 1px solid #eee !important; 
+            }
+            .photo-grid-caption { 
+                font-size: 8pt !important; 
+                font-weight: bold !important; 
+                color: #1a73e8 !important; 
+            }
+
+            .pin { 
+                width: 16px !important; 
+                height: 16px !important; 
+                font-size: 9px !important; 
+                line-height: 12px !important; 
+                background-color: #d93025 !important; 
+                color: white !important; 
+                border: 1.5px solid white !important; 
+                transform: translate(-50%, -50%) scale(1) !important; 
+                box-shadow: none !important; 
+            }
             .pin.progress { background-color: #e67e22 !important; }
             .pin.resolved { background-color: #28a745 !important; }
-            .pin-late-badge { position: absolute !important; top: -7px !important; right: -7px !important; font-size: 10px !important; background: white !important; border-radius: 50% !important; line-height: 1 !important; display: block !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            .status-badge { display: inline-block !important; padding: 2px 6px !important; border-radius: 4px !important; font-size: 8pt !important; font-weight: bold !important; text-transform: uppercase !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            .pin-late-badge { 
+                position: absolute !important; 
+                top: -6px !important; 
+                right: -6px !important; 
+                font-size: 9px !important; 
+                background: white !important; 
+                border-radius: 50% !important; 
+                line-height: 1 !important; 
+                display: block !important; 
+            }
+            .status-badge { 
+                display: inline-block !important; 
+                padding: 1px 5px !important; 
+                border-radius: 3px !important; 
+                font-size: 7.5pt !important; 
+                font-weight: bold !important; 
+                text-transform: uppercase !important; 
+                border: 1px solid #000 !important; 
+            }
             .status-badge.active { background-color: #ffcccc !important; color: #900 !important; }
             .status-badge.progress { background-color: #fdebd0 !important; color: #d35400 !important; border: 1px solid #d35400 !important; }
             .status-badge.resolved { background-color: #ccffcc !important; color: #060 !important; }
             .status-badge.late-task { background-color: #ffcccc !important; color: #d93025 !important; border: 1px solid #f5b7b1 !important; }
-            .first-page-only { page-break-inside: avoid; }
+            .first-page-only { page-break-inside: avoid !important; break-inside: avoid !important; }
         }
         #printTemplate { display: none; }
     </style>
@@ -210,7 +315,7 @@
 <div class="app-container">
 
     <div id="pageAccueil" class="section active">
-        <h1>Rapport de visite V3.3</h1>
+        <h1>Rapport de visite V3.5</h1>
 
         <div class="config-box">
             <strong>🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
@@ -3141,6 +3246,7 @@
 
                     niveauxAAfficher.forEach((niv, idxNiveau) => {
                         const blockNiveau = document.createElement('div'); 
+                        blockNiveau.className = "pdf-page-block";
                         blockNiveau.style.marginBottom = "20px";
 
                         if (idxNiveau < niveauxAAfficher.length - 1) {
@@ -3294,6 +3400,7 @@
 
                 chantierActuel.niveaux.forEach((niv, idxNiveau) => {
                     const blockNiveau = document.createElement('div'); 
+                    blockNiveau.className = "pdf-page-block";
                     blockNiveau.style.marginBottom = "20px";
 
                     if (idxNiveau < chantierActuel.niveaux.length - 1) {
@@ -3465,7 +3572,7 @@
                 }
 
                 return `
-                    <div style="border:1px solid #000; padding:10px; margin-bottom:12px; page-break-inside:avoid; background:#fff;">
+                    <div style="border:1px solid #000; padding:10px; margin-bottom:12px; page-break-inside:avoid; break-inside:avoid; background:#fff;">
                         <div style="font-size:9pt; font-weight:bold; color:#555; border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:6px;">
                             Date : ${n.dateCreation}
                         </div>
@@ -3480,6 +3587,7 @@
         }
 
         // SECTION REPORTAGE PHOTO (EXCLUSION DES PHOTOS ARCHIVÉES ET DES PUCES LEVÉES EN MODE ENTREPRISE)
+        // FORMAT : 8 PHOTOS PAR PAGE (2 COLONNES x 4 LIGNES)
         const blockPhotos = document.getElementById('pdfPhotosSection');
         if (imprimerPhotos && chantierActuel.puces) {
             blockPhotos.style.display = "block";
@@ -3504,6 +3612,7 @@
                 if (!inclureLevees && st === "resolue") return;
 
                 if (p.photos && p.photos.length > 0) {
+                    // FILTRE DES PHOTOS ARCHIVÉES
                     const photosValidesPdf = p.photos.map(pic => normaliserPhotoPuce(pic)).filter(pObj => !pObj.archivee);
 
                     photosValidesPdf.forEach((photoObj, indexPhoto) => {
@@ -3521,14 +3630,29 @@
             if (collectionToutesPhotosImprimables.length === 0) {
                 photoPagesContainer.innerHTML = "<p style='font-style:italic;'>Aucune photographie filtrée à imprimer pour cette sélection.</p>";
             } else {
-                const PHOTOS_PAR_PAGE = 6; const nbPages = Math.ceil(collectionToutesPhotosImprimables.length / PHOTOS_PAR_PAGE);
+                const PHOTOS_PAR_PAGE = 8; // Passage à 8 photos par page (2x4)
+                const nbPages = Math.ceil(collectionToutesPhotosImprimables.length / PHOTOS_PAR_PAGE);
+                
                 for (let pageIdx = 0; pageIdx < nbPages; pageIdx++) {
-                    if (pageIdx > 0) { const pb = document.createElement('div'); pb.className = "page-break"; photoPagesContainer.appendChild(pb); }
-                    const title = document.createElement('h3'); title.innerText = `Planche Photos — Page ${pageIdx + 1} / ${nbPages}`; photoPagesContainer.appendChild(title);
-                    const table = document.createElement('table'); table.className = "photo-grid-table"; let currentTr = null;
+                    if (pageIdx > 0) { 
+                        const pb = document.createElement('div'); 
+                        pb.className = "page-break"; 
+                        photoPagesContainer.appendChild(pb); 
+                    }
+                    const title = document.createElement('h3'); 
+                    title.innerText = `Planche Photos — Page ${pageIdx + 1} / ${nbPages}`; 
+                    photoPagesContainer.appendChild(title);
+
+                    const table = document.createElement('table'); 
+                    table.className = "photo-grid-table"; 
+                    let currentTr = null;
+
                     for (let i = 0; i < PHOTOS_PAR_PAGE; i++) {
                         const photoIndex = (pageIdx * PHOTOS_PAR_PAGE) + i;
-                        if (i % 2 === 0) { currentTr = document.createElement('tr'); table.appendChild(currentTr); }
+                        if (i % 2 === 0) { 
+                            currentTr = document.createElement('tr'); 
+                            table.appendChild(currentTr); 
+                        }
                         const td = document.createElement('td');
                         if (photoIndex < collectionToutesPhotosImprimables.length) {
                             const pAvecP = collectionToutesPhotosImprimables[photoIndex];
@@ -3537,7 +3661,10 @@
                             else if (pAvecP.statut === "resolue") statusLabel = "LEVÉE";
 
                             td.innerHTML = `<img src="${pAvecP.src}" class="photo-grid-img"><div class="photo-grid-caption">PUCE N° ${pAvecP.numero}${pAvecP.labelIndex} (${pAvecP.niveau}) - ${statusLabel}</div>`;
-                        } else { td.style.border = "none"; td.style.background = "transparent"; }
+                        } else { 
+                            td.style.border = "none"; 
+                            td.style.background = "transparent"; 
+                        }
                         currentTr.appendChild(td);
                     }
                     photoPagesContainer.appendChild(table);
