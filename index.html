@@ -116,15 +116,15 @@
         .table-remarques tr.clickable-row:hover { background-color: #edf2fa !important; }
 
         /* GALERIE ET CARTES PHOTOS */
-        .photo-gallery-wrapper { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; min-height: 120px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f8f9fa; }
-        .photo-gallery-card { position: relative; width: 130px; display: flex; flex-direction: column; background: white; border: 1px solid #dadce0; border-radius: 6px; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-        .photo-gallery-item { position: relative; width: 100%; height: 90px; border-radius: 4px; border: 1px solid #e0e0e0; background-size: cover; background-position: center; cursor: pointer; }
+        .photo-gallery-wrapper { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; min-height: 110px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f8f9fa; }
+        .photo-gallery-item-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .photo-gallery-item { position: relative; width: 95px; height: 95px; border-radius: 6px; border: 1px solid #dadce0; background-size: cover; background-position: center; cursor: pointer; }
         .photo-gallery-item.archived { opacity: 0.45; filter: grayscale(80%); border-style: dashed; }
         .photo-gallery-del-btn { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; background: #d93025; color: white; border-radius: 50%; font-size: 12px; font-weight: bold; text-align: center; line-height: 20px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 2; }
         .photo-gallery-edit-btn { position: absolute; bottom: -6px; right: -6px; width: 24px; height: 24px; background: #1a73e8; color: white; border-radius: 50%; font-size: 12px; text-align: center; line-height: 22px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 2; }
         .photo-gallery-archive-btn { position: absolute; top: -6px; left: -6px; background: #5f6368; color: white; border-radius: 12px; font-size: 10px; font-weight: bold; padding: 2px 5px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 2; }
         .photo-gallery-archive-btn.is-archived { background: #e67e22; }
-        .photo-entreprise-select { width: 100%; margin-top: 4px; font-size: 11px; padding: 3px; border-radius: 4px; border: 1px solid #dadce0; background: #fff; }
+        .photo-entreprise-select { font-size: 11px; padding: 2px 4px; border-radius: 4px; border: 1px solid #ccc; max-width: 95px; background: white; }
 
         .entreprises-selection-list { max-height: 120px; overflow-y: auto; background: white; border: 1px solid #dadce0; border-radius: 8px; padding: 10px; margin-top: 5px; }
         .entreprise-checkbox-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 14px; cursor: pointer; }
@@ -234,8 +234,7 @@
                 margin: 0 auto !important;
             }
             
-            /* DIMENTIONNEMENT DU PLAN SELON LE MODE D'EXPORTATION */
-            /* Mode Entreprise : Plan compact pour faire tenir le tableau sous le plan */
+            /* DIMENSIONNEMENT DU PLAN SELON LE MODE D'EXPORTATION */
             .mode-entreprise .plan-img { 
                 max-height: 135mm !important; 
                 width: auto !important; 
@@ -244,7 +243,6 @@
                 display: block; 
                 margin: 0 auto; 
             }
-            /* Mode Global : Plan pleine page pour une lisibilité maximale */
             .mode-global .plan-img { 
                 max-height: 240mm !important; 
                 width: auto !important; 
@@ -314,12 +312,6 @@
                 font-weight: bold !important; 
                 color: #1a73e8 !important; 
                 line-height: 1.2 !important;
-            }
-            .photo-grid-subcaption {
-                font-size: 7pt !important;
-                font-weight: normal !important;
-                color: #333 !important;
-                margin-top: 2px !important;
                 text-align: left !important;
             }
 
@@ -850,7 +842,7 @@
     let niveauxTemporaires = []; 
     let planEnCoursDeChargementBase64 = ""; 
     let planDirectTerrainBase64 = "";
-    let photosPuceTemporairesTableau = []; // Stocke des objets { src, archivee: false, entreprise: "" }
+    let photosPuceTemporairesTableau = []; // Stocke des objets { src, archivee: false, entreprise: '' }
     let tachesPuceTemporairesTableau = [];
     let indexTacheEnEdition = null; // Stocke l'index de la tâche en cours d'édition
     let zonesPuceTemporairesTableau = []; // Zones associées à la puce en cours d'édition
@@ -895,13 +887,9 @@
     // Normalisation d'un objet photo (support rétrocompatible string vs object)
     function normaliserPhotoPuce(pic) {
         if (typeof pic === 'string') {
-            return { src: pic, archivee: false, entreprise: "" };
+            return { src: pic, archivee: false, entreprise: '' };
         }
-        return {
-            src: pic?.src || '',
-            archivee: pic?.archivee || false,
-            entreprise: pic?.entreprise || ""
-        };
+        return pic || { src: '', archivee: false, entreprise: '' };
     }
 
     function convertirDxfTextEnSvgDataUrl(dxfText) {
@@ -1195,24 +1183,24 @@
         document.querySelectorAll('.chk-entreprise-export').forEach(chk => chk.checked = cocher);
     }
 
-    // NOUVELLE VÉRIFICATION DE PERTINENCE STRICTE D'UNE PUCE POUR UNE ENTREPRISE (SANS PUCES SOLDÉES FANTÔMES)
+    /* VERIFICATION SI UNE PUCE A AU MOINS UNE ACTION ACTIVES / NON SOLDÉE POUR UNE ENTREPRISE */
     function puceConcerneEntreprise(p, nomEntreprise) {
         if (!nomEntreprise) return true;
-        
-        // Si la puce globale est résolue, elle est totalement exclue du rapport entreprise
-        if (normaliserStatutPuce(p) === "resolue") return false;
+        const stPuce = normaliserStatutPuce(p);
 
-        // 1. Vérification dans les tâches actives ou en cours spécifiquement attribuées à cette entreprise
+        // Si la puce complète est levée/résolue, elle ne concerne plus l'entreprise pour son rapport
+        if (stPuce === "resolue") return false;
+
+        // Vérification dans les sous-tâches : il faut au moins une tâche attribuée à l'entreprise ET non soldée
         if (p.taches && p.taches.length > 0) {
-            const aDesTachesActivesLot = p.taches.some(t => {
-                const entOk = !t.entreprise || t.entreprise === nomEntreprise;
-                const statutNonSolde = (t.statut !== "resolue" && !t.faite);
-                return entOk && statutNonSolde;
+            const aDesTachesNonSoldees = p.taches.some(t => {
+                if (t.entreprise && t.entreprise !== nomEntreprise) return false;
+                return t.statut !== "resolue" && !t.faite;
             });
-            if (aDesTachesActivesLot) return true;
+            if (aDesTachesNonSoldees) return true;
         }
 
-        // 2. Vérification dans l'affectation globale si aucune sous-tâche n'existe
+        // Vérification dans les entreprises globales cochées si aucune tâche spécifique n'est définie
         if ((!p.taches || p.taches.length === 0) && p.entreprises && p.entreprises.includes(nomEntreprise)) {
             return true;
         }
@@ -1643,7 +1631,7 @@
                         const bytes = convertirDataUrlEnUint8Array(photoDataUrl);
                         zip.file(cheminRelatif, bytes);
 
-                        nouveauxChemins.push({ src: cheminRelatif, archivee: photoObj.archivee || false, entreprise: photoObj.entreprise || "" });
+                        nouveauxChemins.push({ src: cheminRelatif, archivee: photoObj.archivee || false, entreprise: photoObj.entreprise || '' });
                     } else {
                         nouveauxChemins.push(photoObj);
                     }
@@ -1793,7 +1781,7 @@
                                 if (photoFileInZip) {
                                     const base64Str = await photoFileInZip.async("base64");
                                     const mime = pPath.endsWith('.avif') ? 'image/avif' : (pPath.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
-                                    photosReconstituees.push({ src: `data:${mime};base64,${base64Str}`, archivee: pObj.archivee || false, entreprise: pObj.entreprise || "" });
+                                    photosReconstituees.push({ src: `data:${mime};base64,${base64Str}`, archivee: pObj.archivee || false, entreprise: pObj.entreprise || '' });
                                 }
                             } else {
                                 photosReconstituees.push(pObj);
@@ -2048,7 +2036,7 @@
         const driveUrlSaisi = document.getElementById('driveUrlInput').value.trim();
 
         const nouveauChantier = {
-            id: Date.now(),
+            id: Date.now() + Math.floor(Math.random() * 1000),
             nom: nouveauNom,
             reference: document.getElementById('reference').value.trim(),
             localisation: document.getElementById('localisation').value.trim(),
@@ -2214,7 +2202,7 @@
         if(!chantierActuel.notes) chantierActuel.notes = [];
 
         chantierActuel.notes.unshift({
-            id: Date.now(),
+            id: Date.now() + Math.floor(Math.random() * 1000),
             texte: "",
             croquis: null,
             puceLieeId: null,
@@ -2585,10 +2573,9 @@
         }
     }
 
-    function changerEntrepriseAssocieePhoto(index, nomEnt, event) {
-        if (event) event.stopPropagation();
+    function changerEntreprisePhotoPuce(index, nomEntreprise) {
         if (photosPuceTemporairesTableau[index]) {
-            photosPuceTemporairesTableau[index].entreprise = nomEnt;
+            photosPuceTemporairesTableau[index].entreprise = nomEntreprise;
         }
     }
 
@@ -3051,7 +3038,7 @@
             tachesPuceTemporairesTableau[indexTacheEnEdition].echeance = ech;
         } else {
             tachesPuceTemporairesTableau.push({
-                id: Date.now(),
+                id: Date.now() + Math.floor(Math.random() * 1000),
                 description: desc,
                 entreprise: ent,
                 dateCreation: new Date().toLocaleDateString('fr-FR'),
@@ -3097,7 +3084,7 @@
             const r = new FileReader(); 
             r.onload = (e) => { 
                 compresserImage(e.target.result, 1000, 1000).then(imgCompressee => { 
-                    photosPuceTemporairesTableau.push({ src: imgCompressee, archivee: false, entreprise: "" }); 
+                    photosPuceTemporairesTableau.push({ src: imgCompressee, archivee: false, entreprise: '' }); 
                     rafraichirAffichageGaleriePhotosSaisie(); 
                 }); 
             };
@@ -3113,14 +3100,15 @@
             return;
         }
 
-        const entreprisesChantier = chantierActuel ? (chantierActuel.entreprises || []) : [];
+        const entreprisesList = chantierActuel ? (chantierActuel.entreprises || []) : [];
 
         ctn.innerHTML = photosPuceTemporairesTableau.map((picRaw, idx) => {
             const pic = normaliserPhotoPuce(picRaw);
-            const optionsEnt = `<option value="">🌐 Globale</option>` + entreprisesChantier.map(e => `<option value="${e}" ${pic.entreprise === e ? 'selected' : ''}>🏢 ${e}</option>`).join('');
+            const optionsEnt = `<option value="" ${!pic.entreprise ? 'selected' : ''}>🌐 Globale</option>` +
+                entreprisesList.map(e => `<option value="${e}" ${pic.entreprise === e ? 'selected' : ''}>🏢 ${e}</option>`).join('');
 
             return `
-                <div class="photo-gallery-card">
+                <div class="photo-gallery-item-wrapper">
                     <div class="photo-gallery-item ${pic.archivee ? 'archived' : ''}" style="background-image: url(${pic.src});" onclick="ouvrirVisionneusePhotoGrandFormat(${idx})">
                         <div class="photo-gallery-archive-btn ${pic.archivee ? 'is-archived' : ''}" onclick="basculerArchivagePhotoPuce(${idx}, event)" title="${pic.archivee ? 'Restaurer pour le PDF' : 'Archiver (Masquer du PDF)'}">
                             ${pic.archivee ? '📦' : '👁️'}
@@ -3128,7 +3116,7 @@
                         <div class="photo-gallery-del-btn" onclick="supprimerPhotoDeLaZoneSaisie(${idx}, event)" title="Supprimer">×</div>
                         <div class="photo-gallery-edit-btn" onclick="ouvrirAnnotationPhoto(${idx}, event)" title="Dessiner / Annoter">✏️</div>
                     </div>
-                    <select class="photo-entreprise-select" onchange="changerEntrepriseAssocieePhoto(${idx}, this.value, event)">
+                    <select class="photo-entreprise-select" onchange="changerEntreprisePhotoPuce(${idx}, this.value)">
                         ${optionsEnt}
                     </select>
                 </div>
@@ -3395,8 +3383,6 @@
                     if (!chantierActuel.puces) return false;
                     return chantierActuel.puces.some(p => {
                         if (p.niveauNom !== niv.nom) return false;
-                        const st = normaliserStatutPuce(p);
-                        if (st === "resolue") return false;
                         return puceConcerneEntreprise(p, entrepriseFiltre);
                     });
                 });
@@ -3437,9 +3423,7 @@
                         // Puces filtrées non levées du niveau pour cette entreprise
                         const pucesNiveauEnt = (chantierActuel.puces || []).filter(p => {
                             if (p.niveauNom !== niv.nom) return false;
-                            if (!puceConcerneEntreprise(p, entrepriseFiltre)) return false;
-                            const st = normaliserStatutPuce(p);
-                            return st !== "resolue"; // On bannit les résolues
+                            return puceConcerneEntreprise(p, entrepriseFiltre);
                         }).sort((a,b) => a.numero - b.numero);
 
                         pucesNiveauEnt.forEach(p => {
@@ -3712,7 +3696,6 @@
             if (entrepriseFiltre && n.puceLieeId) {
                 const puceLiee = (chantierActuel.puces || []).find(p => p.id == n.puceLieeId);
                 if (puceLiee) {
-                    if (normaliserStatutPuce(puceLiee) === "resolue") return false; // Exclusion des notes liées à des puces soldées
                     if (!puceConcerneEntreprise(puceLiee, entrepriseFiltre)) return false;
                 }
             }
@@ -3748,8 +3731,7 @@
             pdfNotesSection.style.display = "none";
         }
 
-        // SECTION REPORTAGE PHOTO AVEC FILTRE PAR ENTREPRISE ET LÉGENDES DÉTAILLÉES
-        // FORMAT : 8 PHOTOS PAR PAGE (2 COLONNES x 4 LIGNES)
+        // SECTION REPORTAGE PHOTO (FILTRAGE DES PHOTOS PAR ENTREPRISE ET LÉGENDES DÉTAILLÉES)
         const blockPhotos = document.getElementById('pdfPhotosSection');
         if (imprimerPhotos && chantierActuel.puces) {
             blockPhotos.style.display = "block";
@@ -3763,7 +3745,6 @@
             pucesTriees.forEach(p => {
                 if (entrepriseFiltre) {
                     if (!puceConcerneEntreprise(p, entrepriseFiltre)) return;
-                    if (normaliserStatutPuce(p) === "resolue") return; // On masque les photos des réserves levées pour l'artisan
                 }
 
                 if (p.photo && (!p.photos || p.photos.length === 0)) { p.photos = [normaliserPhotoPuce(p.photo)]; delete p.photo; }
@@ -3774,39 +3755,37 @@
                 if (!inclureLevees && st === "resolue") return;
 
                 if (p.photos && p.photos.length > 0) {
-                    // FILTRE DES PHOTOS ARCHIVÉES ET FILTRAGE PAR ENTREPRISE ASSOCIÉE À LA PHOTO
+                    // FILTRE DES PHOTOS ARCHIVÉES ET FILTRAGE SPECIFIQUE PAR ENTREPRISE
                     const photosValidesPdf = p.photos.map(pic => normaliserPhotoPuce(pic)).filter(pObj => {
                         if (pObj.archivee) return false;
                         if (entrepriseFiltre) {
-                            // La photo est incluse si elle est globale (pas d'entreprise) OU attribuée à l'entreprise ciblée
+                            // En mode entreprise, inclure la photo si elle est globale (vide) OU si elle est assignée à cette entreprise
                             return !pObj.entreprise || pObj.entreprise === entrepriseFiltre;
                         }
                         return true;
                     });
 
+                    // CONSTRUCTIONS DES LÉGENDES DÉTAILLÉES PAR PHOTO
                     photosValidesPdf.forEach((photoObj, indexPhoto) => {
-                        // RECHERCHE DE LA LÉGENDE : TÂCHES OU COMMENTAIRE DE LA PUCE
-                        let legendeDetail = [];
-                        if (p.taches && p.taches.length > 0) {
-                            const tConcernees = entrepriseFiltre ? p.taches.filter(t => !t.entreprise || t.entreprise === entrepriseFiltre) : p.taches;
-                            tConcernees.forEach(t => {
-                                if (t.description) legendeDetail.push(`• ${t.description}${t.entreprise ? ' [' + t.entreprise + ']' : ''}`);
-                            });
-                        }
-                        if (p.commentaire && p.commentaire.trim() !== "") {
-                            legendeDetail.push(`Obs: ${p.commentaire.trim()}`);
-                        }
+                        let legendeRemarques = [];
+                        if (p.commentaire && p.commentaire.trim() !== "") legendeRemarques.push(p.commentaire.trim());
 
-                        const legendeTexteAffiche = legendeDetail.length > 0 ? legendeDetail.join('<br>') : 'Sans description particulière';
+                        if (p.taches && p.taches.length > 0) {
+                            const tFiltrables = p.taches.filter(t => {
+                                if (entrepriseFiltre) return (!t.entreprise || t.entreprise === entrepriseFiltre) && t.statut !== "resolue" && !t.faite;
+                                return true;
+                            });
+                            tFiltrables.forEach(t => legendeRemarques.push(`- ${t.description}${t.entreprise ? ' [' + t.entreprise + ']' : ''}`));
+                        }
 
                         collectionToutesPhotosImprimables.push({
                             src: photoObj.src,
                             numero: p.numero,
                             niveau: p.niveauNom + (p.zonePrecis ? ` (${p.zonePrecis})` : ''),
                             statut: st,
-                            labelIndex: photosValidesPdf.length > 1 ? ` (${indexPhoto + 1}/${photosValidesPdf.length})` : '',
-                            entrepriseLIEE: photoObj.entreprise ? ` [Lot ${photoObj.entreprise}]` : '',
-                            legendeDetaillee: legendeTexteAffiche
+                            entrepriseTag: photoObj.entreprise ? ` [Lot ${photoObj.entreprise}]` : '',
+                            detailRemarques: legendeRemarques.join('\n'),
+                            labelIndex: photosValidesPdf.length > 1 ? ` (${indexPhoto + 1}/${photosValidesPdf.length})` : ''
                         });
                     });
                 }
@@ -3815,7 +3794,7 @@
             if (collectionToutesPhotosImprimables.length === 0) {
                 photoPagesContainer.innerHTML = "<p style='font-style:italic;'>Aucune photographie filtrée à imprimer pour cette sélection.</p>";
             } else {
-                const PHOTOS_PAR_PAGE = 8; // Passage à 8 photos par page (2x4)
+                const PHOTOS_PAR_PAGE = 8; // Plante photo 8 images par page (2x4)
                 const nbPages = Math.ceil(collectionToutesPhotosImprimables.length / PHOTOS_PAR_PAGE);
                 
                 for (let pageIdx = 0; pageIdx < nbPages; pageIdx++) {
@@ -3845,11 +3824,9 @@
                             if (pAvecP.statut === "en_cours") statusLabel = "EN COURS";
                             else if (pAvecP.statut === "resolue") statusLabel = "LEVÉE";
 
-                            td.innerHTML = `
-                                <img src="${pAvecP.src}" class="photo-grid-img">
-                                <div class="photo-grid-caption">PUCE N° ${pAvecP.numero}${pAvecP.labelIndex} (${pAvecP.niveau}) - ${statusLabel}${pAvecP.entrepriseLIEE}</div>
-                                <div class="photo-grid-subcaption">${pAvecP.legendeDetaillee}</div>
-                            `;
+                            const detailsTxtHtml = pAvecP.detailRemarques ? `<div style="font-weight:normal; color:#333; margin-top:2px; font-size:7pt; white-space:pre-wrap;">${pAvecP.detailRemarques}</div>` : '';
+
+                            td.innerHTML = `<img src="${pAvecP.src}" class="photo-grid-img"><div class="photo-grid-caption">PUCE N° ${pAvecP.numero}${pAvecP.labelIndex} (${pAvecP.niveau})${pAvecP.entrepriseTag} - ${statusLabel}${detailsTxtHtml}</div>`;
                         } else { 
                             td.style.border = "none"; 
                             td.style.background = "transparent"; 
