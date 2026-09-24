@@ -116,13 +116,15 @@
         .table-remarques tr.clickable-row:hover { background-color: #edf2fa !important; }
 
         /* GALERIE ET CARTES PHOTOS */
-        .photo-gallery-wrapper { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; min-height: 90px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f8f9fa; }
-        .photo-gallery-item { position: relative; width: 95px; height: 95px; border-radius: 6px; border: 1px solid #dadce0; background-size: cover; background-position: center; cursor: pointer; }
+        .photo-gallery-wrapper { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; min-height: 120px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f8f9fa; }
+        .photo-gallery-card { position: relative; width: 130px; display: flex; flex-direction: column; background: white; border: 1px solid #dadce0; border-radius: 6px; padding: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .photo-gallery-item { position: relative; width: 100%; height: 90px; border-radius: 4px; border: 1px solid #e0e0e0; background-size: cover; background-position: center; cursor: pointer; }
         .photo-gallery-item.archived { opacity: 0.45; filter: grayscale(80%); border-style: dashed; }
         .photo-gallery-del-btn { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; background: #d93025; color: white; border-radius: 50%; font-size: 12px; font-weight: bold; text-align: center; line-height: 20px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 2; }
         .photo-gallery-edit-btn { position: absolute; bottom: -6px; right: -6px; width: 24px; height: 24px; background: #1a73e8; color: white; border-radius: 50%; font-size: 12px; text-align: center; line-height: 22px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 2; }
         .photo-gallery-archive-btn { position: absolute; top: -6px; left: -6px; background: #5f6368; color: white; border-radius: 12px; font-size: 10px; font-weight: bold; padding: 2px 5px; cursor: pointer; border: 1px solid white; box-shadow: 0 1px 3px rgba(0,0,0,0.3); z-index: 2; }
         .photo-gallery-archive-btn.is-archived { background: #e67e22; }
+        .photo-entreprise-select { width: 100%; margin-top: 4px; font-size: 11px; padding: 3px; border-radius: 4px; border: 1px solid #dadce0; background: #fff; }
 
         .entreprises-selection-list { max-height: 120px; overflow-y: auto; background: white; border: 1px solid #dadce0; border-radius: 8px; padding: 10px; margin-top: 5px; }
         .entreprise-checkbox-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 14px; cursor: pointer; }
@@ -252,22 +254,32 @@
                 margin: 0 auto; 
             }
 
+            /* OPTIMISATION ET COMPACITÉ DU TABLEAU DES REMARQUES PDF */
             .pdf-table { 
                 width: 100% !important; 
                 border-collapse: collapse !important; 
                 margin-top: 6px !important; 
-                page-break-inside: avoid !important; 
-                break-inside: avoid !important;
+                page-break-inside: auto !important;
+            }
+            .pdf-table thead {
+                display: table-header-group !important; /* Répétition automatique de l'en-tête sur chaque page */
+            }
+            .pdf-table tr {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important; /* Empêche de couper une ligne au milieu */
             }
             .pdf-table th, .pdf-table td { 
                 border: 1px solid #000 !important; 
-                padding: 4px 6px !important; 
-                font-size: 8pt !important; 
+                padding: 3px 5px !important; 
+                font-size: 7.5pt !important; /* Police réduite pour optimiser le gain de place */
+                line-height: 1.25 !important;
                 text-align: left !important; 
             }
             .pdf-table th { 
                 background-color: #eaeded !important; 
                 font-weight: bold !important;
+                text-transform: uppercase !important;
+                font-size: 7.5pt !important;
             }
 
             /* PLANCHE PHOTO : 8 PHOTOS PAR PAGE (2 COLONNES x 4 LIGNES) */
@@ -290,7 +302,7 @@
             }
             .photo-grid-img { 
                 width: 100% !important; 
-                height: 52mm !important; 
+                height: 48mm !important; 
                 object-fit: contain !important; 
                 background: #fafafa !important; 
                 display: block !important; 
@@ -298,9 +310,17 @@
                 border: 1px solid #eee !important; 
             }
             .photo-grid-caption { 
-                font-size: 8pt !important; 
+                font-size: 7.5pt !important; 
                 font-weight: bold !important; 
                 color: #1a73e8 !important; 
+                line-height: 1.2 !important;
+            }
+            .photo-grid-subcaption {
+                font-size: 7pt !important;
+                font-weight: normal !important;
+                color: #333 !important;
+                margin-top: 2px !important;
+                text-align: left !important;
             }
 
             .pin { 
@@ -807,10 +827,10 @@
         <table class="pdf-table">
             <thead>
                 <tr>
-                    <th style="width: 12%; text-align:center;">N° Puce</th>
-                    <th style="width: 18%; text-align:center;">Niveau / Zone</th>
+                    <th style="width: 8%; text-align:center;">N° Puce</th>
+                    <th style="width: 16%; text-align:center;">Niveau / Zone</th>
                     <th style="width: 12%; text-align:center;">Statut</th>
-                    <th>Observations &amp; Commentaires détaillés</th>
+                    <th style="width: 64%;">Observations &amp; Commentaires détaillés</th>
                 </tr>
             </thead>
             <tbody id="pdfCorpsTableau"></tbody>
@@ -830,7 +850,7 @@
     let niveauxTemporaires = []; 
     let planEnCoursDeChargementBase64 = ""; 
     let planDirectTerrainBase64 = "";
-    let photosPuceTemporairesTableau = []; // Stocke des objets { src, archivee: false }
+    let photosPuceTemporairesTableau = []; // Stocke des objets { src, archivee: false, entreprise: "" }
     let tachesPuceTemporairesTableau = [];
     let indexTacheEnEdition = null; // Stocke l'index de la tâche en cours d'édition
     let zonesPuceTemporairesTableau = []; // Zones associées à la puce en cours d'édition
@@ -875,9 +895,13 @@
     // Normalisation d'un objet photo (support rétrocompatible string vs object)
     function normaliserPhotoPuce(pic) {
         if (typeof pic === 'string') {
-            return { src: pic, archivee: false };
+            return { src: pic, archivee: false, entreprise: "" };
         }
-        return pic || { src: '', archivee: false };
+        return {
+            src: pic?.src || '',
+            archivee: pic?.archivee || false,
+            entreprise: pic?.entreprise || ""
+        };
     }
 
     function convertirDxfTextEnSvgDataUrl(dxfText) {
@@ -1171,12 +1195,28 @@
         document.querySelectorAll('.chk-entreprise-export').forEach(chk => chk.checked = cocher);
     }
 
+    // NOUVELLE VÉRIFICATION DE PERTINENCE STRICTE D'UNE PUCE POUR UNE ENTREPRISE (SANS PUCES SOLDÉES FANTÔMES)
     function puceConcerneEntreprise(p, nomEntreprise) {
         if (!nomEntreprise) return true;
-        // Vérification dans les entreprises globales de la puce
-        if (p.entreprises && p.entreprises.includes(nomEntreprise)) return true;
-        // Vérification dans les tâches associées
-        if (p.taches && p.taches.some(t => t.entreprise === nomEntreprise)) return true;
+        
+        // Si la puce globale est résolue, elle est totalement exclue du rapport entreprise
+        if (normaliserStatutPuce(p) === "resolue") return false;
+
+        // 1. Vérification dans les tâches actives ou en cours spécifiquement attribuées à cette entreprise
+        if (p.taches && p.taches.length > 0) {
+            const aDesTachesActivesLot = p.taches.some(t => {
+                const entOk = !t.entreprise || t.entreprise === nomEntreprise;
+                const statutNonSolde = (t.statut !== "resolue" && !t.faite);
+                return entOk && statutNonSolde;
+            });
+            if (aDesTachesActivesLot) return true;
+        }
+
+        // 2. Vérification dans l'affectation globale si aucune sous-tâche n'existe
+        if ((!p.taches || p.taches.length === 0) && p.entreprises && p.entreprises.includes(nomEntreprise)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -1603,7 +1643,7 @@
                         const bytes = convertirDataUrlEnUint8Array(photoDataUrl);
                         zip.file(cheminRelatif, bytes);
 
-                        nouveauxChemins.push({ src: cheminRelatif, archivee: photoObj.archivee || false });
+                        nouveauxChemins.push({ src: cheminRelatif, archivee: photoObj.archivee || false, entreprise: photoObj.entreprise || "" });
                     } else {
                         nouveauxChemins.push(photoObj);
                     }
@@ -1753,7 +1793,7 @@
                                 if (photoFileInZip) {
                                     const base64Str = await photoFileInZip.async("base64");
                                     const mime = pPath.endsWith('.avif') ? 'image/avif' : (pPath.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
-                                    photosReconstituees.push({ src: `data:${mime};base64,${base64Str}`, archivee: pObj.archivee || false });
+                                    photosReconstituees.push({ src: `data:${mime};base64,${base64Str}`, archivee: pObj.archivee || false, entreprise: pObj.entreprise || "" });
                                 }
                             } else {
                                 photosReconstituees.push(pObj);
@@ -2545,6 +2585,13 @@
         }
     }
 
+    function changerEntrepriseAssocieePhoto(index, nomEnt, event) {
+        if (event) event.stopPropagation();
+        if (photosPuceTemporairesTableau[index]) {
+            photosPuceTemporairesTableau[index].entreprise = nomEnt;
+        }
+    }
+
     function chargerPlanEtPucesDuNiveauActuel() {
         if(!chantierActuel || !chantierActuel.niveaux || !chantierActuel.niveaux[indexNiveauActuel]) return;
         document.getElementById('viewPlanImg').src = chantierActuel.niveaux[indexNiveauActuel].plan || "";
@@ -2709,7 +2756,7 @@
         const nomNivActuel = (chantierActuel.niveaux && chantierActuel.niveaux[indexNiveauActuel]) ? chantierActuel.niveaux[indexNiveauActuel].nom : "Niveau unique";
 
         const nPuce = { 
-            id: Date.now(), 
+            id: Date.now() + Math.floor(Math.random() * 1000), 
             numero: num, 
             niveauNom: nomNivActuel, 
             zonePrecis: "", 
@@ -3050,7 +3097,7 @@
             const r = new FileReader(); 
             r.onload = (e) => { 
                 compresserImage(e.target.result, 1000, 1000).then(imgCompressee => { 
-                    photosPuceTemporairesTableau.push({ src: imgCompressee, archivee: false }); 
+                    photosPuceTemporairesTableau.push({ src: imgCompressee, archivee: false, entreprise: "" }); 
                     rafraichirAffichageGaleriePhotosSaisie(); 
                 }); 
             };
@@ -3065,15 +3112,25 @@
             ctn.innerHTML = "Aucune photo enregistrée pour ce constat";
             return;
         }
+
+        const entreprisesChantier = chantierActuel ? (chantierActuel.entreprises || []) : [];
+
         ctn.innerHTML = photosPuceTemporairesTableau.map((picRaw, idx) => {
             const pic = normaliserPhotoPuce(picRaw);
+            const optionsEnt = `<option value="">🌐 Globale</option>` + entreprisesChantier.map(e => `<option value="${e}" ${pic.entreprise === e ? 'selected' : ''}>🏢 ${e}</option>`).join('');
+
             return `
-                <div class="photo-gallery-item ${pic.archivee ? 'archived' : ''}" style="background-image: url(${pic.src});" onclick="ouvrirVisionneusePhotoGrandFormat(${idx})">
-                    <div class="photo-gallery-archive-btn ${pic.archivee ? 'is-archived' : ''}" onclick="basculerArchivagePhotoPuce(${idx}, event)" title="${pic.archivee ? 'Restaurer pour le PDF' : 'Archiver (Masquer du PDF)'}">
-                        ${pic.archivee ? '📦' : '👁️'}
+                <div class="photo-gallery-card">
+                    <div class="photo-gallery-item ${pic.archivee ? 'archived' : ''}" style="background-image: url(${pic.src});" onclick="ouvrirVisionneusePhotoGrandFormat(${idx})">
+                        <div class="photo-gallery-archive-btn ${pic.archivee ? 'is-archived' : ''}" onclick="basculerArchivagePhotoPuce(${idx}, event)" title="${pic.archivee ? 'Restaurer pour le PDF' : 'Archiver (Masquer du PDF)'}">
+                            ${pic.archivee ? '📦' : '👁️'}
+                        </div>
+                        <div class="photo-gallery-del-btn" onclick="supprimerPhotoDeLaZoneSaisie(${idx}, event)" title="Supprimer">×</div>
+                        <div class="photo-gallery-edit-btn" onclick="ouvrirAnnotationPhoto(${idx}, event)" title="Dessiner / Annoter">✏️</div>
                     </div>
-                    <div class="photo-gallery-del-btn" onclick="supprimerPhotoDeLaZoneSaisie(${idx}, event)" title="Supprimer">×</div>
-                    <div class="photo-gallery-edit-btn" onclick="ouvrirAnnotationPhoto(${idx}, event)" title="Dessiner / Annoter">✏️</div>
+                    <select class="photo-entreprise-select" onchange="changerEntrepriseAssocieePhoto(${idx}, this.value, event)">
+                        ${optionsEnt}
+                    </select>
                 </div>
             `;
         }).join('');
@@ -3339,7 +3396,6 @@
                     return chantierActuel.puces.some(p => {
                         if (p.niveauNom !== niv.nom) return false;
                         const st = normaliserStatutPuce(p);
-                        // Exclure purement et simplement les puces levées en mode entreprise
                         if (st === "resolue") return false;
                         return puceConcerneEntreprise(p, entrepriseFiltre);
                     });
@@ -3435,10 +3491,10 @@
                             tableElem.innerHTML = `
                                 <thead>
                                     <tr>
-                                        <th style="width: 12%; text-align:center;">N° Puce</th>
-                                        <th style="width: 18%; text-align:center;">Localisation</th>
+                                        <th style="width: 8%; text-align:center;">N° Puce</th>
+                                        <th style="width: 16%; text-align:center;">Localisation</th>
                                         <th style="width: 12%; text-align:center;">Statut</th>
-                                        <th>Actions à mener &amp; Observations</th>
+                                        <th style="width: 64%;">Actions à mener &amp; Observations</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>
@@ -3471,7 +3527,7 @@
                                             const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
                                             const labelSubT = t.statut === "en_cours" ? '🟠' : '🔴';
 
-                                            return `<div style="font-size:8.5pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> — Échéance: ${echFmt} ${bRetard}</div>`;
+                                            return `<div style="font-size:7pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> — Échéance: ${echFmt} ${bRetard}</div>`;
                                         }).join('') + `</div>`;
                                     }
                                 }
@@ -3633,7 +3689,7 @@
                                 if (t.statut === "en_cours") labelSubT = '🟠';
                                 else if (t.statut === "resolue" || t.faite) labelSubT = '🟢';
 
-                                return `<div style="font-size:9pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
+                                return `<div style="font-size:7pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
                             }).join('') + `</div>`;
                         }
 
@@ -3692,7 +3748,7 @@
             pdfNotesSection.style.display = "none";
         }
 
-        // SECTION REPORTAGE PHOTO (EXCLUSION DES PHOTOS ARCHIVÉES ET DES PUCES LEVÉES EN MODE ENTREPRISE)
+        // SECTION REPORTAGE PHOTO AVEC FILTRE PAR ENTREPRISE ET LÉGENDES DÉTAILLÉES
         // FORMAT : 8 PHOTOS PAR PAGE (2 COLONNES x 4 LIGNES)
         const blockPhotos = document.getElementById('pdfPhotosSection');
         if (imprimerPhotos && chantierActuel.puces) {
@@ -3718,16 +3774,39 @@
                 if (!inclureLevees && st === "resolue") return;
 
                 if (p.photos && p.photos.length > 0) {
-                    // FILTRE DES PHOTOS ARCHIVÉES
-                    const photosValidesPdf = p.photos.map(pic => normaliserPhotoPuce(pic)).filter(pObj => !pObj.archivee);
+                    // FILTRE DES PHOTOS ARCHIVÉES ET FILTRAGE PAR ENTREPRISE ASSOCIÉE À LA PHOTO
+                    const photosValidesPdf = p.photos.map(pic => normaliserPhotoPuce(pic)).filter(pObj => {
+                        if (pObj.archivee) return false;
+                        if (entrepriseFiltre) {
+                            // La photo est incluse si elle est globale (pas d'entreprise) OU attribuée à l'entreprise ciblée
+                            return !pObj.entreprise || pObj.entreprise === entrepriseFiltre;
+                        }
+                        return true;
+                    });
 
                     photosValidesPdf.forEach((photoObj, indexPhoto) => {
+                        // RECHERCHE DE LA LÉGENDE : TÂCHES OU COMMENTAIRE DE LA PUCE
+                        let legendeDetail = [];
+                        if (p.taches && p.taches.length > 0) {
+                            const tConcernees = entrepriseFiltre ? p.taches.filter(t => !t.entreprise || t.entreprise === entrepriseFiltre) : p.taches;
+                            tConcernees.forEach(t => {
+                                if (t.description) legendeDetail.push(`• ${t.description}${t.entreprise ? ' [' + t.entreprise + ']' : ''}`);
+                            });
+                        }
+                        if (p.commentaire && p.commentaire.trim() !== "") {
+                            legendeDetail.push(`Obs: ${p.commentaire.trim()}`);
+                        }
+
+                        const legendeTexteAffiche = legendeDetail.length > 0 ? legendeDetail.join('<br>') : 'Sans description particulière';
+
                         collectionToutesPhotosImprimables.push({
                             src: photoObj.src,
                             numero: p.numero,
                             niveau: p.niveauNom + (p.zonePrecis ? ` (${p.zonePrecis})` : ''),
                             statut: st,
-                            labelIndex: photosValidesPdf.length > 1 ? ` (${indexPhoto + 1}/${photosValidesPdf.length})` : ''
+                            labelIndex: photosValidesPdf.length > 1 ? ` (${indexPhoto + 1}/${photosValidesPdf.length})` : '',
+                            entrepriseLIEE: photoObj.entreprise ? ` [Lot ${photoObj.entreprise}]` : '',
+                            legendeDetaillee: legendeTexteAffiche
                         });
                     });
                 }
@@ -3766,7 +3845,11 @@
                             if (pAvecP.statut === "en_cours") statusLabel = "EN COURS";
                             else if (pAvecP.statut === "resolue") statusLabel = "LEVÉE";
 
-                            td.innerHTML = `<img src="${pAvecP.src}" class="photo-grid-img"><div class="photo-grid-caption">PUCE N° ${pAvecP.numero}${pAvecP.labelIndex} (${pAvecP.niveau}) - ${statusLabel}</div>`;
+                            td.innerHTML = `
+                                <img src="${pAvecP.src}" class="photo-grid-img">
+                                <div class="photo-grid-caption">PUCE N° ${pAvecP.numero}${pAvecP.labelIndex} (${pAvecP.niveau}) - ${statusLabel}${pAvecP.entrepriseLIEE}</div>
+                                <div class="photo-grid-subcaption">${pAvecP.legendeDetaillee}</div>
+                            `;
                         } else { 
                             td.style.border = "none"; 
                             td.style.background = "transparent"; 
