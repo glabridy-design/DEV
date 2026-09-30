@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title.AARapport de Visite de Chantier</title>
+    <title>Rapport de Visite de Chantier</title>
     <link rel="manifest" href="manifest.json">
+    <!-- JSZip chargé en local pour une autonomie 100% Hors-Ligne -->
     <script src="jszip.min.js"></script>
+    <!-- Parser DXF professionnel pour la conversion vectorielle AutoCAD -> SVG -->
     <script src="https://cdn.jsdelivr.net/npm/dxf-parser@1.1.2/dist/dxf-parser.min.js"></script>
 
     <style>
@@ -14,19 +16,21 @@
         .app-container { max-width: 900px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
 
         h1, h2, h3 { color: #1a73e8; margin-top: 0; }
-        
-        .section { display: none !important; }
-        .section.active { display: block !important; }
+        .section { display: none; }
+        .section.active { display: block; }
 
+        /* Navigation principale */
         .nav-bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px; flex-wrap: wrap; }
         .btn-back { background: #5f6368; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
 
+        /* Badges d'état de synchronisation */
         .sync-status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; background: #e8f0fe; color: #1a73e8; border: 1px solid #b4cff7; }
         .sync-status-badge.synced { background: #e6f4ea; color: #137333; border-color: #a8dab5; }
         .sync-status-badge.pending { background: #fef7e0; color: #b06000; border-color: #fdd835; }
         .sync-status-badge.syncing { background: #e8f0fe; color: #1a73e8; border-color: #aecbfa; }
         .sync-status-badge.offline { background: #fce8e6; color: #c5221f; border: 1px solid #f5b7b1; }
 
+        /* MENU DÉROULANT DES ACTIONS */
         .dropdown-container { position: relative; display: inline-block; }
         .btn-dropdown { background: #1a73e8; color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; }
         .btn-dropdown:hover { background: #1557b0; }
@@ -38,6 +42,7 @@
         .dropdown-menu button.danger-item { color: #d93025; font-weight: bold; }
         .dropdown-menu button.danger-item:hover { background-color: #fce8e6; color: #c5221f; }
 
+        /* Onglets internes */
         .tabs-container { display: flex; border-bottom: 2px solid #dadce0; margin-bottom: 20px; gap: 5px; padding-top: 10px; flex-wrap: wrap; }
         .tab-button { flex: 1; min-width: 140px; padding: 12px 8px; background: #f1f3f4; border: none; border-radius: 8px 8px 0 0; cursor: pointer; font-weight: bold; font-size: 14px; color: #5f6368; transition: all 0.2s; text-align: center; }
         .tab-button:hover { background: #e8eaed; color: #1a73e8; }
@@ -45,6 +50,7 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
+        /* Formulaires */
         label { display: block; margin: 14px 0 6px; font-weight: 600; font-size: 14px; color: #4a4a4a; }
         input[type="text"], input[type="date"], select, textarea { width: 100%; padding: 12px; border: 1px solid #dadce0; border-radius: 8px; font-size: 16px; background: #f8f9fa; transition: border 0.2s; }
         input[type="text"]:focus, input[type="date"]:focus, select:focus, textarea:focus { border-color: #1a73e8; background: white; outline: none; }
@@ -69,6 +75,7 @@
         .btn-delete-card { position: absolute; top: 15px; right: 15px; background: #fce8e6; color: #c5221f; border: 1px solid #fad2cf; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
         .btn-delete-card:hover { background: #d93025; color: white; border-color: #d93025; }
 
+        /* Badges de Statut */
         .status-badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
         .status-badge.active { background: #fadbd8; color: #c0392b; border: 1px solid #f5b7b1; }
         .status-badge.progress { background: #fdebd0; color: #d35400; border: 1px solid #f5cba7; }
@@ -85,10 +92,12 @@
         .plan-container { position: relative; display: inline-block; max-width: 100%; }
         .plan-img { display: block; max-width: 100%; height: auto; user-select: none; -webkit-user-drag: none; }
 
+        /* Overlay vectoriel SVG pour le tracé des zones */
         .plan-svg-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
         .plan-svg-overlay polygon, .plan-svg-overlay rect { pointer-events: auto; cursor: pointer; transition: fill-opacity 0.2s; }
         .plan-svg-overlay polygon:hover, .plan-svg-overlay rect:hover { fill-opacity: 0.65 !important; }
 
+        /* Puces sur le plan */
         .pin { position: absolute; width: 22px; height: 22px; background: #d93025; color: white; border-radius: 50%; text-align: center; font-size: 11px; font-weight: bold; line-height: 18px; transform: translate(-50%, -50%); border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.4); cursor: pointer; z-index: 6; }
         .pin.progress { background: #e67e22; }
         .pin.resolved { background: #28a745; }
@@ -106,7 +115,8 @@
         .table-remarques tr.clickable-row { cursor: pointer; transition: background 0.15s; }
         .table-remarques tr.clickable-row:hover { background-color: #edf2fa !important; }
 
-        .photo-gallery-wrapper { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; min-height: 110px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f8f9fa; }
+        /* GALERIE ET CARTES PHOTOS */
+        .photo-gallery-wrapper { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; min-height: 110px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; background: #f8f9fa; }
         .photo-gallery-item-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .photo-gallery-item { position: relative; width: 95px; height: 95px; border-radius: 6px; border: 1px solid #dadce0; background-size: cover; background-position: center; cursor: pointer; }
         .photo-gallery-item.archived { opacity: 0.45; filter: grayscale(80%); border-style: dashed; }
@@ -123,6 +133,7 @@
         .note-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
         .note-sketch-img { max-width: 100%; max-height: 250px; border: 1px solid #ccc; border-radius: 6px; margin-top: 10px; display: block; background: #fff; }
 
+        /* FENÊTRES MODALES : MASQUÉES STRICTEMENT PAR DÉFAUT ÉCRAN ET IMPRESSION */
         .sketch-modal-overlay, .photo-viewer-overlay { 
             display: none !important; 
             position: fixed; 
@@ -173,6 +184,7 @@
             .photo-viewer-next { right: 5px; }
         }
 
+        /* VERROUILLAGE GÉOMÉTRIQUE STRICT MULTI-NAVIGATEURS POUR IMPRESSION PDF */
         @media print {
             @page { 
                 size: A4 portrait; 
@@ -190,6 +202,7 @@
             }
             .app-container { max-width: 100% !important; width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; border: none !important; }
             
+            /* MASQUAGE COMPLET DE L'IHM ET DES FENÊTRES MODALES */
             .section, .nav-bar, .no-print, form, button, input, textarea, select, .config-box, .tabs-container, .map-filters-box, .print-options-box, .photo-viewer-overlay, .sketch-modal-overlay { 
                 display: none !important; 
             }
@@ -221,6 +234,7 @@
                 margin: 0 auto !important;
             }
             
+            /* DIMENSIONNEMENT DU PLAN SELON LE MODE D'EXPORTATION */
             .mode-entreprise .plan-img { 
                 max-height: 135mm !important; 
                 width: auto !important; 
@@ -238,6 +252,7 @@
                 margin: 0 auto; 
             }
 
+            /* OPTIMISATION ET COMPACITÉ DU TABLEAU DES REMARQUES PDF */
             .pdf-table { 
                 width: 100% !important; 
                 border-collapse: collapse !important; 
@@ -245,16 +260,16 @@
                 page-break-inside: auto !important;
             }
             .pdf-table thead {
-                display: table-header-group !important;
+                display: table-header-group !important; /* Répétition automatique de l'en-tête sur chaque page */
             }
             .pdf-table tr {
                 page-break-inside: avoid !important;
-                break-inside: avoid !important;
+                break-inside: avoid !important; /* Empêche de couper une ligne au milieu */
             }
             .pdf-table th, .pdf-table td { 
                 border: 1px solid #000 !important; 
                 padding: 3px 5px !important; 
-                font-size: 7.5pt !important; 
+                font-size: 7.5pt !important; /* Police réduite pour optimiser le gain de place */
                 line-height: 1.25 !important;
                 text-align: left !important; 
             }
@@ -265,36 +280,58 @@
                 font-size: 7.5pt !important;
             }
 
+            /* PLANCHE PHOTO : 8 PHOTOS PAR PAGE (2 COLONNES x 4 LIGNES) */
             .photo-grid-table { 
                 width: 100% !important; 
+                height: 248mm !important; 
+                table-layout: fixed !important; 
                 border-collapse: separate !important; 
-                border-spacing: 6px !important; 
+                border-spacing: 3px !important; 
+                page-break-inside: avoid !important; 
+                break-inside: avoid !important;
+                margin: 0 !important;
+            }
+            .photo-grid-table tr {
+                height: 62mm !important;
                 page-break-inside: avoid !important; 
                 break-inside: avoid !important;
             }
             .photo-grid-table td { 
                 width: 50% !important; 
+                height: 62mm !important; 
                 vertical-align: top !important; 
                 border: 1px solid #ccc !important; 
-                padding: 4px !important; 
+                padding: 3px !important; 
                 text-align: center !important; 
                 background: #fff !important; 
                 page-break-inside: avoid !important; 
                 break-inside: avoid !important;
+                overflow: hidden !important;
             }
             .photo-grid-img { 
                 width: 100% !important; 
                 height: 52mm !important; 
+                max-height: 52mm !important; 
                 object-fit: contain !important; 
                 background: #fafafa !important; 
                 display: block !important; 
-                margin-bottom: 4px !important; 
+                margin: 0 0 2px 0 !important; 
                 border: 1px solid #eee !important; 
             }
             .photo-grid-caption { 
-                font-size: 8pt !important; 
+                display: block !important;
+                height: 6mm !important;
+                max-height: 6mm !important;
+                overflow: hidden !important;
+                white-space: nowrap !important;
+                text-overflow: ellipsis !important;
+                font-size: 7.5pt !important; 
                 font-weight: bold !important; 
                 color: #1a73e8 !important; 
+                line-height: 6mm !important;
+                text-align: left !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
 
             .pin { 
@@ -343,268 +380,276 @@
 <div class="app-container">
 
     <div id="pageAccueil" class="section active">
-        <h1.AARapport de visite V5</h1>
+        <h1>Rapport de visite V5</h1>
 
         <div class="config-box">
-            <strong.AA🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
+            <strong>🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
             <div style="margin-top: 8px; display: flex; gap: 5px; flex-wrap: wrap;">
                 <input type="text" id="cloudUser" placeholder="Pseudo GitHub" style="flex:1; padding:6px; font-size:13px;">
                 <input type="text" id="cloudRepo" placeholder="Nom du Dépôt" style="flex:1; padding:6px; font-size:13px;">
                 <input type="password" id="cloudToken" placeholder="GitHub Token (PAT)" style="flex:1; padding:6px; font-size:13px;">
-                <button class="btn btn-small" style="margin:0; background:#24292e;" onclick="sauvegarderConfigCloud()".AAConnecter</button>
+                <button class="btn btn-small" style="margin:0; background:#24292e;" onclick="sauvegarderConfigCloud()">Connecter</button>
             </div>
         </div>
 
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn btn-success" style="flex:1; min-width:180px;" onclick="changerPage('pageCreer')".AA+ Créer un nouveau chantier</button>
-            <button class="btn" style="flex:1; background: #5f6368; min-width:180px;" onclick="chargerIndexDepuisGitHub()".AA🔄 Télécharger les Chantiers Cloud (.json)</button>
-            <button class="btn" style="flex:1; background: #0b57d0; min-width:180px;" onclick="document.getElementById('importLocalFileInput').click()".AA📁 Importer un chantier (.json)</button>
+            <button class="btn btn-success" style="flex:1; min-width:180px;" onclick="changerPage('pageCreer')">+ Créer un nouveau chantier</button>
+            <button class="btn" style="flex:1; background: #5f6368; min-width:180px;" onclick="chargerIndexDepuisGitHub()">🔄 Télécharger les Chantiers Cloud (.json)</button>
+            <button class="btn" style="flex:1; background: #0b57d0; min-width:180px;" onclick="document.getElementById('importLocalFileInput').click()">📁 Importer un chantier (.json)</button>
             <input type="file" id="importLocalFileInput" accept=".json" style="display:none;" onchange="importerFichierChantierLocal(event)">
         </div>
 
-        <h2 style="margin-top: 35px; border-bottom: 2px solid #1a73e8; padding-bottom: 5px;".AAVos chantiers en cours</h2>
+        <h2 style="margin-top: 35px; border-bottom: 2px solid #1a73e8; padding-bottom: 5px;">Vos chantiers en cours</h2>
         <div id="listeChantiers"></div>
     </div>
 
     <div id="pageCreer" class="section">
-        <div class="nav-bar"><button class="btn-back" onclick="changerPage('pageAccueil')".AA← Retour</button></div>
-        <h2.AANouveau Chantier</h2>
+        <div class="nav-bar"><button class="btn-back" onclick="changerPage('pageAccueil')">← Retour</button></div>
+        <h2>Nouveau Chantier</h2>
         <form id="formChantier" onsubmit="sauvegarderChantier(event)">
-            <label for="nom".AANom du chantier :</label>
+            <label for="nom">Nom du chantier :</label>
             <input type="text" id="nom" required placeholder="Ex: Casino Trouville">
-            <label for="reference".AARéférence de l'affaire :</label>
+            <label for="reference">Référence de l'affaire :</label>
             <input type="text" id="reference" required placeholder="Ex: DL398_OPC">
-            <label for="localisation".AALocalisation :</label>
+            <label for="localisation">Localisation :</label>
             <input type="text" id="localisation" required placeholder="Ex: Trouville-sur-Mer">
 
-            <label for="driveUrlInput".AA🔗 Lien du dossier Google Drive pour ce chantier (ZIP Visites) :</label>
+            <label for="driveUrlInput">🔗 Lien du dossier Google Drive pour ce chantier (ZIP Visites) :</label>
             <input type="text" id="driveUrlInput" placeholder="https://drive.google.com/drive/folders/..." value="https://drive.google.com/drive/folders/1tRoQjp4ww2Qp6QuD2AdG5LPT9Wkl4Siz?usp=drive_link">
 
-            <label.AAPlans par niveau (Supports Images, SVG & AutoCAD DXF) :</label>
+            <label>Plans par niveau (Supports Images, SVG &amp; AutoCAD DXF) :</label>
             <div style="background:#f8f9fa; border:1px solid #dadce0; padding:15px; border-radius:8px; margin-bottom:15px;">
                 <div class="flex-row">
                     <input type="text" id="nomNiveauInput" placeholder="Ex: RDC, R+1...">
                     <input type="file" id="planInput" accept="image/*,.svg,.dxf" onchange="chargerImagePlanNiveau(event)">
                 </div>
-                <button type="button" class="btn btn-small" style="background:#5f6368;" onclick="enregistrerNiveauDansListe()".AA+ Ajouter ce niveau</button>
+                <button type="button" class="btn btn-small" style="background:#5f6368;" onclick="enregistrerNiveauDansListe()">+ Ajouter ce niveau</button>
                 <div id="listeNiveauxTemporaire" style="margin-top:10px; display: flex; gap: 5px; flex-wrap: wrap;"></div>
             </div>
 
-            <label.AAEntreprises :</label>
+            <label>Entreprises :</label>
             <div class="flex-row">
                 <input type="text" id="nomEntreprise" placeholder="Nom de l'entreprise...">
-                <button type="button" class="btn btn-small" onclick="ajouterEntreprise()".AAAjouter</button>
+                <button type="button" class="btn btn-small" onclick="ajouterEntreprise()">Ajouter</button>
             </div>
             <div id="listeEntreprisesTemporaire" style="min-height:40px; border:1px solid #dadce0; padding:8px; border-radius:8px; background:#f8f9fa; margin-bottom:15px; display:flex; flex-wrap:wrap; gap:5px;"></div>
 
-            <button type="submit" class="btn".AACréer l'affaire</button>
+            <button type="submit" class="btn">Créer l'affaire</button>
         </form>
     </div>
 
     <div id="pageChantierDetails" class="section">
         <div class="nav-bar">
-            <button class="btn-back" onclick="changerPage('pageAccueil')".AA← Retour</button>
+            <button class="btn-back" onclick="changerPage('pageAccueil')">← Retour</button>
 
+            <!-- BADGE DE SYNCHRO CONFIGURATION CHANTIER -->
             <div id="syncStatusBadge" class="sync-status-badge synced">
-                <span id="syncStatusIcon".AA🟢</span>
-                <span id="syncStatusText".AAConfig à jour</span>
+                <span id="syncStatusIcon">🟢</span>
+                <span id="syncStatusText">Config à jour</span>
             </div>
 
             <div class="dropdown-container no-print">
-                <button class="btn-dropdown" onclick="basculerMenuActions(event)".AA⚙ Actions & Exports ▾</button>
+                <button class="btn-dropdown" onclick="basculerMenuActions(event)">⚙️ Actions &amp; Exports ▾</button>
                 <div id="dropdownMenuActions" class="dropdown-menu">
-                    <button onclick="declencherImpression()".AA🖨️ Exporter en PDF</button>
-                    <button onclick="forcerSynchroSmartManuelle()".AA☁️ Synchro Config Chantier sur GitHub</button>
-                    <button onclick="exporterChantierEnFichierLocal()".AA💾 Exporter Config Chantier (.json)</button>
-                    <button onclick="exporterRapportDuJourIncr()".AA⏏️ Exporter Visite du Jour (.zip vers Drive)</button>
-                    <button onclick="exporterRapportBase64Direct()".AA📦 Exporter le rapport (JSON Base64 Direct)</button>
-                    <button onclick="document.getElementById('importHistoriquePucesInput').click(); fermerMenuActions();".AA📥 Fusionner un Rapport Local (.zip / .json)</button>
-                    <button onclick="ouvrirGoogleDriveRapports()".AA🌐 Télécharger un Rapport Cloud (Google Drive)</button>
-                    <button class="danger-item" onclick="reinitialiserToutesLesPucesEtRemarques()".AA🗑️ Réinitialiser / Purger tout le rapport</button>
+                    <button onclick="declencherImpression()">🖨️ Exporter en PDF</button>
+                    <button onclick="forcerSynchroSmartManuelle()">☁️ Synchro Config Chantier sur GitHub</button>
+                    <button onclick="exporterChantierEnFichierLocal()">💾 Exporter Config Chantier (.json)</button>
+                    <button onclick="exporterRapportDuJourIncr()">⏏️ Exporter Visite du Jour (.zip vers Drive)</button>
+                    <button onclick="exporterRapportBase64Direct()">📦 Exporter le rapport (JSON Base64 Direct)</button>
+                    <button onclick="document.getElementById('importHistoriquePucesInput').click(); fermerMenuActions();">📥 Fusionner un Rapport Local (.zip / .json)</button>
+                    <button onclick="ouvrirGoogleDriveRapports()">🌐 Télécharger un Rapport Cloud (Google Drive)</button>
+                    <button class="danger-item" onclick="reinitialiserToutesLesPucesEtRemarques()">🗑️ Réinitialiser / Purger tout le rapport</button>
                 </div>
             </div>
             <input type="file" id="importHistoriquePucesInput" accept=".zip,.json" style="display:none;" onchange="injecterHistoriqueRemarquesJson(event)">
         </div>
 
-        <h1 id="viewNom".AA---</h1>
+        <h1 id="viewNom">---</h1>
         <div style="margin-bottom:15px; font-size:14px; color:#5f6368;">
-            <span style="margin-right:15px;".AA<strong.AARef :</strong.AA <span id="viewRef".AA---</span.AA</span>
-            <span.AA<strong.AA📍 Lieu :</strong.AA <span id="viewLoc".AA---</span.AA</span>
+            <span style="margin-right:15px;"><strong>Ref :</strong> <span id="viewRef">---</span></span>
+            <span><strong>📍 Lieu :</strong> <span id="viewLoc">---</span></span>
         </div>
 
         <div class="tabs-container no-print">
-            <button class="tab-button active" onclick="switchTab('tabTerrain')".AA🏗️ Saisie Terrain</button>
-            <button class="tab-button" onclick="switchTab('tabNotes')".AA📝 Notes & Croquis</button>
+            <button class="tab-button active" onclick="switchTab('tabTerrain')">🏗️ Saisie Terrain</button>
+            <button class="tab-button" onclick="switchTab('tabNotes')">📝 Notes &amp; Croquis</button>
         </div>
 
         <div id="tabTerrain" class="tab-content active">
+            <!-- GESTION DU LIEN DRIVE ET DATE DE VISITE DU CHANTIER -->
             <div style="background:#e8f0fe; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin-bottom:15px;">
                 <div class="flex-row" style="margin-bottom:8px;">
                     <div style="flex:1; min-width:200px;">
-                        <label style="margin-top:0; color:#1a73e8; font-size:13px;".AA📅 Date de la visite :</label>
+                        <label style="margin-top:0; color:#1a73e8; font-size:13px;">📅 Date de la visite :</label>
                         <input type="date" id="viewDateVisiteInput" style="font-size:13px; padding:8px; background:white;" onchange="enregistrerDateVisiteTerrain()">
                     </div>
                     <div style="flex:2; min-width:250px;">
-                        <label style="margin-top:0; color:#1a73e8; font-size:13px;".AA🔗 Dossier Google Drive de ce chantier :</label>
+                        <label style="margin-top:0; color:#1a73e8; font-size:13px;">🔗 Dossier Google Drive de ce chantier :</label>
                         <input type="text" id="viewDriveUrlInput" placeholder="https://drive.google.com/drive/folders/..." style="font-size:13px; padding:8px; background:white;">
                     </div>
                 </div>
                 <div style="display:flex; justify-content:flex-end; gap:8px;">
-                    <button type="button" class="btn btn-small" style="background:#1a73e8;" onclick="mettreAJourLienDriveChantier()".AA💾 Enregistrer paramètres</button>
-                    <button type="button" class="btn btn-small btn-success" onclick="ouvrirDossierDriveDirectement()".AA📁 Ouvrir le Drive</button>
+                    <button type="button" class="btn btn-small" style="background:#1a73e8;" onclick="mettreAJourLienDriveChantier()">💾 Enregistrer paramètres</button>
+                    <button type="button" class="btn btn-small btn-success" onclick="ouvrirDossierDriveDirectement()">📁 Ouvrir le Drive</button>
                 </div>
             </div>
 
+            <!-- MODULE RÉCAPITULATIF DES ÉVOLUTIONS ET ALERTES RETARDS -->
             <div style="background:#fff; border:1px solid #b4cff7; padding:15px; border-radius:8px; margin-bottom:15px; box-shadow: 0 2px 6px rgba(0,0,0,0.03);">
                 <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-                    <h3 style="margin:0; font-size:15px; color:#1a73e8;".AA📝 Synthèse des évolutions & Alertes retards</h3>
-                    <button type="button" class="btn btn-small" style="background:#1a73e8; font-size:12px;" onclick="regenererSyntheseEvolutionsTexte()".AA🔄 Régénérer la synthèse</button>
+                    <h3 style="margin:0; font-size:15px; color:#1a73e8;">📝 Synthèse des évolutions &amp; Alertes retards</h3>
+                    <button type="button" class="btn btn-small" style="background:#1a73e8; font-size:12px;" onclick="regenererSyntheseEvolutionsTexte()">🔄 Régénérer la synthèse</button>
                 </div>
-                <p style="font-size:12px; color:#666; margin-top:0;".AACe texte récapitule automatiquement les changements depuis le dernier export ainsi que les actions en retard. Vous pouvez le modifier avant impression.</p>
-                <textarea id="syntheseEvolutionsInput" rows="5" style="width:100%; border:1px solid #dadce0; border-radius:6px; padding:10px; font-size:13px; line-height:1.5; background:#f8f9fa;" onchange="enregistrerModifTexteSyntheseManuelle()".AA</textarea>
+                <p style="font-size:12px; color:#666; margin-top:0;">Ce texte récapitule automatiquement les changements depuis le dernier export ainsi que les actions en retard. Vous pouvez le modifier avant impression.</p>
+                <textarea id="syntheseEvolutionsInput" rows="5" style="width:100%; border:1px solid #dadce0; border-radius:6px; padding:10px; font-size:13px; line-height:1.5; background:#f8f9fa;" onchange="enregistrerModifTexteSyntheseManuelle()"></textarea>
             </div>
 
-            <label.AAEntreprises associées :</label>
+            <label>Entreprises associées :</label>
             <div style="background:#f8f9fa; border:1px solid #dadce0; padding:10px; border-radius:8px; margin-bottom:15px;">
-                <div id="viewEntreprises" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;".AA</div>
+                <div id="viewEntreprises" style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px;"></div>
                 <div class="flex-row" style="margin-bottom:0;">
                     <input type="text" id="nomEntrepriseTerrainInput" placeholder="Ajouter une entreprise au fichier source..." style="padding:8px; font-size:14px;">
-                    <button type="button" class="btn btn-small btn-success" onclick="ajouterEntrepriseDirectTerrain()".AA+ Inclure</button>
+                    <button type="button" class="btn btn-small btn-success" onclick="ajouterEntrepriseDirectTerrain()">+ Inclure</button>
                 </div>
             </div>
 
-            <label.AAAjouter un niveau / plan à cette affaire (Images, SVG, DXF AutoCAD) :</label>
+            <label>Ajouter un niveau / plan à cette affaire (Images, SVG, DXF AutoCAD) :</label>
             <div style="background:#f8f9fa; border:1px solid #dadce0; padding:12px; border-radius:8px; margin-bottom:20px;">
                 <div class="flex-row" style="margin-bottom:0;">
                     <input type="text" id="nomNiveauDirectInput" placeholder="Nom (Ex: R+2, Parking...)" style="padding:8px; font-size:14px;">
                     <input type="file" id="planDirectInput" accept="image/*,.svg,.dxf" onchange="chargerImagePlanNiveauDirectTerrain(event)" style="font-size:13px;">
-                    <button type="button" class="btn btn-small" style="background:#5f6368;" onclick="injecterNiveauDirectDansFichierSource()".AA+ Injecter Niveau</button>
+                    <button type="button" class="btn btn-small" style="background:#5f6368;" onclick="injecterNiveauDirectDansFichierSource()">+ Injecter Niveau</button>
                 </div>
             </div>
 
             <div style="background:#edf2fa; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin-bottom:15px;">
-                <label for="selectNiveauVisite" style="margin-top:0; color:#1a73e8;".AANiveau actif :</label>
-                <select id="selectNiveauVisite" onchange="changerDeNiveauSurTerrain()".AA</select>
+                <label for="selectNiveauVisite" style="margin-top:0; color:#1a73e8;">Niveau actif :</label>
+                <select id="selectNiveauVisite" onchange="changerDeNiveauSurTerrain()"></select>
             </div>
 
-            <h2.AAPlan interactif</h2>
+            <h2>Plan interactif</h2>
             <div class="plan-wrapper">
                 <div id="planContainer" class="plan-container">
                     <img id="viewPlanImg" class="plan-img" alt="Plan" onclick="clicSurPlanContainer(event)">
-                    <svg id="planSvgOverlay" class="plan-svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none".AA</svg>
+                    <!-- Overlay SVG interactif pour les zones de puces -->
+                    <svg id="planSvgOverlay" class="plan-svg-overlay" viewBox="0 0 100 100" preserveAspectRatio="none"></svg>
                 </div>
             </div>
 
             <div class="map-filters-box no-print">
-                <span style="font-size:13px; color:#5f6368; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;".AA🔍 Filtres plan :</span>
+                <span style="font-size:13px; color:#5f6368; font-weight:bold; text-transform:uppercase; letter-spacing:0.5px;">🔍 Filtres plan :</span>
                 <label class="filter-checkbox-label">
                     <input type="checkbox" id="chkAfficherActives" checked onchange="rafraichirPucesGraphiques(); rafraichirTableauRemarques();">
-                    <span style="color:#c0392b;".AA🔴 Actives</span>
+                    <span style="color:#c0392b;">🔴 Actives</span>
                 </label>
                 <label class="filter-checkbox-label">
                     <input type="checkbox" id="chkAfficherEnCours" checked onchange="rafraichirPucesGraphiques(); rafraichirTableauRemarques();">
-                    <span style="color:#e67e22;".AA🟠 En cours</span>
+                    <span style="color:#e67e22;">🟠 En cours</span>
                 </label>
                 <label class="filter-checkbox-label">
                     <input type="checkbox" id="chkAfficherLevees" checked onchange="rafraichirPucesGraphiques(); rafraichirTableauRemarques();">
-                    <span style="color:#1e8449;".AA🟢 Levées</span>
+                    <span style="color:#1e8449;">🟢 Levées</span>
                 </label>
             </div>
 
             <div id="zoneSaisiePuce" style="display:none; background:#edf2fa; border:1px solid #b4cff7; padding:15px; border-radius:8px; margin-top:20px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <h3 style="margin: 0;".AASaisie Puce N° <span id="labelNumeroPuce".AAX</span.AA</h3>
-                    <div id="badgeStatutPuce" class="status-badge active".AAActive</div>
+                    <h3 style="margin: 0;">Saisie Puce N° <span id="labelNumeroPuce">X</span></h3>
+                    <div id="badgeStatutPuce" class="status-badge active">Active</div>
                 </div>
 
-                <label style="color:#1a73e8;".AAStatut d'avancement du point :</label>
+                <label style="color:#1a73e8;">Statut d'avancement du point :</label>
                 <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
-                    <button type="button" class="btn btn-small btn-danger" style="flex:1;" onclick="changerStatutPuceTerrain('active')".AA🔴 Active</button>
-                    <button type="button" class="btn btn-small btn-warning" style="flex:1;" onclick="changerStatutPuceTerrain('en_cours')".AA🟠 En cours</button>
-                    <button type="button" class="btn btn-small btn-success" style="flex:1;" onclick="changerStatutPuceTerrain('resolue')".AA🟢 Levée</button>
+                    <button type="button" class="btn btn-small btn-danger" style="flex:1;" onclick="changerStatutPuceTerrain('active')">🔴 Active</button>
+                    <button type="button" class="btn btn-small btn-warning" style="flex:1;" onclick="changerStatutPuceTerrain('en_cours')">🟠 En cours</button>
+                    <button type="button" class="btn btn-small btn-success" style="flex:1;" onclick="changerStatutPuceTerrain('resolue')">🟢 Levée</button>
                 </div>
 
+                <!-- SECTION PERSONNALISATION & TRACÉ DE ZONES -->
                 <div style="background:#fff; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin-bottom:15px;">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-                        <h4 style="margin:0; color:#1a73e8;".AA📐 Zones associées sur le plan</h4>
+                        <h4 style="margin:0; color:#1a73e8;">📐 Zones associées sur le plan</h4>
                         <div style="display:flex; gap:6px;">
-                            <button type="button" class="btn btn-small" style="background:#1a73e8; font-size:12px;" onclick="demarrerTraceZone('rect')".AA🟩 Tracé Rectangle</button>
-                            <button type="button" class="btn btn-small" style="background:#6f42c1; font-size:12px;" onclick="demarrerTraceZone('poly')".AA🔷 Tracé Polygone</button>
+                            <button type="button" class="btn btn-small" style="background:#1a73e8; font-size:12px;" onclick="demarrerTraceZone('rect')">🟩 Tracé Rectangle</button>
+                            <button type="button" class="btn btn-small" style="background:#6f42c1; font-size:12px;" onclick="demarrerTraceZone('poly')">🔷 Tracé Polygone</button>
                         </div>
                     </div>
 
+                    <!-- Réglages visuels des zones (Couleur & Bordure) -->
                     <div style="display:flex; gap:15px; align-items:center; margin-top:10px; flex-wrap:wrap; background:#f8f9fa; padding:8px; border-radius:6px; border:1px solid #e0e0e0;">
                         <div style="display:flex; align-items:center; gap:6px;">
-                            <label style="margin:0; font-size:12px;".AACouleur :</label>
+                            <label style="margin:0; font-size:12px;">Couleur :</label>
                             <input type="color" id="zoneColorPicker" value="#d93025" style="width:30px; height:28px; border:none; cursor:pointer; background:none;" onchange="mettreAJourStyleZoneSaisie()">
                         </div>
                         <div style="display:flex; align-items:center; gap:6px;">
-                            <label style="margin:0; font-size:12px;".AAÉpaisseur Bordure :</label>
+                            <label style="margin:0; font-size:12px;">Épaisseur Bordure :</label>
                             <input type="range" id="zoneBorderWidthRange" min="1" max="8" value="2" style="width:70px;" oninput="mettreAJourStyleZoneSaisie()">
-                            <span id="zoneBorderWidthBadge" style="font-size:11px; font-weight:bold; color:#1a73e8;".AA2px</span>
+                            <span id="zoneBorderWidthBadge" style="font-size:11px; font-weight:bold; color:#1a73e8;">2px</span>
                         </div>
                     </div>
 
-                    <div id="zoneSaisieInformationStatus" style="display:none; font-size:13px; font-weight:bold; color:#d93025; background:#fce8e6; padding:8px; border-radius:6px; margin-top:8px;".AA</div>
-                    <div id="listeZonesPuceActiveContainer" style="margin-top:10px;".AA</div>
+                    <div id="zoneSaisieInformationStatus" style="display:none; font-size:13px; font-weight:bold; color:#d93025; background:#fce8e6; padding:8px; border-radius:6px; margin-top:8px;"></div>
+                    <div id="listeZonesPuceActiveContainer" style="margin-top:10px;"></div>
                 </div>
 
-                <label.AAPhotos constatations (Historique visuel) :</label>
+                <label>Photos constatations (Historique visuel) :</label>
                 <input type="file" id="photoPuce" accept="image/*" onchange="chargerPhotoPuceAjoutMultiples(event)">
-                <div id="photoGalleryContainer" class="photo-gallery-wrapper".AAAucune photo enregistrée pour ce constat</div>
+                <div id="photoGalleryContainer" class="photo-gallery-wrapper">Aucune photo enregistrée pour ce constat</div>
 
-                <label for="zonePuceInput".AALocalisation Spécifique (Pièce / Zone) :</label>
+                <label for="zonePuceInput">Localisation Spécifique (Pièce / Zone) :</label>
                 <input type="text" id="zonePuceInput" placeholder="Ex: Logement 102, Couloir, Gaine technique...">
 
+                <!-- SECTION DES TÂCHES / ACTIONS CORRECTIVES -->
                 <div style="background:#fff; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin: 15px 0;">
-                    <h4 style="margin: 0 0 8px 0; color:#1a73e8;".AA📋 Actions à mener / Tâches associées</h4>
-                    <p style="font-size:12px; color:#666; margin-top:0;".AADéfinissez les tâches, entreprises responsables, statut et échéances précises pour cette puce.</p>
+                    <h4 style="margin: 0 0 8px 0; color:#1a73e8;">📋 Actions à mener / Tâches associées</h4>
+                    <p style="font-size:12px; color:#666; margin-top:0;">Définissez les tâches, entreprises responsables, statut et échéances précises pour cette puce.</p>
 
-                    <div id="listeSousTachesContainer".AA</div>
+                    <div id="listeSousTachesContainer"></div>
 
                     <div style="background:#f8f9fa; border:1px dashed #ccc; padding:10px; border-radius:6px; margin-top:10px;">
-                        <span style="font-size:13px; font-weight:bold; color:#333;" id="labelSousTacheFormTitle".AA+ Ajouter une action corrective</span>
+                        <span style="font-size:13px; font-weight:bold; color:#333;" id="labelSousTacheFormTitle">+ Ajouter une action corrective</span>
                         <div class="flex-row" style="margin-top:6px;">
                             <input type="text" id="nouvelleTacheDescInput" placeholder="Action à réaliser..." style="font-size:13px; padding:8px;">
-                            <select id="nouvelleTacheEntrepriseSelect" style="font-size:13px; padding:8px; flex:1; min-width:140px;".AA</select>
+                            <select id="nouvelleTacheEntrepriseSelect" style="font-size:13px; padding:8px; flex:1; min-width:140px;"></select>
                             <input type="date" id="nouvelleTacheEcheanceInput" style="font-size:13px; padding:8px; width:auto;">
-                            <button type="button" id="btnAjouterOuEditerTache" class="btn btn-small btn-success" style="padding:8px 12px;" onclick="ajouterOuValiderEditerTachePuceActive()".AA+ Ajouter</button>
-                            <button type="button" id="btnAnnulerEditerTache" class="btn btn-small" style="padding:8px 12px; background:#5f6368; display:none;" onclick="annulerModeEditionTache()".AAAnnuler</button>
+                            <button type="button" id="btnAjouterOuEditerTache" class="btn btn-small btn-success" style="padding:8px 12px;" onclick="ajouterOuValiderEditerTachePuceActive()">+ Ajouter</button>
+                            <button type="button" id="btnAnnulerEditerTache" class="btn btn-small" style="padding:8px 12px; background:#5f6368; display:none;" onclick="annulerModeEditionTache()">Annuler</button>
                         </div>
                     </div>
                 </div>
 
-                <label.AAEntreprises globales concernées (Optionnel) :</label>
-                <div id="zoneEntreprisesPuceCheckboxes" class="entreprises-selection-list".AA</div>
+                <label>Entreprises globales concernées (Optionnel) :</label>
+                <div id="zoneEntreprisesPuceCheckboxes" class="entreprises-selection-list"></div>
 
-                <label.AAObservations complémentaires & Suivi :</label>
-                <textarea id="commentairePuce" rows="3" placeholder="Saisissez vos observations libres...".AA</textarea>
+                <label>Observations complémentaires &amp; Suivi :</label>
+                <textarea id="commentairePuce" rows="3" placeholder="Saisissez vos observations libres..."></textarea>
 
                 <div style="margin-top:15px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" class="btn btn-danger btn-small" style="margin:0;" onclick="supprimerPuceActuelle()".AASupprimer</button>
-                    <button type="button" class="btn btn-success btn-small" style="margin:0;" onclick="sauvegarderDonniesPuce()".AAValider ce point</button>
+                    <button type="button" class="btn btn-danger btn-small" style="margin:0;" onclick="supprimerPuceActuelle()">Supprimer</button>
+                    <button type="button" class="btn btn-success btn-small" style="margin:0;" onclick="sauvegarderDonniesPuce()">Valider ce point</button>
                 </div>
             </div>
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 25px; flex-wrap: wrap; gap: 10px;">
-                <h2 style="margin: 0;".AAObservations enregistrées</h2>
-                <button type="button" class="btn btn-small btn-danger" onclick="reinitialiserToutesLesPucesEtRemarques()".AA🗑️ Réinitialiser / Purger tout le rapport</button>
+                <h2 style="margin: 0;">Observations enregistrées</h2>
+                <button type="button" class="btn btn-small btn-danger" onclick="reinitialiserToutesLesPucesEtRemarques()">🗑️ Réinitialiser / Purger tout le rapport</button>
             </div>
 
             <div class="table-responsive">
                 <table class="table-remarques">
                     <thead>
-                        <tr.AA<th.AAN°</th.AA<th.AANiveau / Zone</th.AA<th.AAPhotos</th.AA<th.AAStatut</th.AA<th.AAEntreprises & Tâches / Constats</th.AA<th.AADate</th.AA<th.AAAction</th.AA</tr>
+                        <tr><th>N°</th><th>Niveau / Zone</th><th>Photos</th><th>Statut</th><th>Entreprises &amp; Tâches / Constats</th><th>Date</th><th>Action</th></tr>
                     </thead>
-                    <tbody id="corpsTableauRemarques".AA</tbody>
+                    <tbody id="corpsTableauRemarques"></tbody>
                 </table>
             </div>
 
             <div class="print-options-box no-print">
-                <h3 style="color:#0b57d0; font-size:14px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;".AA⚙️ Options d'impression du rapport PDF</h3>
+                <h3 style="color:#0b57d0; font-size:14px; margin-bottom:10px; text-transform:uppercase; letter-spacing:0.5px;">⚙️ Options d'impression du rapport PDF</h3>
                 
+                <!-- MODE D'EXPORTATION : GLOBAL OU PAR ENTREPRISE -->
                 <div style="background:#fff; border:1px solid #b4cff7; padding:10px; border-radius:6px; margin-bottom:15px;">
-                    <span style="font-size:13px; font-weight:bold; color:#1a73e8;".AA🎯 Mode d'export PDF :</span>
+                    <span style="font-size:13px; font-weight:bold; color:#1a73e8;">🎯 Mode d'export PDF :</span>
                     <div style="display:flex; gap:20px; margin-top:6px; flex-wrap:wrap;">
                         <label class="filter-checkbox-label">
                             <input type="radio" name="radioModeExportPdf" value="global" checked onchange="basculerModeExportPdf(this.value)">
@@ -616,115 +661,117 @@
                         </label>
                     </div>
 
+                    <!-- LISTE DE SÉLECTION DES ENTREPRISES À IMPRIMER -->
                     <div id="blocSelectionEntreprisesPdf" style="display:none; margin-top:10px; border-top:1px dashed #ccc; padding-top:8px;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-                            <span style="font-size:12px; font-weight:bold;".AACochez les entreprises à exporter :</span>
+                            <span style="font-size:12px; font-weight:bold;">Cochez les entreprises à exporter :</span>
                             <div style="display:flex; gap:6px;">
-                                <button type="button" class="btn btn-small" style="padding:2px 8px; font-size:11px;" onclick="cocherToutesEntreprisesExport(true)".AATout cocher</button>
-                                <button type="button" class="btn btn-small" style="padding:2px 8px; font-size:11px; background:#5f6368;" onclick="cocherToutesEntreprisesExport(false)".AATout décocher</button>
+                                <button type="button" class="btn btn-small" style="padding:2px 8px; font-size:11px;" onclick="cocherToutesEntreprisesExport(true)">Tout cocher</button>
+                                <button type="button" class="btn btn-small" style="padding:2px 8px; font-size:11px; background:#5f6368;" onclick="cocherToutesEntreprisesExport(false)">Tout décocher</button>
                             </div>
                         </div>
-                        <div id="listeCheckboxesEntreprisesExport" style="display:flex; flex-wrap:wrap; gap:12px; background:#f8f9fa; padding:8px; border-radius:6px; border:1px solid #dadce0;".AA</div>
+                        <div id="listeCheckboxesEntreprisesExport" style="display:flex; flex-wrap:wrap; gap:12px; background:#f8f9fa; padding:8px; border-radius:6px; border:1px solid #dadce0;"></div>
                     </div>
                 </div>
 
                 <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom: 10px;">
-                    <label class="filter-checkbox-label".AA<input type="checkbox" id="printOptSynthese" checked.AA 📝 Imprimer la synthèse & alertes retards (Page 1)</label>
-                    <label class="filter-checkbox-label".AA<input type="checkbox" id="printOptPlans" checked.AA 🗺️ Imprimer les plans</label>
-                    <label class="filter-checkbox-label".AA<input type="checkbox" id="printOptNotes" checked.AA 📝 Imprimer les notes et croquis</label>
-                    <label class="filter-checkbox-label".AA<input type="checkbox" id="printOptTableau" checked.AA 📊 Imprimer le tableau</label>
-                    <label class="filter-checkbox-label".AA<input type="checkbox" id="printOptPhotos" checked.AA 📷 Imprimer le reportage photo</label>
+                    <label class="filter-checkbox-label"><input type="checkbox" id="printOptSynthese" checked> 📝 Imprimer la synthèse &amp; alertes retards (Page 1)</label>
+                    <label class="filter-checkbox-label"><input type="checkbox" id="printOptPlans" checked> 🗺️ Imprimer les plans</label>
+                    <label class="filter-checkbox-label"><input type="checkbox" id="printOptNotes" checked> 📝 Imprimer les notes et croquis</label>
+                    <label class="filter-checkbox-label"><input type="checkbox" id="printOptTableau" checked> 📊 Imprimer le tableau</label>
+                    <label class="filter-checkbox-label"><input type="checkbox" id="printOptPhotos" checked> 📷 Imprimer le reportage photo</label>
                 </div>
                 <div style="border-top:1px dashed #b4cff7; padding-top:10px; display:flex; gap:20px; flex-wrap:wrap;">
-                    <label class="filter-checkbox-label" style="color:#c0392b;".AA<input type="checkbox" id="printOptRemarquesActives" checked.AA 🔴 Inclure Remarques Actives</label>
-                    <label class="filter-checkbox-label" style="color:#e67e22;".AA<input type="checkbox" id="printOptRemarquesEnCours" checked.AA 🟠 Inclure Remarques En Cours</label>
-                    <label class="filter-checkbox-label" style="color:#1e8449;".AA<input type="checkbox" id="printOptRemarquesLevees" checked.AA 🟢 Inclure Remarques Levées</label>
+                    <label class="filter-checkbox-label" style="color:#c0392b;"><input type="checkbox" id="printOptRemarquesActives" checked> 🔴 Inclure Remarques Actives</label>
+                    <label class="filter-checkbox-label" style="color:#e67e22;"><input type="checkbox" id="printOptRemarquesEnCours" checked> 🟠 Inclure Remarques En Cours</label>
+                    <label class="filter-checkbox-label" style="color:#1e8449;"><input type="checkbox" id="printOptRemarquesLevees" checked> 🟢 Inclure Remarques Levées</label>
                 </div>
             </div>
         </div>
 
         <div id="tabNotes" class="tab-content">
-            <h2.AA📝 Bloc-notes Libre & Croquis Terrain (SVG)</h2>
-            <p style="font-size: 14px; color:#5f6368;".AAConsignez vos consignes, directives de réunion ou schémas vectoriels à la main et liez-les optionnellement à un constat du plan.</p>
+            <h2>📝 Bloc-notes Libre &amp; Croquis Terrain (SVG)</h2>
+            <p style="font-size: 14px; color:#5f6368;">Consignez vos consignes, directives de réunion ou schémas vectoriels à la main et liez-les optionnellement à un constat du plan.</p>
 
-            <button type="button" class="btn btn-success" style="margin-bottom: 20px; width: auto;" onclick="ajouterNouvelleNote()".AA+ Nouvelle note</button>
-            <div id="listeNotesContainer".AA</div>
+            <button type="button" class="btn btn-success" style="margin-bottom: 20px; width: auto;" onclick="ajouterNouvelleNote()">+ Nouvelle note</button>
+            <div id="listeNotesContainer"></div>
         </div>
     </div>
 </div>
 
+<!-- MODALE VISIONNEUSE PHOTO GRAND FORMAT (TABLETTE) -->
 <div id="photoViewerModalOverlay" class="photo-viewer-overlay" onclick="fermerVisionneusePhotoGrandFormat()">
     <div class="photo-viewer-container" onclick="event.stopPropagation()">
-        <button type="button" class="photo-viewer-close-btn" onclick="fermerVisionneusePhotoGrandFormat()".AA✖ Fermer</button>
-        <button type="button" class="photo-viewer-nav-btn photo-viewer-prev" onclick="naviguerPhotoViewer(-1)".AA◀</button>
+        <button type="button" class="photo-viewer-close-btn" onclick="fermerVisionneusePhotoGrandFormat()">✖ Fermer</button>
+        <button type="button" class="photo-viewer-nav-btn photo-viewer-prev" onclick="naviguerPhotoViewer(-1)">◀</button>
         <img id="photoViewerModalImg" class="photo-viewer-img" src="" alt="Photo grand format">
-        <button type="button" class="photo-viewer-nav-btn photo-viewer-next" onclick="naviguerPhotoViewer(1)".AA▶</button>
+        <button type="button" class="photo-viewer-nav-btn photo-viewer-next" onclick="naviguerPhotoViewer(1)">▶</button>
     </div>
-    <div id="photoViewerModalCounter" class="photo-viewer-counter".AA1 / 1</div>
+    <div id="photoViewerModalCounter" class="photo-viewer-counter">1 / 1</div>
 </div>
 
 <div id="photoAnnotationModalOverlay" class="sketch-modal-overlay">
     <div class="sketch-modal-card">
-        <h3 style="margin-top:0; color:#1a73e8;".AA✏️ Annoter / Dessiner sur la Photo</h3>
+        <h3 style="margin-top:0; color:#1a73e8;">✏️ Annoter / Dessiner sur la Photo</h3>
         <div class="sketch-tools">
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                <span style="font-size:13px; font-weight:bold;".AACouleur :</span>
+                <span style="font-size:13px; font-weight:bold;">Couleur :</span>
                 <input type="color" id="photoColorPicker" value="#d93025" style="width:34px; height:32px; border:1px solid #ccc; border-radius:6px; cursor:pointer; padding:0; background:none;" onchange="choisirCouleurPinceauPhoto(this.value, null)" title="Choisir une couleur">
 
-                <div class="color-btn selected" style="background:#d93025;" onclick="choisirCouleurPinceauPhoto('#d93025', this)" title="Rouge (Défaut)".AA</div>
-                <div class="color-btn" style="background:#f1c40f;" onclick="choisirCouleurPinceauPhoto('#f1c40f', this)" title="Jaune".AA</div>
-                <div class="color-btn" style="background:#1a73e8;" onclick="choisirCouleurPinceauPhoto('#1a73e8', this)" title="Bleu".AA</div>
-                <div class="color-btn" style="background:#28a745;" onclick="choisirCouleurPinceauPhoto('#28a745', this)" title="Vert".AA</div>
-                <div class="color-btn" style="background:#ffffff;" onclick="choisirCouleurPinceauPhoto('#ffffff', this)" title="Blanc".AA</div>
-                <div class="color-btn" style="background:#000000;" onclick="choisirCouleurPinceauPhoto('#000000', this)" title="Noir".AA</div>
+                <div class="color-btn selected" style="background:#d93025;" onclick="choisirCouleurPinceauPhoto('#d93025', this)" title="Rouge (Défaut)"></div>
+                <div class="color-btn" style="background:#f1c40f;" onclick="choisirCouleurPinceauPhoto('#f1c40f', this)" title="Jaune"></div>
+                <div class="color-btn" style="background:#1a73e8;" onclick="choisirCouleurPinceauPhoto('#1a73e8', this)" title="Bleu"></div>
+                <div class="color-btn" style="background:#28a745;" onclick="choisirCouleurPinceauPhoto('#28a745', this)" title="Vert"></div>
+                <div class="color-btn" style="background:#ffffff;" onclick="choisirCouleurPinceauPhoto('#ffffff', this)" title="Blanc"></div>
+                <div class="color-btn" style="background:#000000;" onclick="choisirCouleurPinceauPhoto('#000000', this)" title="Noir"></div>
 
-                <span style="font-size:13px; font-weight:bold; margin-left:10px;".AATaille :</span>
+                <span style="font-size:13px; font-weight:bold; margin-left:10px;">Taille :</span>
                 <input type="range" id="photoBrushSize" min="2" max="25" value="5" style="width:80px; cursor:pointer;" oninput="changerTaillePinceauPhoto(this.value)">
-                <span id="photoBrushSizeBadge" style="font-size:12px; font-weight:bold; min-width:25px; color:#1a73e8;".AA5px</span>
+                <span id="photoBrushSizeBadge" style="font-size:12px; font-weight:bold; min-width:25px; color:#1a73e8;">5px</span>
             </div>
-            <button type="button" class="btn btn-small btn-danger" onclick="reinitialiserPhotoOriginale()".AARéinitialiser Photo</button>
+            <button type="button" class="btn btn-small btn-danger" onclick="reinitialiserPhotoOriginale()">Réinitialiser Photo</button>
         </div>
 
         <div class="sketch-canvas-container">
-            <canvas id="photoAnnotateCanvas".AA</canvas>
+            <canvas id="photoAnnotateCanvas"></canvas>
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-            <button type="button" class="btn btn-small" style="background:#5f6368;" onclick="fermerFenetreAnnotationPhoto()".AAAnnuler</button>
-            <button type="button" class="btn btn-small btn-success" onclick="validerAnnotationPhoto()".AAValider l'annotation 💾</button>
+            <button type="button" class="btn btn-small" style="background:#5f6368;" onclick="fermerFenetreAnnotationPhoto()">Annuler</button>
+            <button type="button" class="btn btn-small btn-success" onclick="validerAnnotationPhoto()">Valider l'annotation 💾</button>
         </div>
     </div>
 </div>
 
 <div id="sketchModalOverlay" class="sketch-modal-overlay">
     <div class="sketch-modal-card">
-        <h3 style="margin-top:0; color:#1a73e8;".AA✏️ Croquis Vectoriel SVG</h3>
+        <h3 style="margin-top:0; color:#1a73e8;">✏️ Croquis Vectoriel SVG</h3>
         <div class="sketch-tools">
             <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                <span style="font-size:13px; font-weight:bold;".AACouleur :</span>
+                <span style="font-size:13px; font-weight:bold;">Couleur :</span>
                 <input type="color" id="sketchColorPicker" value="#000000" style="width:34px; height:32px; border:1px solid #ccc; border-radius:6px; cursor:pointer; padding:0; background:none;" onchange="choisirCouleurPinceau(this.value, null)" title="Choisir une couleur sur la palette">
 
-                <div class="color-btn selected" style="background:black;" onclick="choisirCouleurPinceau('#000000', this)" title="Noir".AA</div>
-                <div class="color-btn" style="background:#d93025;" onclick="choisirCouleurPinceau('#d93025', this)" title="Rouge".AA</div>
-                <div class="color-btn" style="background:#1a73e8;" onclick="choisirCouleurPinceau('#1a73e8', this)" title="Bleu".AA</div>
-                <div class="color-btn" style="background:#28a745;" onclick="choisirCouleurPinceau('#28a745', this)" title="Vert".AA</div>
+                <div class="color-btn selected" style="background:black;" onclick="choisirCouleurPinceau('#000000', this)" title="Noir"></div>
+                <div class="color-btn" style="background:#d93025;" onclick="choisirCouleurPinceau('#d93025', this)" title="Rouge"></div>
+                <div class="color-btn" style="background:#1a73e8;" onclick="choisirCouleurPinceau('#1a73e8', this)" title="Bleu"></div>
+                <div class="color-btn" style="background:#28a745;" onclick="choisirCouleurPinceau('#28a745', this)" title="Vert"></div>
 
-                <span style="font-size:13px; font-weight:bold; margin-left:10px;".AATaille :</span>
+                <span style="font-size:13px; font-weight:bold; margin-left:10px;">Taille :</span>
                 <input type="range" id="sketchBrushSize" min="1" max="20" value="3" style="width:80px; cursor:pointer;" oninput="changerTaillePinceau(this.value)">
-                <span id="brushSizeBadge" style="font-size:12px; font-weight:bold; min-width:25px; color:#1a73e8;".AA3px</span>
+                <span id="brushSizeBadge" style="font-size:12px; font-weight:bold; min-width:25px; color:#1a73e8;">3px</span>
 
-                <button type="button" class="btn btn-small" style="background:#5f6368; padding:4px 8px; margin-left:5px;" onclick="activerGommePinceau()".AA🧽 Gomme</button>
+                <button type="button" class="btn btn-small" style="background:#5f6368; padding:4px 8px; margin-left:5px;" onclick="activerGommePinceau()">🧽 Gomme</button>
             </div>
-            <button type="button" class="btn btn-small btn-danger" onclick="effacerToutCanvasCroquis()".AAEffacer tout</button>
+            <button type="button" class="btn btn-small btn-danger" onclick="effacerToutCanvasCroquis()">Effacer tout</button>
         </div>
 
         <div class="sketch-canvas-container">
-            <canvas id="sketchCanvas" width="550" height="320".AA</canvas>
+            <canvas id="sketchCanvas" width="550" height="320"></canvas>
         </div>
 
         <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px;">
-            <button type="button" class="btn btn-small" style="background:#5f6368;" onclick="fermerFenetreCroquis()".AAAnnuler</button>
-            <button type="button" class="btn btn-small btn-success" onclick="validerEtSauvegarderCroquis()".AAValider ce schéma (SVG)</button>
+            <button type="button" class="btn btn-small" style="background:#5f6368;" onclick="fermerFenetreCroquis()">Annuler</button>
+            <button type="button" class="btn btn-small btn-success" onclick="validerEtSauvegarderCroquis()">Valider ce schéma (SVG)</button>
         </div>
     </div>
 </div>
@@ -734,76 +781,77 @@
         <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px;">
             <div>
                 <img id="pdfLogoEntreprise" src="" alt="Logo" style="max-height: 75px; max-width: 200px; object-fit: contain; display: none;">
-                <div id="pdfLogoPlaceholder" style="font-weight: bold; color: #999; border: 1px dashed #ccc; padding: 10px;".AA[Logo]</div>
+                <div id="pdfLogoPlaceholder" style="font-weight: bold; color: #999; border: 1px dashed #ccc; padding: 10px;">[Logo]</div>
             </div>
             <div style="text-align: right; font-size: 9pt; color: #555; line-height: 1.4;">
-                <h2 id="pdfNomEntreprise" style="margin: 0 0 5px 0; color: #4c4f54; font-size: 14pt; font-weight: bold;".AA---</h2>
-                <span id="pdfStatutEntreprise".AA</span.AA<br>
-                <span id="pdfAdresseEntreprise".AA</span.AA<br>
-                Tél : <span id="pdfTelEntreprise".AA---</span.AA | Email : <span id="pdfEmailEntreprise".AA---</span.AA<br>
-                Site : <a id="pdfSiteEntreprise" href="#" style="color: #4c4f54; text-decoration: none;" target="_blank".AA---</a>
+                <h2 id="pdfNomEntreprise" style="margin: 0 0 5px 0; color: #4c4f54; font-size: 14pt; font-weight: bold;">---</h2>
+                <span id="pdfStatutEntreprise"></span><br>
+                <span id="pdfAdresseEntreprise"></span><br>
+                Tél : <span id="pdfTelEntreprise"></span> | Email : <span id="pdfEmailEntreprise"></span><br>
+                Site : <a id="pdfSiteEntreprise" href="#" style="color: #4c4f54; text-decoration: none;" target="_blank">---</a>
             </div>
         </div>
-        <div id="pdfLigneSeparation" style="border-bottom: 1px solid #4c4f54; margin-top: 2px;".AA</div>
+        <div id="pdfLigneSeparation" style="border-bottom: 1px solid #4c4f54; margin-top: 2px;"></div>
     </div>
 
     <div style="margin-bottom: 25px; padding-top: 10px;">
-        <h1 id="pdfTitrePrincipalDoc" style="margin: 0 0 20px 0; font-size: 14pt; text-align: center; font-weight: bold; letter-spacing: 0.5px;".AARAPPORT DE VISITE</h1>
+        <h1 id="pdfTitrePrincipalDoc" style="margin: 0 0 20px 0; font-size: 14pt; text-align: center; font-weight: bold; letter-spacing: 0.5px;">RAPPORT DE VISITE</h1>
         <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: #fafafa; border: 1px solid #ddd;">
             <tr>
                 <td style="width: 50%; padding: 12px; border: none; font-size: 11pt; line-height: 1.5; vertical-align: top;">
-                    <strongAChantier :</strong.AA <span id="pdfNomChantier" style="color: #4c4f54; font-weight: bold;".AA---</span.AA<br>
-                    <strongAAffaire Ref :</strong.AA <span id="pdfRefChantier".AA---</span>
+                    <strong>Chantier :</strong> <span id="pdfNomChantier" style="color: #4c4f54; font-weight: bold;">---</span><br>
+                    <strong>Affaire Ref :</strong> <span id="pdfRefChantier">---</span>
                 </td>
                 <td style="width: 50%; padding: 12px; border: none; font-size: 11pt; line-height: 1.5; text-align: right; vertical-align: top;">
-                    <strongADate de visite :</strong.AA <span id="pdfDateVisite".AA---</span.AA<br>
-                    <strongALocalisation :</strong.AA <span id="pdfLocChantier".AA---</span>
+                    <strong>Date de visite :</strong> <span id="pdfDateVisite">---</span><br>
+                    <strong>Localisation :</strong> <span id="pdfLocChantier">---</span>
                 </td>
             </tr>
         </table>
     </div>
 
+    <!-- ZONE DE SYNTHÈSE PDF PAGE 1 -->
     <div id="pdfSyntheseBlock" style="margin-bottom: 25px; display:none;">
-        <h3 style="font-size: 11pt; font-weight: bold; margin-bottom: 8px; color: #1a73e8;".AASynthèse des évolutions & Alertes retards</h3>
-        <div id="pdfSyntheseTexteContent" style="font-size: 10pt; color: #333; line-height: 1.5; background: #f8f9fa; border: 1px solid #dadce0; border-radius: 6px; padding: 12px; white-space: pre-wrap;".AA---</div>
+        <h3 style="font-size: 11pt; font-weight: bold; margin-bottom: 8px; color: #1a73e8;">Synthèse des évolutions &amp; Alertes retards</h3>
+        <div id="pdfSyntheseTexteContent" style="font-size: 10pt; color: #333; line-height: 1.5; background: #f8f9fa; border: 1px solid #dadce0; border-radius: 6px; padding: 12px; white-space: pre-wrap;">---</div>
     </div>
 
     <div style="margin-bottom: 25px;">
-        <h3 style="font-size: 11pt; font-weight: bold; margin-bottom: 8px;".AAEntreprises Attributaires</h3>
-        <div id="pdfEntreprises" style="font-style: italic; font-size: 10pt; color: #444; padding-left: 5px;".AA---</div>
+        <h3 style="font-size: 11pt; font-weight: bold; margin-bottom: 8px;">Entreprises Attributaires</h3>
+        <div id="pdfEntreprises" style="font-style: italic; font-size: 10pt; color: #444; padding-left: 5px;">---</div>
     </div>
 
     <div id="pdfPlansSection">
-        <div class="page-break".AA</div>
-        <h2 id="pdfHeaderPlans".AA1. Plans de situation & Implantation des puces</h2>
-        <div id="pdfPlansMultiples".AA</div>
+        <div class="page-break"></div>
+        <h2 id="pdfHeaderPlans">1. Plans de situation &amp; Implantation des puces</h2>
+        <div id="pdfPlansMultiples"></div>
     </div>
 
     <div id="pdfNotesSection" class="page-break" style="display:none;">
-        <h2 id="pdfHeaderNotes".AA2. Notes & Schémas de visite</h2>
-        <div id="pdfNotesContainer" style="margin-top:15px;".AA</div>
+        <h2 id="pdfHeaderNotes">2. Notes &amp; Schémas de visite</h2>
+        <div id="pdfNotesContainer" style="margin-top:15px;"></div>
     </div>
 
     <div id="pdfTableauSection">
-        <div class="page-break".AA</div>
-        <h2 id="pdfTitreRemarques".AA3. Tableau des constatations et remarques</h2>
+        <div class="page-break"></div>
+        <h2 id="pdfTitreRemarques">3. Tableau des constatations et remarques</h2>
         <table class="pdf-table">
             <thead>
                 <tr>
-                    <th style="width: 8%; text-align:center;".AAN° Puce</th>
-                    <th style="width: 16%; text-align:center;".AANiveau / Zone</th>
-                    <th style="width: 12%; text-align:center;".AAStatut</th>
-                    <th style="width: 64%;".AAObservations & Commentaires détaillés</th>
+                    <th style="width: 8%; text-align:center;">N° Puce</th>
+                    <th style="width: 16%; text-align:center;">Niveau / Zone</th>
+                    <th style="width: 12%; text-align:center;">Statut</th>
+                    <th style="width: 64%;">Observations &amp; Commentaires détaillés</th>
                 </tr>
             </thead>
-            <tbody id="corpsTableauRemarques".AA</tbody>
+            <tbody id="pdfCorpsTableau"></tbody>
         </table>
     </div>
 
     <div id="pdfPhotosSection">
-        <div class="page-break".AA</div>
-        <h2 id="pdfTitrePhotos".AA4. Reportage photographique</h2>
-        <div id="pdfPhotoPagesContainer".AA</div>
+        <div class="page-break"></div>
+        <h2 id="pdfTitrePhotos">4. Reportage photographique</h2>
+        <div id="pdfPhotoPagesContainer"></div>
     </div>
 </div>
 
@@ -813,17 +861,18 @@
     let niveauxTemporaires = []; 
     let planEnCoursDeChargementBase64 = ""; 
     let planDirectTerrainBase64 = "";
-    let photosPuceTemporairesTableau = [];
+    let photosPuceTemporairesTableau = []; // Stocke des objets { src, archivee: false, entreprise: '' }
     let tachesPuceTemporairesTableau = [];
-    let indexTacheEnEdition = null; 
-    let zonesPuceTemporairesTableau = []; 
-    let indexZoneEnEdition = null; 
+    let indexTacheEnEdition = null; // Stocke l'index de la tâche en cours d'édition
+    let zonesPuceTemporairesTableau = []; // Zones associées à la puce en cours d'édition
+    let indexZoneEnEdition = null; // Stocke l'index de la zone en cours de ré-édition
     let chantierActuel = null; 
     let indexNiveauActuel = 0; 
     let puceSelectionneeId = null;
     let statutPuceTemporaire = "active"; 
 
-    let modeDessinZoneActif = null; 
+    // Variables pour le mode de dessin de zone sur le plan
+    let modeDessinZoneActif = null; // null, 'rect', 'poly'
     let pointsZoneEnCours = [];
 
     let idNoteCroquisEnCours = null;
@@ -839,6 +888,7 @@
     let couleurPinceauPhoto = '#d93025';
     let taillePinceauPhoto = 5;
 
+    // Variables pour la visionneuse photo grand format
     let indexPhotoViewerActif = 0;
 
     let estEnTrainDeSynchroniser = false;
@@ -853,15 +903,12 @@
         return DEFAULT_GOOGLE_DRIVE_URL;
     }
 
+    // Normalisation d'un objet photo (support rétrocompatible string vs object)
     function normaliserPhotoPuce(pic) {
         if (typeof pic === 'string') {
             return { src: pic, archivee: false, entreprise: '' };
         }
-        return { 
-            src: pic?.src || '', 
-            archivee: pic?.archivee || false, 
-            entreprise: pic?.entreprise || '' 
-        };
+        return pic || { src: '', archivee: false, entreprise: '' };
     }
 
     function convertirDxfTextEnSvgDataUrl(dxfText) {
@@ -886,17 +933,17 @@
             }
 
             dxf.entities.forEach(entity => {
-                if (entity.type === 'LINE' && entity.vertices && entity.vertices.length .=AA. 2) {
+                if (entity.type === 'LINE' && entity.vertices && entity.vertices.length >= 2) {
                     const p1 = entity.vertices[0];
                     const p2 = entity.vertices[1];
                     addBounds(p1.x, p1.y); addBounds(p2.x, p2.y);
-                    pathsSvg.push(`<line x1="\({p1.x}" y1="\){-p1.y}" x2="\({p2.x}" y2="\){-p2.y}" stroke="#111" stroke-width="1"/>`);
+                    pathsSvg.push(`<line x1="${p1.x}" y1="${-p1.y}" x2="${p2.x}" y2="${-p2.y}" stroke="#111" stroke-width="1"/>`);
                 }
                 else if ((entity.type === 'LWPOLYLINE' || entity.type === 'POLYLINE') && entity.vertices && entity.vertices.length > 0) {
                     let d = "";
                     entity.vertices.forEach((v, i) => {
                         addBounds(v.x, v.y);
-                        d += (i === 0 ? `M \({v.x}\){-v.y}` : ` L \({v.x}\){-v.y}`);
+                        d += (i === 0 ? `M ${v.x} ${-v.y}` : ` L ${v.x} ${-v.y}`);
                     });
                     if (entity.shape) d += " Z";
                     pathsSvg.push(`<path d="${d}" stroke="#111" stroke-width="1" fill="none"/>`);
@@ -904,7 +951,7 @@
                 else if (entity.type === 'CIRCLE' && entity.center) {
                     const cx = entity.center.x, cy = entity.center.y, r = entity.radius || 10;
                     addBounds(cx - r, cy - r); addBounds(cx + r, cy + r);
-                    pathsSvg.push(`<circle cx="\({cx}" cy="\){-cy}" r="${r}" stroke="#111" stroke-width="1" fill="none"/>`);
+                    pathsSvg.push(`<circle cx="${cx}" cy="${-cy}" r="${r}" stroke="#111" stroke-width="1" fill="none"/>`);
                 }
                 else if (entity.type === 'ARC' && entity.center) {
                     const cx = entity.center.x, cy = entity.center.y, r = entity.radius || 10;
@@ -916,12 +963,12 @@
                     const x2 = cx + r * Math.cos(endAngle);
                     const y2 = cy + r * Math.sin(endAngle);
                     const largeArc = (entity.endAngle - entity.startAngle + 360) % 360 > 180 ? 1 : 0;
-                    pathsSvg.push(`<path d="M \({x1}\){-y1} A \({r}\){r} 0 \({largeArc} 0\){x2} ${-y2}" stroke="#111" stroke-width="1" fill="none"/>`);
+                    pathsSvg.push(`<path d="M ${x1} ${-y1} A ${r} ${r} 0 ${largeArc} 0 ${x2} ${-y2}" stroke="#111" stroke-width="1" fill="none"/>`);
                 }
                 else if ((entity.type === 'TEXT' || entity.type === 'MTEXT') && entity.startPoint) {
                     addBounds(entity.startPoint.x, entity.startPoint.y);
                     const txt = entity.text || '';
-                    pathsSvg.push(`<text x="\({entity.startPoint.x}" y="\){-entity.startPoint.y}" font-size="12" fill="#333"${txt}</text>`);
+                    pathsSvg.push(`<text x="${entity.startPoint.x}" y="${-entity.startPoint.y}" font-size="12" fill="#333">${txt}</text>`);
                 }
             });
 
@@ -934,9 +981,9 @@
             const height = Math.abs(maxY - minY) || 1000;
             const padding = Math.max(width, height) * 0.05;
 
-            const viewBox = `\({minX - padding}\){-maxY - padding} \({width + (padding * 2)}\){height + (padding * 2)}`;
+            const viewBox = `${minX - padding} ${-maxY - padding} ${width + (padding * 2)} ${height + (padding * 2)}`;
 
-            const svgFinal = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="\({viewBox}" width="100%" height="100%" style="background:#ffffff;"><g.AA\){pathsSvg.join('')}</g></svg>`;
+            const svgFinal = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" width="100%" height="100%" style="background:#ffffff;"><g>${pathsSvg.join('')}</g></svg>`;
             return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgFinal)));
 
         } catch (err) {
@@ -1036,6 +1083,7 @@
             }
         });
 
+        // Touches clavier pour la visionneuse photo
         document.addEventListener('keydown', (e) => {
             const modal = document.getElementById('photoViewerModalOverlay');
             if (modal && modal.style.display === 'flex') {
@@ -1055,7 +1103,7 @@
     function obtenirCouleurHexaParStatut(statut) {
         if (statut === "en_cours") return "#e67e22";
         if (statut === "resolue") return "#28a745";
-        return "#d93025";
+        return "#d93025"; // active
     }
 
     function evaluerRetardTache(tache) {
@@ -1083,6 +1131,9 @@
         return p.taches.some(t => evaluerRetardTache(t).enRetard);
     }
 
+    /* -------------------------------------------------------------
+       GESTION DE LA DATE DE VISITE
+    ------------------------------------------------------------- */
     function enregistrerDateVisiteTerrain() {
         if (!chantierActuel) return;
         chantierActuel.dateVisite = document.getElementById('viewDateVisiteInput').value;
@@ -1106,7 +1157,7 @@
         if (dateStr.includes('-')) {
             const parts = dateStr.split('-');
             if (parts.length === 3 && parts[0].length === 4) {
-                return `\({parts[2]}/\){parts[1]}/${parts[0]}`;
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
             }
         }
         return dateStr;
@@ -1116,6 +1167,9 @@
         return (txt || '').replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
     }
 
+    /* -------------------------------------------------------------
+       LOGIQUE D'EXPORTATION ET IMPRESSION PDF PAR ENTREPRISE
+    ------------------------------------------------------------- */
     function basculerModeExportPdf(mode) {
         const blocEntreprises = document.getElementById('blocSelectionEntreprisesPdf');
         if (mode === 'entreprise') {
@@ -1132,7 +1186,7 @@
 
         const entreprises = chantierActuel.entreprises || [];
         if (entreprises.length === 0) {
-            ctn.innerHTML = "<span style='font-size:12px; color:#888;'.AAAucune entreprise enregistrée sur ce chantier.</span>";
+            ctn.innerHTML = "<span style='font-size:12px; color:#888;'>Aucune entreprise enregistrée sur ce chantier.</span>";
             return;
         }
 
@@ -1148,21 +1202,24 @@
         document.querySelectorAll('.chk-entreprise-export').forEach(chk => chk.checked = cocher);
     }
 
+    /* VERIFICATION SI UNE PUCE A AU MOINS UNE ACTION ACTIVES / NON SOLDÉE POUR UNE ENTREPRISE */
     function puceConcerneEntreprise(p, nomEntreprise) {
         if (!nomEntreprise) return true;
         const stPuce = normaliserStatutPuce(p);
 
+        // Si la puce complète est levée/résolue, elle ne concerne plus l'entreprise pour son rapport
         if (stPuce === "resolue") return false;
 
+        // Vérification dans les sous-tâches : il faut au moins une tâche attribuée à l'entreprise ET non soldée
         if (p.taches && p.taches.length > 0) {
-            const aDesTachesEntActives = p.taches.some(t => {
-                const entOk = !t.entreprise || t.entreprise === nomEntreprise;
-                const activeOk = t.statut !== "resolue" && !t.faite;
-                return entOk && activeOk;
+            const aDesTachesNonSoldees = p.taches.some(t => {
+                if (t.entreprise && t.entreprise !== nomEntreprise) return false;
+                return t.statut !== "resolue" && !t.faite;
             });
-            if (aDesTachesEntActives) return true;
+            if (aDesTachesNonSoldees) return true;
         }
 
+        // Vérification dans les entreprises globales cochées si aucune tâche spécifique n'est définie
         if ((!p.taches || p.taches.length === 0) && p.entreprises && p.entreprises.includes(nomEntreprise)) {
             return true;
         }
@@ -1170,6 +1227,9 @@
         return false;
     }
 
+    /* -------------------------------------------------------------
+       ALGORITHME DE GÉNÉRATION AUTOMATIQUE DE LA SYNTHÈSE DES ÉVOLUTIONS
+    ------------------------------------------------------------- */
     function genererSyntheseEvolutionsChantier(entrepriseFiltre = null) {
         if (!chantierActuel) return "";
 
@@ -1180,13 +1240,15 @@
             puces = puces.filter(p => puceConcerneEntreprise(p, entrepriseFiltre));
         }
 
+        // 1. Analyse des puces globales et statuts
         const actives = puces.filter(p => normaliserStatutPuce(p) === "active");
         const enCours = puces.filter(p => normaliserStatutPuce(p) === "en_cours");
         const levees = puces.filter(p => normaliserStatutPuce(p) === "resolue");
 
         const entText = entrepriseFiltre ? ` pour le lot ${entrepriseFiltre}` : '';
-        lignesSynthese.push(`• Bilan des constatations\({entText} :\){puces.length} point(s) enregistré(s) au total (\({actives.length} actif(s),\){enCours.length} en cours, ${levees.length} levé(s)).`);
+        lignesSynthese.push(`• Bilan des constatations${entText} : ${puces.length} point(s) enregistré(s) au total (${actives.length} actif(s), ${enCours.length} en cours, ${levees.length} levé(s)).`);
 
+        // 2. Détection dynamique des actions en retard
         let retardsDetail = [];
         puces.forEach(p => {
             const st = normaliserStatutPuce(p);
@@ -1195,7 +1257,7 @@
                     if (!entrepriseFiltre || t.entreprise === entrepriseFiltre) {
                         const evalR = evaluerRetardTache(t);
                         if (evalR.enRetard) {
-                            retardsDetail.push(`Puce N°\({p.numero} (\){p.niveauNom}\({p.zonePrecis ? ' - ' + p.zonePrecis : ''}) : "\){t.description}" [Lot \({t.entreprise || 'Non assigné'}] -\){evalR.joursRetard} jour(s) de retard (Échéance: ${t.echeance.split("-").reverse().join("/")})`);
+                            retardsDetail.push(`Puce N°${p.numero} (${p.niveauNom}${p.zonePrecis ? ' - ' + p.zonePrecis : ''}) : "${t.description}" [Lot ${t.entreprise || 'Non assigné'}] - ${evalR.joursRetard} jour(s) de retard (Échéance: ${t.echeance.split("-").reverse().join("/")})`);
                         }
                     }
                 });
@@ -1320,7 +1382,7 @@
         const { user, repo, token } = obtenirIdentifiantsGitHub();
         if(!user || !repo || !token) return;
 
-        const url = `https://api.github.com/repos/\({user}/\){repo}/contents/Charte.json?ref=main`;
+        const url = `https://api.github.com/repos/${user}/${repo}/contents/Charte.json?ref=main`;
         try {
             const res = await fetch(url, { 
                 headers: { 
@@ -1433,12 +1495,12 @@
 
         try {
             const nomDossier = obtenirNomDossierChantier(chantierActuel.nom);
-            const urlConfig = `https://api.github.com/repos/\({user}/\){repo}/contents/${nomDossier}/config.json`;
+            const urlConfig = `https://api.github.com/repos/${user}/${repo}/contents/${nomDossier}/config.json`;
 
             let distantChantier = null;
             let shaDistant = null;
 
-            const resGet = await fetch(`\({urlConfig}?t=\){Date.now()}`, {
+            const resGet = await fetch(`${urlConfig}?t=${Date.now()}`, {
                 headers: { "Authorization": `token ${token}`, "Accept": "application/vnd.github.v3+json" },
                 cache: "no-store"
             });
@@ -1546,7 +1608,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `rapport_base64_\({nomDossierChantier}_\){dateAujourdhui}.json`;
+        a.download = `rapport_base64_${nomDossierChantier}_${dateAujourdhui}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -1554,7 +1616,7 @@
 
         const driveUrl = obtenirLienDriveActuel();
         setTimeout(() => {
-            if (confirm(`📦 Fichier "rapport_base64_\({nomDossierChantier}_\){dateAujourdhui}.json" généré avec succès !\n\nVoulez-vous ouvrir le dossier Google Drive de ce chantier pour y déposer ce fichier ?`)) {
+            if (confirm(`📦 Fichier "rapport_base64_${nomDossierChantier}_${dateAujourdhui}.json" généré avec succès !\n\nVoulez-vous ouvrir le dossier Google Drive de ce chantier pour y déposer ce fichier ?`)) {
                 window.open(driveUrl, '_blank');
             }
         }, 500);
@@ -1582,17 +1644,13 @@
 
                     if (photoDataUrl && photoDataUrl.startsWith('data:')) {
                         const ext = photoDataUrl.includes('image/avif') ? 'avif' : (photoDataUrl.includes('image/webp') ? 'webp' : 'jpg');
-                        const nomFichierPhoto = `puce_\({p.numero}_photo_\){idxPhoto + 1}.${ext}`;
+                        const nomFichierPhoto = `puce_${p.numero}_photo_${idxPhoto + 1}.${ext}`;
                         const cheminRelatif = `photos/${nomFichierPhoto}`;
 
                         const bytes = convertirDataUrlEnUint8Array(photoDataUrl);
                         zip.file(cheminRelatif, bytes);
 
-                        nouveauxChemins.push({ 
-                            src: cheminRelatif, 
-                            archivee: photoObj.archivee || false, 
-                            entreprise: photoObj.entreprise || '' 
-                        });
+                        nouveauxChemins.push({ src: cheminRelatif, archivee: photoObj.archivee || false, entreprise: photoObj.entreprise || '' });
                     } else {
                         nouveauxChemins.push(photoObj);
                     }
@@ -1626,7 +1684,7 @@
         zip.file("rapport.json", JSON.stringify(rapportJsonObj, null, 2));
 
         const zipBlob = await zip.generateAsync({ type: "blob" });
-        const zipNomFichierLocal = `\({nomDossierChantier}_\){nomSousDossierRapport}.zip`;
+        const zipNomFichierLocal = `${nomDossierChantier}_${nomSousDossierRapport}.zip`;
 
         const urlBlob = URL.createObjectURL(zipBlob);
         const a = document.createElement('a');
@@ -1674,7 +1732,7 @@
             return alert("ℹ️ Le rapport de ce chantier ne contient actuellement aucune puce ou remarque.");
         }
 
-        const conf1 = confirm(`Êtes-vous sûr de vouloir supprimer TOUTES les puces, photos et remarques (\({totalPuces} points) du chantier "\){chantierActuel.nom}" ?`);
+        const conf1 = confirm(`Êtes-vous sûr de vouloir supprimer TOUTES les puces, photos et remarques (${totalPuces} points) du chantier "${chantierActuel.nom}" ?`);
         if(conf1) {
             const conf2 = confirm(`⚠️ CETTE ACTION EST IRREVOCABLE :\n\nTous les constats géolocalisés sur les plans et les photos d'observations associées vont être définitivement effacés.\n\nConfirmer la réinitialisation du rapport ?`);
             if(conf2) {
@@ -1742,11 +1800,7 @@
                                 if (photoFileInZip) {
                                     const base64Str = await photoFileInZip.async("base64");
                                     const mime = pPath.endsWith('.avif') ? 'image/avif' : (pPath.endsWith('.webp') ? 'image/webp' : 'image/jpeg');
-                                    photosReconstituees.push({ 
-                                        src: `data:\({mime};base64,\){base64Str}`, 
-                                        archivee: pObj.archivee || false, 
-                                        entreprise: pObj.entreprise || '' 
-                                    });
+                                    photosReconstituees.push({ src: `data:${mime};base64,${base64Str}`, archivee: pObj.archivee || false, entreprise: pObj.entreprise || '' });
                                 }
                             } else {
                                 photosReconstituees.push(pObj);
@@ -1814,7 +1868,7 @@
         chargerPlanEtPucesDuNiveauActuel();
         rafraichirVueNotes();
         notifierModificationLocale();
-        alert(`🎯 Succès ! \({pucesAInjecter.length} puces et\){notesAInjecter.length} note(s) ont été fusionnées sur vos plans.`);
+        alert(`🎯 Succès ! ${pucesAInjecter.length} puces et ${notesAInjecter.length} note(s) ont été fusionnées sur vos plans.`);
     }
 
     function chargerImagePlanNiveauDirectTerrain(event) {
@@ -1851,7 +1905,7 @@
 
         await sauvegarderUnChantierDansIndexedDB(chantierActuel);
 
-        document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="\({i}".AA\){n.nom}</option.AA`).join('');
+        document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="${i}">${n.nom}</option>`).join('');
         indexNiveauActuel = chantierActuel.niveaux.length - 1;
         document.getElementById('selectNiveauVisite').value = indexNiveauActuel;
 
@@ -1902,7 +1956,7 @@
         const { user, repo, token } = obtenirIdentifiantsGitHub();
         if(!user || !repo || !token) return alert("Identifiants GitHub non configurés.");
 
-        const urlRoot = `https://api.github.com/repos/\({user}/\){repo}/contents/`;
+        const urlRoot = `https://api.github.com/repos/${user}/${repo}/contents/`;
         try {
             const res = await fetch(urlRoot, { headers: { "Authorization": `token ${token}` } });
             if(!res.ok) throw new Error("Code HTTP " + res.status);
@@ -1917,7 +1971,7 @@
 
             let nbCharges = 0;
             for(let d of dossiersChantiers) {
-                const configUrl = `https://api.github.com/repos/\({user}/\){repo}/contents/${d.name}/config.json`;
+                const configUrl = `https://api.github.com/repos/${user}/${repo}/contents/${d.name}/config.json`;
                 const resConfig = await fetch(configUrl, {
                     headers: {
                         "Authorization": `token ${token}`,
@@ -1961,7 +2015,7 @@
     }
 
     function rafraichirListeNiveauxTemporaire() {
-        document.getElementById('listeNiveauxTemporaire').innerHTML = niveauxTemporaires.map((n) => `<span class="enterprise-badge".AA📍 ${n.nom}</span.AA`).join('');
+        document.getElementById('listeNiveauxTemporaire').innerHTML = niveauxTemporaires.map((n) => `<span class="enterprise-badge">📍 ${n.nom}</span>`).join('');
     }
     function chargerImagePlanNiveau(event) {
         const file = event.target.files[0];
@@ -1989,7 +2043,7 @@
         const input = document.getElementById('nomEntreprise');
         if (input.value.trim()) {
             entreprisesTemporaires.push(input.value.trim());
-            document.getElementById('listeEntreprisesTemporaire').innerHTML = entreprisesTemporaires.map(e => `<span class="enterprise-badge".AA${e}</span.AA`).join('');
+            document.getElementById('listeEntreprisesTemporaire').innerHTML = entreprisesTemporaires.map(e => `<span class="enterprise-badge">${e}</span>`).join('');
             input.value = "";
         }
     }
@@ -2024,14 +2078,14 @@
 
     function rafraichirVueAccueil() {
         const container = document.getElementById('listeChantiers');
-        if (listeTousChantiers.length === 0) { container.innerHTML = "<p.AAAucun chantier actif.</p.AA"; return; }
+        if (listeTousChantiers.length === 0) { container.innerHTML = "<p>Aucun chantier actif.</p>"; return; }
         container.innerHTML = listeTousChantiers.map(c => `
-            <div class="chantier-card" onclick="ouvrirEtChargerChantier('${c.id}')".AA
-                <h3 style="margin:0; padding-right:80px; font-size:16px;".AA🏢 ${c.nom}</h3.AA
-                <p style="margin:5px 0 0 0; font-size:13px; color:#666;".AARef : \({c.reference} — Lieu :\){c.localisation}</p.AA
-                <div style="margin-top:5px; font-size:11px; color:#1a73e8; font-weight:bold;".AA📊 ${c.puces ? c.puces.length : 0} puce(s) active(s)</div.AA
-                <button type="button" class="btn-delete-card" onclick="supprimerChantierDefinitif(event, '\({c.id}', '\){c.nom.replace(/'/g, "\\'")}')".AASupprimer 🗑️</button.AA
-            </div.AA
+            <div class="chantier-card" onclick="ouvrirEtChargerChantier('${c.id}')">
+                <h3 style="margin:0; padding-right:80px; font-size:16px;">🏢 ${c.nom}</h3>
+                <p style="margin:5px 0 0 0; font-size:13px; color:#666;">Ref : ${c.reference} — Lieu : ${c.localisation}</p>
+                <div style="margin-top:5px; font-size:11px; color:#1a73e8; font-weight:bold;">📊 ${c.puces ? c.puces.length : 0} puce(s) active(s)</div>
+                <button type="button" class="btn-delete-card" onclick="supprimerChantierDefinitif(event, '${c.id}', '${c.nom.replace(/'/g, "\\'")}')">Supprimer 🗑️</button>
+            </div>
         `).join('');
     }
 
@@ -2072,17 +2126,18 @@
         document.getElementById('viewLoc').innerText = chantierActuel.localisation || "N/A";
         document.getElementById('viewDriveUrlInput').value = chantierActuel.driveUrl || DEFAULT_GOOGLE_DRIVE_URL;
         document.getElementById('viewDateVisiteInput').value = chantierActuel.dateVisite;
-        document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge".AA${e}</span.AA`).join('') || "Aucune entreprise";
+        document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge">${e}</span>`).join('') || "Aucune entreprise";
 
+        // Initialisation du texte de synthèse automatique s'il n'existe pas encore
         const texteAutoSynthese = chantierActuel.syntheseManuel || genererSyntheseEvolutionsChantier();
         document.getElementById('syntheseEvolutionsInput').value = texteAutoSynthese;
 
         if (chantierActuel.niveaux.length > 0) {
-            document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="\({i}".AA\){n.nom}</option.AA`).join('');
+            document.getElementById('selectNiveauVisite').innerHTML = chantierActuel.niveaux.map((n, i) => `<option value="${i}">${n.nom}</option>`).join('');
             indexNiveauActuel = 0;
             chargerPlanEtPucesDuNiveauActuel();
         } else {
-            document.getElementById('selectNiveauVisite').innerHTML = "<option.AAAucun plan/niveau</option.AA";
+            document.getElementById('selectNiveauVisite').innerHTML = "<option>Aucun plan/niveau</option>";
             document.getElementById('viewPlanImg').src = "";
         }
 
@@ -2099,6 +2154,7 @@
         document.getElementById('printOptRemarquesEnCours').checked = true;
         document.getElementById('printOptRemarquesLevees').checked = true;
 
+        // Réinitialisation du mode d'export
         const radioGlobal = document.querySelector('input[name="radioModeExportPdf"][value="global"]');
         if (radioGlobal) radioGlobal.checked = true;
         basculerModeExportPdf('global');
@@ -2111,51 +2167,51 @@
     function rafraichirVueNotes() {
         const ctn = document.getElementById('listeNotesContainer');
         if(!chantierActuel || !chantierActuel.notes || chantierActuel.notes.length === 0) {
-            ctn.innerHTML = "<p style='font-style:italic; color:#666;'.AAAucune note enregistrée pour ce chantier.</p.AA";
+            ctn.innerHTML = "<p style='font-style:italic; color:#666;'>Aucune note enregistrée pour ce chantier.</p>";
             return;
         }
 
         ctn.innerHTML = chantierActuel.notes.map((n, idx) => {
-            let pucesOptions = `<option value="".AA-- Aucune puce / remarque liée --</option.AA`;
+            let pucesOptions = `<option value="">-- Aucune puce / remarque liée --</option>`;
             if (chantierActuel.puces && chantierActuel.puces.length > 0) {
                 pucesOptions += chantierActuel.puces.map(p =>
-                    `<option value="\({p.id}"\){n.puceLieeId == p.id ? 'selected' : ''}.AA📍 Puce N° \({p.numero} (\){p.niveauNom}${p.zonePrecis ? ' - ' + p.zonePrecis : ''})</option.AA`
+                    `<option value="${p.id}" ${n.puceLieeId == p.id ? 'selected' : ''}>📍 Puce N° ${p.numero} (${p.niveauNom}${p.zonePrecis ? ' - ' + p.zonePrecis : ''})</option>`
                 ).join('');
             }
 
             return `
-                <div class="note-card".AA
-                    <div class="note-card-header".AA
-                        <span style="font-size:12px; color:#5f6368; font-weight:bold;".AA🕒 Créé le ${n.dateCreation}</span.AA
-                        <div style="display:flex; align-items:center; gap:15px;".AA
-                            <label class="filter-checkbox-label" style="font-size:12px; color:#1a73e8;".AA
-                                <input type="checkbox" \({n.inclurePdf ? 'checked' : ''} onchange="basculerOptionNotePdf(\){idx}, this.checked)".AA
+                <div class="note-card">
+                    <div class="note-card-header">
+                        <span style="font-size:12px; color:#5f6368; font-weight:bold;">🕒 Créé le ${n.dateCreation}</span>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <label class="filter-checkbox-label" style="font-size:12px; color:#1a73e8;">
+                                <input type="checkbox" ${n.inclurePdf ? 'checked' : ''} onchange="basculerOptionNotePdf(${idx}, this.checked)">
                                 📄 Imprimer au PDF
-                            </label.AA
-                            <button type="button" class="btn btn-small btn-danger" style="padding:4px 8px; font-size:12px;" onclick="supprimerNoteIndex(${idx})".AA🗑️</button.AA
-                        </div.AA
-                    </div.AA
+                            </label>
+                            <button type="button" class="btn btn-small btn-danger" style="padding:4px 8px; font-size:12px;" onclick="supprimerNoteIndex(${idx})">🗑️</button>
+                        </div>
+                    </div>
 
-                    <div style="margin-bottom: 10px;".AA
-                        <label style="font-size:12px; margin:0 0 4px 0; color:#1a73e8;".AA🔗 Lier à une remarque du plan (Optionnel) :</label.AA
-                        <select style="padding:8px; font-size:13px; background:#fff;" onchange="enregistrerLienPuceNote(${idx}, this.value)".AA
+                    <div style="margin-bottom: 10px;">
+                        <label style="font-size:12px; margin:0 0 4px 0; color:#1a73e8;">🔗 Lier à une remarque du plan (Optionnel) :</label>
+                        <select style="padding:8px; font-size:13px; background:#fff;" onchange="enregistrerLienPuceNote(${idx}, this.value)">
                             ${pucesOptions}
-                        </select.AA
-                    </div.AA
+                        </select>
+                    </div>
 
-                    <textarea style="width:100%; border:1px solid #dadce0; border-radius:6px; padding:8px; font-size:14px;" rows="3" onchange="enregistrerTexteNote(\({idx}, this.value)" placeholder="Saisissez vos observations libres...".AA\){n.texte || ''}</textarea.AA
+                    <textarea style="width:100%; border:1px solid #dadce0; border-radius:6px; padding:8px; font-size:14px;" rows="3" onchange="enregistrerTexteNote(${idx}, this.value)" placeholder="Saisissez vos observations libres...">${n.texte || ''}</textarea>
 
                     ${n.croquis ? `
-                        <div style="margin-top:10px; position:relative; display:inline-block;".AA
-                            <img src="${n.croquis}" class="note-sketch-img" alt="Croquis SVG".AA
-                            <button type="button" class="btn btn-small btn-danger" style="position:absolute; top:15px; right:5px; padding:3px 6px; font-size:11px;" onclick="supprimerCroquisDeNote(${idx})".AAEffacer croquis ✖</button.AA
-                        </div.AA
+                        <div style="margin-top:10px; position:relative; display:inline-block;">
+                            <img src="${n.croquis}" class="note-sketch-img" alt="Croquis SVG">
+                            <button type="button" class="btn btn-small btn-danger" style="position:absolute; top:15px; right:5px; padding:3px 6px; font-size:11px;" onclick="supprimerCroquisDeNote(${idx})">Effacer croquis ✖</button>
+                        </div>
                     ` : `
-                        <div style="margin-top:10px;".AA
-                            <button type="button" class="btn btn-small" style="background:#24292e; font-size:13px;" onclick="ouvrirCanvasPourNote(${idx})".AA✏️ Dessiner un croquis (SVG)</button.AA
-                        </div.AA
+                        <div style="margin-top:10px;">
+                            <button type="button" class="btn btn-small" style="background:#24292e; font-size:13px;" onclick="ouvrirCanvasPourNote(${idx})">✏️ Dessiner un croquis (SVG)</button>
+                        </div>
                     `}
-                </div.AA
+                </div>
             `;
         }).join('');
     }
@@ -2348,11 +2404,11 @@
 
         let pathsSvg = polygonesCroquisActuel.map(t => {
             if (t.points.length < 2) return '';
-            let d = `M \({t.points[0].x}\){t.points[0].y} ` + t.points.slice(1).map(p => `L \({p.x}\){p.y}`).join(' ');
-            return `<path d="\({d}" stroke="\){t.color}" stroke-width="${t.size}" stroke-linecap="round" stroke-linejoin="round" fill="none" />`;
+            let d = `M ${t.points[0].x} ${t.points[0].y} ` + t.points.slice(1).map(p => `L ${p.x} ${p.y}`).join(' ');
+            return `<path d="${d}" stroke="${t.color}" stroke-width="${t.size}" stroke-linecap="round" stroke-linejoin="round" fill="none" />`;
         }).join('');
 
-        const svgBrut = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 \({canvas.width}\){canvas.height}" width="\({canvas.width}" height="\){canvas.height}"><rect width="100%" height="100%" fill="#ffffff"/>${pathsSvg}</svg>`;
+        const svgBrut = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvas.width} ${canvas.height}" width="${canvas.width}" height="${canvas.height}"><rect width="100%" height="100%" fill="#ffffff"/>${pathsSvg}</svg>`;
         const svgBase64 = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgBrut)));
 
         chantierActuel.notes[idNoteCroquisEnCours].croquis = svgBase64;
@@ -2501,6 +2557,9 @@
         fermerFenetreAnnotationPhoto();
     }
 
+    /* -------------------------------------------------------------
+       LOGIQUE VISIONNEUSE PHOTO GRAND FORMAT ET ARCHIVAGE
+    ------------------------------------------------------------- */
     function ouvrirVisionneusePhotoGrandFormat(indexPhoto) {
         if (photosPuceTemporairesTableau.length === 0) return;
         indexPhotoViewerActif = indexPhoto;
@@ -2511,7 +2570,7 @@
     function afficherPhotoDansVisionneuse() {
         const photoObj = normaliserPhotoPuce(photosPuceTemporairesTableau[indexPhotoViewerActif]);
         document.getElementById('photoViewerModalImg').src = photoObj.src;
-        document.getElementById('photoViewerModalCounter').innerText = `\({indexPhotoViewerActif + 1} /\){photosPuceTemporairesTableau.length}${photoObj.archivee ? ' (📦 ARCHIVÉE)' : ''}`;
+        document.getElementById('photoViewerModalCounter').innerText = `${indexPhotoViewerActif + 1} / ${photosPuceTemporairesTableau.length}${photoObj.archivee ? ' (📦 ARCHIVÉE)' : ''}`;
     }
 
     function naviguerPhotoViewer(direction) {
@@ -2550,6 +2609,9 @@
         chargerPlanEtPucesDuNiveauActuel();
     }
 
+    /* -------------------------------------------------------------
+       LOGIQUE DE TRACÉ ET RÉ-ÉDITION DE ZONES (COULEURS & BORDURES)
+    ------------------------------------------------------------- */
     function demarrerTraceZone(type) {
         if (!puceSelectionneeId) return alert("Sélectionnez d'abord une puce.");
         modeDessinZoneActif = type;
@@ -2560,7 +2622,7 @@
         if (type === 'rect') {
             infoDiv.innerText = "🟩 Cliquez pour poser le coin Supérieur-Gauche, puis le coin Inférieur-Droit du rectangle.";
         } else {
-            infoDiv.innerHTML = "🔷 Cliquez sur le plan pour poser les sommets. <button type='button' class='btn btn-small btn-success' style='padding:2px 8px; font-size:11px;' onclick='finaliserTracePolygoneZone(event)'.AAValider ce polygone ✔</button.AA";
+            infoDiv.innerHTML = "🔷 Cliquez sur le plan pour poser les sommets. <button type='button' class='btn btn-small btn-success' style='padding:2px 8px; font-size:11px;' onclick='finaliserTracePolygoneZone(event)'>Valider ce polygone ✔</button>";
         }
     }
 
@@ -2572,6 +2634,7 @@
         modeDessinZoneActif = z.type;
         pointsZoneEnCours = z.points ? [...z.points] : [];
 
+        // Mise à jour des sélecteurs de style
         if (z.couleur) document.getElementById('zoneColorPicker').value = z.couleur;
         if (z.epaisseur) {
             document.getElementById('zoneBorderWidthRange').value = z.epaisseur;
@@ -2580,7 +2643,7 @@
 
         const infoDiv = document.getElementById('zoneSaisieInformationStatus');
         infoDiv.style.display = 'block';
-        infoDiv.innerHTML = `✏️ Ré-édition Zone \({idxZone + 1} (\){z.type === 'rect' ? 'Rectangle' : 'Polygone'}). Cliquez sur le plan pour remplacer les points. <button type='button' class='btn btn-small btn-success' style='padding:2px 8px; font-size:11px;' onclick='finaliserTracePolygoneZone(event)'.AAEnregistrer modification ✔</button.AA`;
+        infoDiv.innerHTML = `✏️ Ré-édition Zone ${idxZone + 1} (${z.type === 'rect' ? 'Rectangle' : 'Polygone'}). Cliquez sur le plan pour remplacer les points. <button type='button' class='btn btn-small btn-success' style='padding:2px 8px; font-size:11px;' onclick='finaliserTracePolygoneZone(event)'>Enregistrer modification ✔</button>`;
 
         rafraichirPucesGraphiques();
     }
@@ -2676,6 +2739,7 @@
             return;
         }
 
+        // Mode standard : Déplacement / Placement de puce
         placerPuce(x, y);
     }
 
@@ -2771,23 +2835,25 @@
 
                 const pZones = (p.id === puceSelectionneeId) ? zonesPuceTemporairesTableau : (p.zones || []);
 
+                // Rendu des zones et lignes de liaison
                 pZones.forEach((z) => {
                     const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
                     const epaisseurBorder = z.epaisseur ? (z.epaisseur * 0.15) : 0.4;
 
                     if (z.type === 'rect') {
-                        elementsSvg += `<rect x="\({z.x}" y="\){z.y}" width="\({z.w}" height="\){z.h}" fill="\({couleurZone}" fill-opacity="0.3" stroke="\){couleurZone}" stroke-width="\({epaisseurBorder}" onclick="event.stopPropagation(); selectionnerPuce(\){p.id});".AA</rect.AA`;
-                    } else if (z.type === 'poly' && z.points && z.points.length .=AA. 3) {
-                        const ptsStr = z.points.map(pt => `\({pt.x},\){pt.y}`).join(' ');
-                        elementsSvg += `<polygon points="\({ptsStr}" fill="\){couleurZone}" fill-opacity="0.3" stroke="\({couleurZone}" stroke-width="\){epaisseurBorder}" onclick="event.stopPropagation(); selectionnerPuce(${p.id});".AA</polygon.AA`;
+                        elementsSvg += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></rect>`;
+                    } else if (z.type === 'poly' && z.points && z.points.length >= 3) {
+                        const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
+                        elementsSvg += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}" onclick="event.stopPropagation(); selectionnerPuce(${p.id});"></polygon>`;
                     }
 
                     const centre = calculerCentreZone(z);
                     if (centre) {
-                        elementsSvg += `<line x1="\({p.x}" y1="\){p.y}" x2="\({centre.x}" y2="\){centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85".AA</line.AA`;
+                        elementsSvg += `<line x1="${p.x}" y1="${p.y}" x2="${centre.x}" y2="${centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85"></line>`;
                     }
                 });
 
+                // Rendu de la puce ponctuelle
                 const div = document.createElement('div'); 
                 let classStatut = '';
                 if (st === "en_cours") classStatut = ' progress';
@@ -2808,18 +2874,19 @@
             }
         });
 
+        // Rendu temporaire pendant le tracé en cours
         if (modeDessinZoneActif && pointsZoneEnCours.length > 0) {
             const coulDraft = document.getElementById('zoneColorPicker').value || "#1a73e8";
             const epDraft = (document.getElementById('zoneBorderWidthRange').value || 2) * 0.15;
 
             if (modeDessinZoneActif === 'poly') {
-                const ptsPolyDraft = pointsZoneEnCours.map(pt => `\({pt.x},\){pt.y}`).join(' ');
-                elementsSvg += `<polyline points="\({ptsPolyDraft}" fill="none" stroke="\){coulDraft}" stroke-width="${epDraft}" stroke-dasharray="0.8,0.8".AA</polyline.AA`;
+                const ptsPolyDraft = pointsZoneEnCours.map(pt => `${pt.x},${pt.y}`).join(' ');
+                elementsSvg += `<polyline points="${ptsPolyDraft}" fill="none" stroke="${coulDraft}" stroke-width="${epDraft}" stroke-dasharray="0.8,0.8"></polyline>`;
                 pointsZoneEnCours.forEach(pt => {
-                    elementsSvg += `<circle cx="\({pt.x}" cy="\){pt.y}" r="0.6" fill="${coulDraft}".AA</circle.AA`;
+                    elementsSvg += `<circle cx="${pt.x}" cy="${pt.y}" r="0.6" fill="${coulDraft}"></circle>`;
                 });
             } else if (modeDessinZoneActif === 'rect') {
-                elementsSvg += `<circle cx="\({pointsZoneEnCours[0].x}" cy="\){pointsZoneEnCours[0].y}" r="0.6" fill="${coulDraft}".AA</circle.AA`;
+                elementsSvg += `<circle cx="${pointsZoneEnCours[0].x}" cy="${pointsZoneEnCours[0].y}" r="0.6" fill="${coulDraft}"></circle>`;
             }
         }
 
@@ -2833,7 +2900,7 @@
         document.getElementById('labelNumeroPuce').innerText = p.numero;
         document.getElementById('commentairePuce').value = p.commentaire || "";
         document.getElementById('zonePuceInput').value = p.zonePrecis || ""; 
-        document.getElementById('zoneEntreprisesPuceCheckboxes').innerHTML = (chantierActuel.entreprises || []).map(e => `<label class="entreprise-checkbox-item".AA<input type="checkbox" value="\({e}"\){(p.entreprises || []).includes(e)?'checked':''}.AA ${e}</label.AA`).join('');
+        document.getElementById('zoneEntreprisesPuceCheckboxes').innerHTML = (chantierActuel.entreprises || []).map(e => `<label class="entreprise-checkbox-item"><input type="checkbox" value="${e}" ${(p.entreprises || []).includes(e)?'checked':''}> ${e}</label>`).join('');
 
         if (p.photo && (!p.photos || p.photos.length === 0)) {
             p.photos = [normaliserPhotoPuce(p.photo)];
@@ -2854,8 +2921,8 @@
         statutPuceTemporaire = normaliserStatutPuce(p);
 
         const entSelect = document.getElementById('nouvelleTacheEntrepriseSelect');
-        entSelect.innerHTML = `<option value="".AA-- Entreprise responsable --</option.AA` + 
-            (chantierActuel.entreprises || []).map(e => `<option value="\({e}".AA\){e}</option.AA`).join('');
+        entSelect.innerHTML = `<option value="">-- Entreprise responsable --</option>` + 
+            (chantierActuel.entreprises || []).map(e => `<option value="${e}">${e}</option>`).join('');
 
         rafraichirListeZonesSaisiePuce();
         rafraichirAffichageGaleriePhotosSaisie();
@@ -2869,18 +2936,18 @@
         if (!ctn) return;
 
         if (zonesPuceTemporairesTableau.length === 0) {
-            ctn.innerHTML = "<span style='font-style:italic; font-size:12px; color:#888;'.AAAucune zone délimitée pour ce point.</span.AA";
+            ctn.innerHTML = "<span style='font-style:italic; font-size:12px; color:#888;'>Aucune zone délimitée pour ce point.</span>";
             return;
         }
 
         ctn.innerHTML = zonesPuceTemporairesTableau.map((z, idx) => `
-            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; border:1px solid #dadce0; padding:6px 10px; border-radius:6px; margin-bottom:4px; font-size:12px;".AA
-                <span.AA📐 <strong.AAZone \({idx + 1}</strong.AA (\){z.type === 'rect' ? 'Rectangle' : 'Polygone ' + (z.points ? z.points.length : 0) + ' points'}) <span style="display:inline-block; width:12px; height:12px; background:${z.couleur || '#d93025'}; border-radius:50%; vertical-align:middle; margin-left:4px;".AA</span.AA</span.AA
-                <div style="display:flex; gap:4px;".AA
-                    <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:11px; background:#1a73e8;" onclick="reEditerZonePuceIndex(${idx})".AA✏️ Éditer</button.AA
-                    <button type="button" class="btn btn-small btn-danger" style="padding:2px 6px; font-size:11px;" onclick="supprimerZonePuceSaisie(${idx})".AA🗑️</button.AA
-                </div.AA
-            </div.AA
+            <div style="display:flex; justify-content:space-between; align-items:center; background:#f8f9fa; border:1px solid #dadce0; padding:6px 10px; border-radius:6px; margin-bottom:4px; font-size:12px;">
+                <span>📐 <strong>Zone ${idx + 1}</strong> (${z.type === 'rect' ? 'Rectangle' : 'Polygone ' + (z.points ? z.points.length : 0) + ' points'}) <span style="display:inline-block; width:12px; height:12px; background:${z.couleur || '#d93025'}; border-radius:50%; vertical-align:middle; margin-left:4px;"></span></span>
+                <div style="display:flex; gap:4px;">
+                    <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:11px; background:#1a73e8;" onclick="reEditerZonePuceIndex(${idx})">✏️ Éditer</button>
+                    <button type="button" class="btn btn-small btn-danger" style="padding:2px 6px; font-size:11px;" onclick="supprimerZonePuceSaisie(${idx})">🗑️</button>
+                </div>
+            </div>
         `).join('');
     }
 
@@ -2891,10 +2958,13 @@
         rafraichirPucesGraphiques();
     }
 
+    /* -------------------------------------------------------------
+       LOGIQUE GESTION & ÉDITION DES TÂCHES ET STATUTS
+    ------------------------------------------------------------- */
     function rafraichirListeSousTachesSaisie() {
         const ctn = document.getElementById('listeSousTachesContainer');
         if (tachesPuceTemporairesTableau.length === 0) {
-            ctn.innerHTML = "<p style='font-style:italic; font-size:13px; color:#888;'.AAAucune action spécifique enregistrée pour ce point.</p.AA";
+            ctn.innerHTML = "<p style='font-style:italic; font-size:13px; color:#888;'>Aucune action spécifique enregistrée pour ce point.</p>";
             return;
         }
 
@@ -2902,39 +2972,39 @@
             if (!t.statut) t.statut = t.faite ? "resolue" : "a_faire";
 
             const evalRetard = evaluerRetardTache(t);
-            const badgeRetard = evalRetard.enRetard ? `<span class="status-badge late-task".AA🚨 RETARD (${evalRetard.joursRetard}j)</span.AA` : '';
+            const badgeRetard = evalRetard.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalRetard.joursRetard}j)</span>` : '';
             const formatEcheance = t.echeance ? t.echeance.split("-").reverse().join("/") : "Non définie";
 
-            let labelTacheStatut = '<span class="status-badge active" style="font-size:10px;".AA🔴 À faire</span.AA';
-            if (t.statut === "en_cours") labelTacheStatut = '<span class="status-badge progress" style="font-size:10px;".AA🟠 En cours</span.AA';
-            else if (t.statut === "resolue") labelTacheStatut = '<span class="status-badge resolved" style="font-size:10px;".AA🟢 Réalisée</span.AA';
+            let labelTacheStatut = '<span class="status-badge active" style="font-size:10px;">🔴 À faire</span>';
+            if (t.statut === "en_cours") labelTacheStatut = '<span class="status-badge progress" style="font-size:10px;">🟠 En cours</span>';
+            else if (t.statut === "resolue") labelTacheStatut = '<span class="status-badge resolved" style="font-size:10px;">🟢 Réalisée</span>';
 
             return `
-                <div class="task-item-card ${t.statut === 'resolue' ? 'done' : ''}".AA
-                    <div class="task-item-header".AA
-                        <div style="display:flex; align-items:center; gap:8px;".AA
+                <div class="task-item-card ${t.statut === 'resolue' ? 'done' : ''}">
+                    <div class="task-item-header">
+                        <div style="display:flex; align-items:center; gap:8px;">
                             ${labelTacheStatut}
-                            <strong style="\({t.statut === 'resolue' ? 'text-decoration:line-through; color:#888;' : ''}".AA\){t.description}</strong.AA
-                        </div.AA
-                        <div style="display:flex; gap:4px; align-items:center;".AA
+                            <strong style="${t.statut === 'resolue' ? 'text-decoration:line-through; color:#888;' : ''}">${t.description}</strong>
+                        </div>
+                        <div style="display:flex; gap:4px; align-items:center;">
                             ${badgeRetard}
-                            <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:11px; background:#1a73e8;" onclick="reEditerTachePuceIndex(${idx})".AA✏️ Éditer</button.AA
-                            <button type="button" class="btn btn-small btn-danger" style="padding:2px 6px; font-size:11px;" onclick="supprimerSousTacheIndex(${idx})".AA🗑️</button.AA
-                        </div.AA
-                    </div.AA
+                            <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:11px; background:#1a73e8;" onclick="reEditerTachePuceIndex(${idx})">✏️ Éditer</button>
+                            <button type="button" class="btn btn-small btn-danger" style="padding:2px 6px; font-size:11px;" onclick="supprimerSousTacheIndex(${idx})">🗑️</button>
+                        </div>
+                    </div>
 
-                    <div style="display:flex; gap:6px; margin: 6px 0; flex-wrap:wrap;".AA
-                        <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:10px; background:\({t.statut==='a_faire'?'#c0392b':'#e0e0e0'}; color:\){t.statut==='a_faire'?'white':'#333'};" onclick="changerStatutSousTache(${idx}, 'a_faire')".AA🔴 À faire</button.AA
-                        <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:10px; background:\({t.statut==='en_cours'?'#d35400':'#e0e0e0'}; color:\){t.statut==='en_cours'?'white':'#333'};" onclick="changerStatutSousTache(${idx}, 'en_cours')".AA🟠 En cours</button.AA
-                        <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:10px; background:\({t.statut==='resolue'?'#1e8449':'#e0e0e0'}; color:\){t.statut==='resolue'?'white':'#333'};" onclick="changerStatutSousTache(${idx}, 'resolue')".AA🟢 Réalisée</button.AA
-                    </div.AA
+                    <div style="display:flex; gap:6px; margin: 6px 0; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:10px; background:${t.statut==='a_faire'?'#c0392b':'#e0e0e0'}; color:${t.statut==='a_faire'?'white':'#333'};" onclick="changerStatutSousTache(${idx}, 'a_faire')">🔴 À faire</button>
+                        <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:10px; background:${t.statut==='en_cours'?'#d35400':'#e0e0e0'}; color:${t.statut==='en_cours'?'white':'#333'};" onclick="changerStatutSousTache(${idx}, 'en_cours')">🟠 En cours</button>
+                        <button type="button" class="btn btn-small" style="padding:2px 6px; font-size:10px; background:${t.statut==='resolue'?'#1e8449':'#e0e0e0'}; color:${t.statut==='resolue'?'white':'#333'};" onclick="changerStatutSousTache(${idx}, 'resolue')">🟢 Réalisée</button>
+                    </div>
 
-                    <div style="font-size:12px; color:#5f6368; display:flex; gap:15px; flex-wrap:wrap;".AA
-                        <span.AA🏢 <strong.AA${t.entreprise || 'Non assignée'}</strong.AA</span.AA
-                        <span.AA📅 Créée le : ${t.dateCreation}</span.AA
-                        <span.AA⏳ Échéance : <strong.AA${formatEcheance}</strong.AA</span.AA
-                    </div.AA
-                </div.AA
+                    <div style="font-size:12px; color:#5f6368; display:flex; gap:15px; flex-wrap:wrap;">
+                        <span>🏢 <strong>${t.entreprise || 'Non assignée'}</strong></span>
+                        <span>📅 Créée le : ${t.dateCreation}</span>
+                        <span>⏳ Échéance : <strong>${formatEcheance}</strong></span>
+                    </div>
+                </div>
             `;
         }).join('');
     }
@@ -3053,22 +3123,22 @@
 
         ctn.innerHTML = photosPuceTemporairesTableau.map((picRaw, idx) => {
             const pic = normaliserPhotoPuce(picRaw);
-            const optionsEnt = `<option value="" ${!pic.entreprise ? 'selected' : ''}.AA🌐 Globale</option.AA` +
-                entreprisesList.map(e => `<option value="\({e}"\){pic.entreprise === e ? 'selected' : ''}.AA🏢 ${e}</option.AA`).join('');
+            const optionsEnt = `<option value="" ${!pic.entreprise ? 'selected' : ''}>🌐 Globale</option>` +
+                entreprisesList.map(e => `<option value="${e}" ${pic.entreprise === e ? 'selected' : ''}>🏢 ${e}</option>`).join('');
 
             return `
-                <div class="photo-gallery-item-wrapper".AA
-                    <div class="photo-gallery-item \({pic.archivee ? 'archived' : ''}" style="background-image: url(\){pic.src});" onclick="ouvrirVisionneusePhotoGrandFormat(${idx})".AA
-                        <div class="photo-gallery-archive-btn \({pic.archivee ? 'is-archived' : ''}" onclick="basculerArchivagePhotoPuce(\){idx}, event)" title="${pic.archivee ? 'Restaurer pour le PDF' : 'Archiver (Masquer du PDF)'}".AA
+                <div class="photo-gallery-item-wrapper">
+                    <div class="photo-gallery-item ${pic.archivee ? 'archived' : ''}" style="background-image: url(${pic.src});" onclick="ouvrirVisionneusePhotoGrandFormat(${idx})">
+                        <div class="photo-gallery-archive-btn ${pic.archivee ? 'is-archived' : ''}" onclick="basculerArchivagePhotoPuce(${idx}, event)" title="${pic.archivee ? 'Restaurer pour le PDF' : 'Archiver (Masquer du PDF)'}">
                             ${pic.archivee ? '📦' : '👁️'}
-                        </div.AA
-                        <div class="photo-gallery-del-btn" onclick="supprimerPhotoDeLaZoneSaisie(${idx}, event)" title="Supprimer".AA×</div.AA
-                        <div class="photo-gallery-edit-btn" onclick="ouvrirAnnotationPhoto(${idx}, event)" title="Dessiner / Annoter".AA✏️</div.AA
-                    </div.AA
-                    <select class="photo-entreprise-select" onchange="changerEntreprisePhotoPuce(${idx}, this.value)".AA
+                        </div>
+                        <div class="photo-gallery-del-btn" onclick="supprimerPhotoDeLaZoneSaisie(${idx}, event)" title="Supprimer">×</div>
+                        <div class="photo-gallery-edit-btn" onclick="ouvrirAnnotationPhoto(${idx}, event)" title="Dessiner / Annoter">✏️</div>
+                    </div>
+                    <select class="photo-entreprise-select" onchange="changerEntreprisePhotoPuce(${idx}, this.value)">
                         ${optionsEnt}
-                    </select.AA
-                </div.AA
+                    </select>
+                </div>
             `;
         }).join('');
     }
@@ -3120,7 +3190,7 @@
 
     function rafraichirTableauRemarques() {
         const tbody = document.getElementById('corpsTableauRemarques');
-        if(!chantierActuel || !chantierActuel.puces || chantierActuel.puces.length === 0) { tbody.innerHTML = "<tr.AA<td colspan='7'.AAAucune remarque</td.AA</tr.AA"; return; }
+        if(!chantierActuel || !chantierActuel.puces || chantierActuel.puces.length === 0) { tbody.innerHTML = "<tr><td colspan='7'>Aucune remarque</td></tr>"; return; }
 
         const voirActives = document.getElementById('chkAfficherActives').checked;
         const voirEnCours = document.getElementById('chkAfficherEnCours').checked;
@@ -3137,52 +3207,52 @@
 
             const nbPics = p.photos ? p.photos.length : 0;
             const nbZones = p.zones ? p.zones.length : 0;
-            const zoneAffichee = p.zonePrecis ? ` — <b.AA${p.zonePrecis}</b.AA` : '';
-            const badgeZonesText = nbZones > 0 ? ` <span style="font-size:11px; color:#1a73e8; font-weight:bold;".AA[📐 ${nbZones} zone(s)]</span.AA` : '';
+            const zoneAffichee = p.zonePrecis ? ` — <b>${p.zonePrecis}</b>` : '';
+            const badgeZonesText = nbZones > 0 ? ` <span style="font-size:11px; color:#1a73e8; font-weight:bold;">[📐 ${nbZones} zone(s)]</span>` : '';
 
-            let labelStatut = '<span class="status-badge active".AAActive</span.AA';
+            let labelStatut = '<span class="status-badge active">Active</span>';
             let styleLigne = '';
 
             if (st === "en_cours") {
-                labelStatut = '<span class="status-badge progress".AAEn cours</span.AA';
+                labelStatut = '<span class="status-badge progress">En cours</span>';
                 styleLigne = 'style="background: #fffdf9;"';
             } else if (st === "resolue") {
-                labelStatut = '<span class="status-badge resolved".AALevée</span.AA';
+                labelStatut = '<span class="status-badge resolved">Levée</span>';
                 styleLigne = 'style="background: #fcfcfc; opacity: 0.85;"';
             }
 
             let tachesHtml = "";
             if (p.taches && p.taches.length > 0) {
-                tachesHtml = `<div style="margin-bottom:6px;".AA` + p.taches.map(t => {
+                tachesHtml = `<div style="margin-bottom:6px;">` + p.taches.map(t => {
                     const evalR = evaluerRetardTache(t);
-                    const bRetard = evalR.enRetard ? `<span class="status-badge late-task".AA🚨 RETARD (${evalR.joursRetard}j)</span.AA` : '';
+                    const bRetard = evalR.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalR.joursRetard}j)</span>` : '';
                     const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
 
                     let labelSubT = '🔴';
                     if (t.statut === "en_cours") labelSubT = '🟠';
                     else if (t.statut === "resolue" || t.faite) labelSubT = '🟢';
 
-                    return `<div style="font-size:12px; margin-bottom:3px;".AA\({labelSubT} <strong.AA\){t.description}</strong.AA [\({t.entreprise || 'Sans lot'}] — Échéance:\){echFmt} ${bRetard}</div.AA`;
-                }).join('') + `</div.AA`;
+                    return `<div style="font-size:12px; margin-bottom:3px;">${labelSubT} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
+                }).join('') + `</div>`;
             }
 
-            const entGlobale = p.entreprises && p.entreprises.length > 0 ? `<div style="font-size:12px; color:#1a73e8;".AALot(s) : ${p.entreprises.join(', ')}</div.AA` : '';
-            const obsText = p.commentaire ? `<div.AA${p.commentaire}</div.AA` : '';
+            const entGlobale = p.entreprises && p.entreprises.length > 0 ? `<div style="font-size:12px; color:#1a73e8;">Lot(s) : ${p.entreprises.join(', ')}</div>` : '';
+            const obsText = p.commentaire ? `<div>${p.commentaire}</div>` : '';
             const gyroIcone = puceAUnRetardAction(p) ? ' 🚨' : '';
 
             html += `
-                <tr class="clickable-row" \({styleLigne} onclick="selectionnerPuceDepuisTableau(\){p.id})".AA
-                    <td.AA<b.AAPuce \({p.numero}\){gyroIcone}</b.AA</td.AA
-                    <td.AA\({p.niveauNom}\){zoneAffichee}${badgeZonesText}</td.AA
-                    <td.AA\({nbPics > 0 ? `📷 (\){nbPics})` : 'Non'}</td.AA
-                    <td.AA${labelStatut}</td.AA
-                    <td.AA\({tachesHtml}\){entGlobale}${obsText}</td.AA
-                    <td.AA${p.dateCreation}</td.AA
-                    <td.AA<button type="button" class="btn btn-small" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); selectionnerPuceDepuisTableau(${p.id});".AA👁️ Éditer</button.AA</td.AA
-                </tr.AA
+                <tr class="clickable-row" ${styleLigne} onclick="selectionnerPuceDepuisTableau(${p.id})">
+                    <td><b>Puce ${p.numero}${gyroIcone}</b></td>
+                    <td>${p.niveauNom}${zoneAffichee}${badgeZonesText}</td>
+                    <td>${nbPics > 0 ? `📷 (${nbPics})` : 'Non'}</td>
+                    <td>${labelStatut}</td>
+                    <td>${tachesHtml}${entGlobale}${obsText}</td>
+                    <td>${p.dateCreation}</td>
+                    <td><button type="button" class="btn btn-small" style="padding:4px 8px; font-size:12px;" onclick="event.stopPropagation(); selectionnerPuceDepuisTableau(${p.id});">👁️ Éditer</button></td>
+                </tr>
             `;
         });
-        tbody.innerHTML = html || "<tr.AA<td colspan='7'.AAAucune remarque ne correspond aux filtres actifs</td.AA</tr.AA";
+        tbody.innerHTML = html || "<tr><td colspan='7'>Aucune remarque ne correspond aux filtres actifs</td></tr>";
     }
 
     async function ajouterEntrepriseDirectTerrain() {
@@ -3192,7 +3262,7 @@
             if(!chantierActuel.entreprises) chantierActuel.entreprises = [];
             if(!chantierActuel.entreprises.includes(nom)) {
                 chantierActuel.entreprises.push(nom);
-                document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge".AA${e}</span.AA`).join('');
+                document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge">${e}</span>`).join('');
                 input.value = "";
                 const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
                 if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
@@ -3210,10 +3280,14 @@
 
     function fermerChantierActuel() { chantierActuel = null; changerPage('pageAccueil'); }
 
+    /* -------------------------------------------------------------
+       FONCTION PRINCIPALE D'IMPRESSION ET EXPORT PDF PAR ENTREPRISE
+    ------------------------------------------------------------- */
     function declencherImpression() {
         fermerMenuActions();
         if (!chantierActuel) return;
 
+        // Demande / Confirmation de la date de la visite avant impression
         const dateVisiteEffective = demanderEtObtenirDateVisiteExport();
 
         const modeExport = document.querySelector('input[name="radioModeExportPdf"]:checked')?.value || 'global';
@@ -3224,18 +3298,21 @@
                 return alert("⚠️ Veuillez cocher au moins une entreprise à exporter.");
             }
 
+            // Lancement séquentiel des impressions par entreprise
             lancerImpressionSequentielleEntreprises(checkboxesCochees, 0, dateVisiteEffective);
         } else {
+            // Mode global unique
             genererEtImprimerDocPdf(null, dateVisiteEffective);
         }
     }
 
     function lancerImpressionSequentielleEntreprises(listeEntreprises, indexCourant, dateVisiteEffective) {
-        if (indexCourant .=AA. listeEntreprises.length) return;
+        if (indexCourant >= listeEntreprises.length) return;
 
         const nomEnt = listeEntreprises[indexCourant];
         genererEtImprimerDocPdf(nomEnt, dateVisiteEffective);
 
+        // Si plusieurs entreprises sélectionnées, on attend la fermeture de la fenêtre avant d'enchaîner
         if (indexCourant + 1 < listeEntreprises.length) {
             setTimeout(() => {
                 if (confirm(`▶ Passer à l'impression de l'entreprise suivante (${listeEntreprises[indexCourant + 1]}) ?`)) {
@@ -3260,6 +3337,7 @@
         const dateSanitized = formaterSanitizedChaine(dateVisiteTexteFr);
         const chantierSanitized = formaterSanitizedChaine(chantierActuel.nom);
 
+        // APPLICATION DES CLASSES CSS D'EXPRESSION DE TAILLE DE PLAN
         const printTemplateElem = document.getElementById('printTemplate');
         if (entrepriseFiltre) {
             printTemplateElem.classList.remove('mode-global');
@@ -3269,13 +3347,15 @@
             printTemplateElem.classList.add('mode-global');
         }
 
+        // NOMMAGE AUTOMATIQUE DU FICHIER PDF GÉNÉRÉ
         if (entrepriseFiltre) {
             const entSanitized = formaterSanitizedChaine(entrepriseFiltre);
-            document.title = `Rapport_Visite_\({chantierSanitized}_\){entSanitized}_${dateSanitized}`;
+            document.title = `Rapport_Visite_${chantierSanitized}_${entSanitized}_${dateSanitized}`;
         } else {
-            document.title = `Rapport_Visite_\({chantierSanitized}_Global_\){dateSanitized}`;
+            document.title = `Rapport_Visite_${chantierSanitized}_Global_${dateSanitized}`;
         }
 
+        // Mise à jour du titre du document
         const elTitrePrincipal = document.getElementById('pdfTitrePrincipalDoc');
         if (entrepriseFiltre) {
             elTitrePrincipal.innerText = `RAPPORT DE VISITE — DESTINÉ À : ${entrepriseFiltre.toUpperCase()}`;
@@ -3294,6 +3374,7 @@
             document.getElementById('pdfEntreprises').innerText = (chantierActuel.entreprises || []).join(', ') || "Aucune entreprise spécifiée";
         }
 
+        // Injection du bloc de synthèse sur la page 1 du PDF
         const blockPdfSynthese = document.getElementById('pdfSyntheseBlock');
         if (imprimerSynthese) {
             blockPdfSynthese.style.display = "block";
@@ -3308,13 +3389,15 @@
         const blockPlans = document.getElementById('pdfPlansSection');
         const blockTableauGlobal = document.getElementById('pdfTableauSection');
 
+        // MODE EXPORT PAR ENTREPRISE (COMPACT : PLAN + TABLEAU DU NIVEAU SUR LA MÊME PAGE)
         if (entrepriseFiltre) {
-            blockTableauGlobal.style.display = "none";
+            blockTableauGlobal.style.display = "none"; // Désactivation du grand tableau global séparé
 
             if (imprimerPlans && chantierActuel.niveaux) {
                 const pdfPlansMultiples = document.getElementById('pdfPlansMultiples'); 
                 pdfPlansMultiples.innerHTML = "";
 
+                // Filtrage strict : Niveaux ayant des puces NON LEVÉES concernant l'entreprise
                 const niveauxAAfficher = chantierActuel.niveaux.filter(niv => {
                     if (!chantierActuel.puces) return false;
                     return chantierActuel.puces.some(p => {
@@ -3338,7 +3421,7 @@
                             blockNiveau.style.breakAfter = "page";
                         }
 
-                        blockNiveau.innerHTML = `<h3 style="border-bottom: 1px solid #333; padding-bottom: 4px; margin-top:10px; font-size:11pt;".AANiveau : ${niv.nom}</h3.AA`;
+                        blockNiveau.innerHTML = `<h3 style="border-bottom: 1px solid #333; padding-bottom: 4px; margin-top:10px; font-size:11pt;">Niveau : ${niv.nom}</h3>`;
 
                         const ctn = document.createElement('div'); 
                         ctn.className = "plan-container"; 
@@ -3356,6 +3439,7 @@
                         svgPdfOverlay.setAttribute("preserveAspectRatio", "none");
                         let svgPdfContent = "";
 
+                        // Puces filtrées non levées du niveau pour cette entreprise
                         const pucesNiveauEnt = (chantierActuel.puces || []).filter(p => {
                             if (p.niveauNom !== niv.nom) return false;
                             return puceConcerneEntreprise(p, entrepriseFiltre);
@@ -3368,15 +3452,15 @@
                                 const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
                                 const epaisseurBorder = z.epaisseur ? (z.epaisseur * 0.15) : 0.4;
                                 if (z.type === 'rect') {
-                                    svgPdfContent += `<rect x="\({z.x}" y="\){z.y}" width="\({z.w}" height="\){z.h}" fill="\({couleurZone}" fill-opacity="0.3" stroke="\){couleurZone}" stroke-width="${epaisseurBorder}".AA</rect.AA`;
+                                    svgPdfContent += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></rect>`;
                                 } else if (z.type === 'poly' && z.points) {
-                                    const ptsStr = z.points.map(pt => `\({pt.x},\){pt.y}`).join(' ');
-                                    svgPdfContent += `<polygon points="\({ptsStr}" fill="\){couleurZone}" fill-opacity="0.3" stroke="\({couleurZone}" stroke-width="\){epaisseurBorder}".AA</polygon.AA`;
+                                    const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
+                                    svgPdfContent += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></polygon>`;
                                 }
 
                                 const centre = calculerCentreZone(z);
                                 if (centre) {
-                                    svgPdfContent += `<line x1="\({p.x}" y1="\){p.y}" x2="\({centre.x}" y2="\){centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85".AA</line.AA`;
+                                    svgPdfContent += `<line x1="${p.x}" y1="${p.y}" x2="${centre.x}" y2="${centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85"></line>`;
                                 }
                             });
 
@@ -3401,21 +3485,22 @@
                         ctn.appendChild(svgPdfOverlay);
                         blockNiveau.appendChild(ctn);
 
+                        // FUSION DU TABLEAU DES REMARQUES IMMÉDIATEMENT SOUS LE PLAN
                         if (imprimerTableau && pucesNiveauEnt.length > 0) {
                             const tableElem = document.createElement('table');
                             tableElem.className = "pdf-table";
                             tableElem.style.marginTop = "10px";
 
                             tableElem.innerHTML = `
-                                <thead.AA
-                                    <tr.AA
-                                        <th style="width: 8%; text-align:center;".AAN° Puce</th.AA
-                                        <th style="width: 16%; text-align:center;".AALocalisation</th.AA
-                                        <th style="width: 12%; text-align:center;".AAStatut</th.AA
-                                        <th style="width: 64%;".AAActions à mener & Observations</th.AA
-                                    </tr.AA
-                                </thead.AA
-                                <tbody.AA</tbody.AA
+                                <thead>
+                                    <tr>
+                                        <th style="width: 8%; text-align:center;">N° Puce</th>
+                                        <th style="width: 16%; text-align:center;">Localisation</th>
+                                        <th style="width: 12%; text-align:center;">Statut</th>
+                                        <th style="width: 64%;">Actions à mener &amp; Observations</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
                             `;
 
                             const tbodyElem = tableElem.querySelector('tbody');
@@ -3424,34 +3509,35 @@
                                 const tr = document.createElement('tr');
                                 const st = normaliserStatutPuce(p);
 
-                                let badgeHtml = '<span class="status-badge active".AAActive</span.AA';
+                                let badgeHtml = '<span class="status-badge active">Active</span>';
                                 if (st === "en_cours") {
-                                    badgeHtml = '<span class="status-badge progress".AAEn cours</span.AA';
+                                    badgeHtml = '<span class="status-badge progress">En cours</span>';
                                     tr.style.backgroundColor = "#fffdf9";
                                 }
 
+                                // Extraction des sous-tâches NON RÉALISÉES pour cette entreprise
                                 let pdfTachesHtml = "";
                                 if (p.taches && p.taches.length > 0) {
                                     const tachesActivesEnt = p.taches.filter(t => {
                                         if (t.entreprise && t.entreprise !== entrepriseFiltre) return false;
-                                        return t.statut !== "resolue" && !t.faite;
+                                        return t.statut !== "resolue" && !t.faite; // Retrait des tâches réalisées
                                     });
 
                                     if (tachesActivesEnt.length > 0) {
-                                        pdfTachesHtml = `<div style="margin-bottom:4px;".AA` + tachesActivesEnt.map(t => {
+                                        pdfTachesHtml = `<div style="margin-bottom:4px;">` + tachesActivesEnt.map(t => {
                                             const evalR = evaluerRetardTache(t);
-                                            const bRetard = evalR.enRetard ? `<span class="status-badge late-task".AA🚨 RETARD (${evalR.joursRetard}j)</span.AA` : '';
+                                            const bRetard = evalR.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalR.joursRetard}j)</span>` : '';
                                             const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
                                             const labelSubT = t.statut === "en_cours" ? '🟠' : '🔴';
 
-                                            return `<div style="font-size:7pt; margin-bottom:2px;".AA\({labelSubT} <strong.AA\){t.description}</strong.AA — Échéance: \({echFmt}\){bRetard}</div.AA`;
-                                        }).join('') + `</div.AA`;
+                                            return `<div style="font-size:7pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> — Échéance: ${echFmt} ${bRetard}</div>`;
+                                        }).join('') + `</div>`;
                                     }
                                 }
 
                                 const gyroIconePdf = puceAUnRetardAction(p) ? ' 🚨' : '';
                                 const labelZoneAffiche = p.zonePrecis || 'Zone générale';
-                                tr.innerHTML = `<td style="text-align:center; font-weight:bold;".AAPuce \({p.numero}\){gyroIconePdf}</td.AA<td style="text-align:center;".AA\({labelZoneAffiche}</td.AA<td style="text-align:center;".AA\){badgeHtml}</td.AA<td.AA\({pdfTachesHtml}<div.AA\){p.commentaire || ''}</div.AA</td.AA`;
+                                tr.innerHTML = `<td style="text-align:center; font-weight:bold;">Puce ${p.numero}${gyroIconePdf}</td><td style="text-align:center;">${labelZoneAffiche}</td><td style="text-align:center;">${badgeHtml}</td><td>${pdfTachesHtml}<div>${p.commentaire || ''}</div></td>`;
                                 tbodyElem.appendChild(tr);
                             });
 
@@ -3467,6 +3553,7 @@
                 blockPlans.style.display = "none";
             }
         } 
+        // MODE GLOBAL (DOCUMENT COMPLET INITIAL AVEC PLAN PLEINE PAGE)
         else {
             if (imprimerPlans && chantierActuel.niveaux) {
                 blockPlans.style.display = "block";
@@ -3486,7 +3573,7 @@
                         blockNiveau.style.breakAfter = "page";
                     }
 
-                    blockNiveau.innerHTML = `<h3 style="border-bottom: 1px solid #333; padding-bottom: 5px; margin-top:15px; font-size:11pt;".AANiveau : ${niv.nom}</h3.AA`;
+                    blockNiveau.innerHTML = `<h3 style="border-bottom: 1px solid #333; padding-bottom: 5px; margin-top:15px; font-size:11pt;">Niveau : ${niv.nom}</h3>`;
 
                     const ctn = document.createElement('div'); 
                     ctn.className = "plan-container"; 
@@ -3516,15 +3603,15 @@
                                     const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
                                     const epaisseurBorder = z.epaisseur ? (z.epaisseur * 0.15) : 0.4;
                                     if (z.type === 'rect') {
-                                        svgPdfContent += `<rect x="\({z.x}" y="\){z.y}" width="\({z.w}" height="\){z.h}" fill="\({couleurZone}" fill-opacity="0.3" stroke="\){couleurZone}" stroke-width="${epaisseurBorder}".AA</rect.AA`;
+                                        svgPdfContent += `<rect x="${z.x}" y="${z.y}" width="${z.w}" height="${z.h}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></rect>`;
                                     } else if (z.type === 'poly' && z.points) {
-                                        const ptsStr = z.points.map(pt => `\({pt.x},\){pt.y}`).join(' ');
-                                        svgPdfContent += `<polygon points="\({ptsStr}" fill="\){couleurZone}" fill-opacity="0.3" stroke="\({couleurZone}" stroke-width="\){epaisseurBorder}".AA</polygon.AA`;
+                                        const ptsStr = z.points.map(pt => `${pt.x},${pt.y}`).join(' ');
+                                        svgPdfContent += `<polygon points="${ptsStr}" fill="${couleurZone}" fill-opacity="0.3" stroke="${couleurZone}" stroke-width="${epaisseurBorder}"></polygon>`;
                                     }
 
                                     const centre = calculerCentreZone(z);
                                     if (centre) {
-                                        svgPdfContent += `<line x1="\({p.x}" y1="\){p.y}" x2="\({centre.x}" y2="\){centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85".AA</line.AA`;
+                                        svgPdfContent += `<line x1="${p.x}" y1="${p.y}" x2="${centre.x}" y2="${centre.y}" stroke="${couleurZone}" stroke-width="0.3" stroke-opacity="0.85"></line>`;
                                     }
                                 });
 
@@ -3560,6 +3647,7 @@
                 blockPlans.style.display = "none";
             }
 
+            // GRAND TABLEAU GLOBAL
             if (imprimerTableau && chantierActuel.puces) {
                 blockTableauGlobal.style.display = "block";
                 document.getElementById('pdfTitreRemarques').innerText = `${compteurChapitreIndex}. Tableau des constatations et remarques`;
@@ -3577,40 +3665,40 @@
                 });
 
                 if(targetPuces.length === 0) {
-                    pdfCorpsTableau.innerHTML = `<tr.AA<td colspan="4" style="text-align:center;".AAAucune réserve filtrée à imprimer pour cette sélection.</td.AA</tr.AA`;
+                    pdfCorpsTableau.innerHTML = `<tr><td colspan="4" style="text-align:center;">Aucune réserve filtrée à imprimer pour cette sélection.</td></tr>`;
                 } else {
                     targetPuces.forEach(p => {
                         const tr = document.createElement('tr');
                         const st = normaliserStatutPuce(p);
 
-                        let badgeHtml = '<span class="status-badge active".AAActive</span.AA';
+                        let badgeHtml = '<span class="status-badge active">Active</span>';
                         if (st === "en_cours") {
-                            badgeHtml = '<span class="status-badge progress".AAEn cours</span.AA';
+                            badgeHtml = '<span class="status-badge progress">En cours</span>';
                             tr.style.backgroundColor = "#fffdf9";
                         } else if (st === "resolue") {
-                            badgeHtml = '<span class="status-badge resolved".AALevée</span.AA';
+                            badgeHtml = '<span class="status-badge resolved">Levée</span>';
                             tr.style.backgroundColor = "#fafafa";
                             tr.style.color = "#777";
                         }
 
                         let pdfTachesHtml = "";
                         if (p.taches && p.taches.length > 0) {
-                            pdfTachesHtml = `<div style="margin-bottom:4px;".AA` + p.taches.map(t => {
+                            pdfTachesHtml = `<div style="margin-bottom:4px;">` + p.taches.map(t => {
                                 const evalR = evaluerRetardTache(t);
-                                const bRetard = evalR.enRetard ? `<span class="status-badge late-task".AA🚨 RETARD (${evalR.joursRetard}j)</span.AA` : '';
+                                const bRetard = evalR.enRetard ? `<span class="status-badge late-task">🚨 RETARD (${evalR.joursRetard}j)</span>` : '';
                                 const echFmt = t.echeance ? t.echeance.split("-").reverse().join("/") : 'Sans date';
 
                                 let labelSubT = '🔴';
                                 if (t.statut === "en_cours") labelSubT = '🟠';
                                 else if (t.statut === "resolue" || t.faite) labelSubT = '🟢';
 
-                                return `<div style="font-size:7pt; margin-bottom:2px;".AA\({labelSubT} <strong.AA\){t.description}</strong.AA [\({t.entreprise || 'Sans lot'}] — Échéance:\){echFmt} ${bRetard}</div.AA`;
-                            }).join('') + `</div.AA`;
+                                return `<div style="font-size:7pt; margin-bottom:2px;">${labelSubT} <strong>${t.description}</strong> [${t.entreprise || 'Sans lot'}] — Échéance: ${echFmt} ${bRetard}</div>`;
+                            }).join('') + `</div>`;
                         }
 
                         const gyroIconePdf = puceAUnRetardAction(p) ? ' 🚨' : '';
                         const labelNiveauZoneAffiche = p.niveauNom + (p.zonePrecis ? ` / ${p.zonePrecis}` : '');
-                        tr.innerHTML = `<td style="text-align:center; font-weight:bold;".AAPuce \({p.numero}\){gyroIconePdf}</td.AA<td style="text-align:center;".AA\({labelNiveauZoneAffiche}</td.AA<td style="text-align:center;".AA\){badgeHtml}</td.AA<td.AA\({pdfTachesHtml}<div.AA\){p.commentaire || ''}</div.AA</td.AA`;
+                        tr.innerHTML = `<td style="text-align:center; font-weight:bold;">Puce ${p.numero}${gyroIconePdf}</td><td style="text-align:center;">${labelNiveauZoneAffiche}</td><td style="text-align:center;">${badgeHtml}</td><td>${pdfTachesHtml}<div>${p.commentaire || ''}</div></td>`;
                         pdfCorpsTableau.appendChild(tr);
                     });
                 }
@@ -3619,6 +3707,7 @@
             }
         }
 
+        // SECTION NOTES ET CROQUIS
         const pdfNotesSection = document.getElementById('pdfNotesSection');
         const pdfNotesContainer = document.getElementById('pdfNotesContainer');
         const notesImprimables = (chantierActuel.notes || []).filter(n => {
@@ -3642,25 +3731,26 @@
                 if(n.puceLieeId) {
                     const puceObj = (chantierActuel.puces || []).find(p => p.id == n.puceLieeId);
                     if(puceObj) {
-                        puceLieeInfo = `<div style="font-size:9.5pt; font-weight:bold; color:#d93025; margin-bottom:6px;".AA📍 Associé à la remarque Puce N° \({puceObj.numero} (\){puceObj.niveauNom}${puceObj.zonePrecis ? ' - ' + puceObj.zonePrecis : ''})</div.AA`;
+                        puceLieeInfo = `<div style="font-size:9.5pt; font-weight:bold; color:#d93025; margin-bottom:6px;">📍 Associé à la remarque Puce N° ${puceObj.numero} (${puceObj.niveauNom}${puceObj.zonePrecis ? ' - ' + puceObj.zonePrecis : ''})</div>`;
                     }
                 }
 
                 return `
-                    <div style="border:1px solid #000; padding:10px; margin-bottom:12px; page-break-inside:avoid; break-inside:avoid; background:#fff;".AA
-                        <div style="font-size:9pt; font-weight:bold; color:#555; border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:6px;".AA
+                    <div style="border:1px solid #000; padding:10px; margin-bottom:12px; page-break-inside:avoid; break-inside:avoid; background:#fff;">
+                        <div style="font-size:9pt; font-weight:bold; color:#555; border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:6px;">
                             Date : ${n.dateCreation}
-                        </div.AA
+                        </div>
                         ${puceLieeInfo}
-                        <div style="font-size:10pt; white-space:pre-wrap;".AA${n.texte || 'Aucune observation textuelle.'}</div.AA
-                        \({n.croquis ? `<img src="\){n.croquis}" style="max-width:100%; max-height:220px; display:block; margin-top:10px; border:1px solid #888;".AA` : ''}
-                    </div.AA
+                        <div style="font-size:10pt; white-space:pre-wrap;">${n.texte || 'Aucune observation textuelle.'}</div>
+                        ${n.croquis ? `<img src="${n.croquis}" style="max-width:100%; max-height:220px; display:block; margin-top:10px; border:1px solid #888;">` : ''}
+                    </div>
                 `;
             }).join('');
         } else {
             pdfNotesSection.style.display = "none";
         }
 
+        // SECTION REPORTAGE PHOTO (FILTRAGE DES PHOTOS PAR ENTREPRISE ET LÉGENDES DÉTAILLÉES)
         const blockPhotos = document.getElementById('pdfPhotosSection');
         if (imprimerPhotos && chantierActuel.puces) {
             blockPhotos.style.display = "block";
@@ -3679,35 +3769,40 @@
                 if (p.photo && (!p.photos || p.photos.length === 0)) { p.photos = [normaliserPhotoPuce(p.photo)]; delete p.photo; }
                 const st = normaliserStatutPuce(p);
 
+                // En export ciblé entreprise, une puce levée/soldée est toujours exclue du PDF.
+                if (entrepriseFiltre && st === "resolue") return;
+
                 if (!inclureActives && st === "active") return;
                 if (!inclureEnCours && st === "en_cours") return;
                 if (!inclureLevees && st === "resolue") return;
 
                 if (p.photos && p.photos.length > 0) {
+                    // FILTRE DES PHOTOS ARCHIVÉES ET FILTRAGE SPECIFIQUE PAR ENTREPRISE
                     const photosValidesPdf = p.photos.map(pic => normaliserPhotoPuce(pic)).filter(pObj => {
                         if (pObj.archivee) return false;
                         if (entrepriseFiltre) {
-                            if (pObj.entreprise && pObj.entreprise !== entrepriseFiltre) return false;
+                            // En mode entreprise, inclure la photo si elle est globale (vide) OU si elle est assignée à cette entreprise
+                            return !pObj.entreprise || pObj.entreprise === entrepriseFiltre;
                         }
                         return true;
                     });
 
-                    photosValidesPdf.forEach((photoObj, indexPhoto) => {
+                    // Légende volontairement courte et fixe pour éviter tout débordement de la planche photo.
+                    photosValidesPdf.forEach((photoObj) => {
                         collectionToutesPhotosImprimables.push({
                             src: photoObj.src,
                             numero: p.numero,
-                            niveau: p.niveauNom + (p.zonePrecis ? ` (${p.zonePrecis})` : ''),
-                            statut: st,
-                            labelIndex: photosValidesPdf.length > 1 ? ` (\({indexPhoto + 1}/\){photosValidesPdf.length})` : ''
+                            niveau: p.niveauNom + (p.zonePrecis ? ` / ${p.zonePrecis}` : ''),
+                            statut: st
                         });
                     });
                 }
             });
 
             if (collectionToutesPhotosImprimables.length === 0) {
-                photoPagesContainer.innerHTML = "<p style='font-style:italic;'.AAAucune photographie filtrée à imprimer pour cette sélection.</p.AA";
+                photoPagesContainer.innerHTML = "<p style='font-style:italic;'>Aucune photographie filtrée à imprimer pour cette sélection.</p>";
             } else {
-                const PHOTOS_PAR_PAGE = 8;
+                const PHOTOS_PAR_PAGE = 8; // Plante photo 8 images par page (2x4)
                 const nbPages = Math.ceil(collectionToutesPhotosImprimables.length / PHOTOS_PAR_PAGE);
                 
                 for (let pageIdx = 0; pageIdx < nbPages; pageIdx++) {
@@ -3717,7 +3812,7 @@
                         photoPagesContainer.appendChild(pb); 
                     }
                     const title = document.createElement('h3'); 
-                    title.innerText = `Planche Photos — Page \({pageIdx + 1} /\){nbPages}`; 
+                    title.innerText = `Planche Photos — Page ${pageIdx + 1} / ${nbPages}`; 
                     photoPagesContainer.appendChild(title);
 
                     const table = document.createElement('table'); 
@@ -3737,7 +3832,7 @@
                             if (pAvecP.statut === "en_cours") statusLabel = "EN COURS";
                             else if (pAvecP.statut === "resolue") statusLabel = "LEVÉE";
 
-                            td.innerHTML = `<img src="\({pAvecP.src}" class="photo-grid-img".AA<div class="photo-grid-caption".AAPUCE N°\){pAvecP.numero}\({pAvecP.labelIndex} (\){pAvecP.niveau}) - ${statusLabel}</div.AA`;
+                            td.innerHTML = `<img src="${pAvecP.src}" class="photo-grid-img" alt="Photo puce N° ${pAvecP.numero}"><div class="photo-grid-caption">PUCE N° ${pAvecP.numero} - ${pAvecP.niveau} - ${statusLabel}</div>`;
                         } else { 
                             td.style.border = "none"; 
                             td.style.background = "transparent"; 
