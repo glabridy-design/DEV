@@ -13,7 +13,7 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; color: #333; }
-        .app-container { max-width: 900px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .app-container { max-width: 960px; margin: 20px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
 
         h1, h2, h3 { color: #1a73e8; margin-top: 0; }
         .section { display: none; }
@@ -132,6 +132,34 @@
         .note-card { background: #fff; border: 1px solid #dadce0; border-radius: 8px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.03); }
         .note-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
         .note-sketch-img { max-width: 100%; max-height: 250px; border: 1px solid #ccc; border-radius: 6px; margin-top: 10px; display: block; background: #fff; }
+
+        /* STYLES GANTT & RÉPERTOIRE MS PROJECT */
+        .gantt-repo-box { background: #f8f9fa; border: 1px solid #dadce0; border-radius: 8px; padding: 15px; margin-bottom: 20px; }
+        .gantt-repo-item { display: flex; justify-content: space-between; align-items: center; background: white; border: 1px solid #dadce0; padding: 10px 14px; border-radius: 6px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+        .gantt-viewport { width: 100%; overflow-x: auto; border: 1px solid #dadce0; border-radius: 8px; background: white; position: relative; }
+        .gantt-table { border-collapse: collapse; width: max-content; min-width: 100%; font-size: 12px; }
+        .gantt-table th, .gantt-table td { border: 1px solid #e0e0e0; padding: 5px 8px; vertical-align: middle; }
+        .gantt-table th { background: #f1f3f4; color: #444; font-weight: bold; text-align: center; position: sticky; top: 0; z-index: 15; }
+        .gantt-sticky-col { position: sticky; left: 0; background: #fff; z-index: 10; min-width: 260px; max-width: 300px; border-right: 2px solid #b4cff7 !important; }
+        .gantt-table th.gantt-sticky-col { background: #e8f0fe; color: #1a73e8; z-index: 20; text-align: left; }
+        .gantt-row-folder { background: #edf2fa !important; font-weight: bold; color: #1a73e8; cursor: pointer; }
+        .gantt-row-folder .gantt-sticky-col { background: #edf2fa !important; }
+        .gantt-row-summary { background: #f8f9fa; font-weight: bold; }
+        .gantt-row-summary .gantt-sticky-col { background: #f8f9fa; }
+        .gantt-timeline-cell { position: relative; padding: 0 !important; height: 28px; background-image: linear-gradient(to right, #f5f5f5 1px, transparent 1px); }
+        .gantt-bar { position: absolute; top: 5px; height: 18px; border-radius: 4px; background: #1a73e8; color: white; font-size: 10px; line-height: 18px; padding: 0 5px; white-space: nowrap; overflow: visible; box-shadow: 0 1px 3px rgba(0,0,0,0.2); cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        .gantt-bar.summary { background: #3c4043; height: 10px; top: 9px; border-radius: 2px; }
+        .gantt-bar.has-late { border: 2px solid #d93025; box-shadow: 0 0 6px rgba(217,48,37,0.5); }
+        .gantt-bar-progress { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(255,255,255,0.32); border-radius: 3px 0 0 3px; pointer-events: none; }
+        .gantt-puce-badge { background: #fff; color: #1a73e8; border: 1px solid #1a73e8; border-radius: 10px; padding: 0 5px; font-size: 10px; font-weight: bold; line-height: 14px; margin-left: 4px; }
+        .gantt-puce-badge.late { background: #fce8e6; color: #d93025; border-color: #d93025; }
+        .gantt-milestone { position: absolute; top: 7px; width: 14px; height: 14px; background: #d93025; border: 2px solid #fff; transform: translateX(-50%) rotate(45deg); box-shadow: 0 1px 4px rgba(0,0,0,0.4); cursor: pointer; z-index: 8; }
+        .gantt-milestone.progress { background: #e67e22; }
+        .gantt-milestone.resolved { background: #28a745; }
+        .gantt-milestone-label { position: absolute; top: 5px; font-size: 11px; font-weight: bold; color: #d93025; white-space: nowrap; transform: translateX(12px); cursor: pointer; }
+        .gantt-today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: #d93025; z-index: 12; pointer-events: none; }
+
+        .gantt-link-list { max-height: 150px; overflow-y: auto; background: white; border: 1px solid #dadce0; border-radius: 6px; padding: 8px; margin-top: 6px; }
 
         /* FENÊTRES MODALES : MASQUÉES PAR DÉFAUT (SANS !important POUR PERMETTRE L'OUVERTURE JS) */
         .sketch-modal-overlay, .photo-viewer-overlay { 
@@ -280,6 +308,15 @@
                 font-size: 7.5pt !important;
             }
 
+            /* GANTT PDF */
+            .pdf-gantt-table { width: 100% !important; border-collapse: collapse !important; margin-top: 8px !important; table-layout: fixed !important; }
+            .pdf-gantt-table th, .pdf-gantt-table td { border: 1px solid #888 !important; padding: 3px 4px !important; font-size: 7pt !important; overflow: hidden !important; }
+            .pdf-gantt-table th { background-color: #e8f0fe !important; font-weight: bold !important; text-align: center !important; }
+            .pdf-gantt-bar-wrap { position: relative !important; width: 100% !important; height: 12px !important; background: #f4f6f9 !important; }
+            .pdf-gantt-bar { position: absolute !important; top: 1px !important; height: 10px !important; background-color: #1a73e8 !important; border-radius: 2px !important; }
+            .pdf-gantt-bar.summary { background-color: #3c4043 !important; height: 6px !important; top: 3px !important; }
+            .pdf-gantt-milestone { position: absolute !important; top: 2px !important; width: 8px !important; height: 8px !important; background-color: #d93025 !important; transform: translateX(-50%) rotate(45deg) !important; }
+
             /* PLANCHE PHOTO : 8 PHOTOS PAR PAGE (2 COLONNES x 4 LIGNES) */
             .photo-grid-table { 
                 width: 100% !important; 
@@ -380,7 +417,7 @@
 <div class="app-container">
 
     <div id="pageAccueil" class="section active">
-        <h1>Rapport de visite V6</h1>
+        <h1>Rapport de visite V7</h1>
 
         <div class="config-box">
             <strong>🔑 Synchronisation Multi-Appareil GitHub (Paramétrages uniquement) :</strong><br>
@@ -472,6 +509,7 @@
 
         <div class="tabs-container no-print">
             <button class="tab-button active" onclick="switchTab('tabTerrain')">🏗️ Saisie Terrain</button>
+            <button class="tab-button" onclick="switchTab('tabGantt')">📅 Planning Gantt</button>
             <button class="tab-button" onclick="switchTab('tabNotes')">📝 Notes &amp; Croquis</button>
         </div>
 
@@ -618,6 +656,32 @@
                     </div>
                 </div>
 
+                <!-- SECTION LIAISON AU PLANNING GANTT (MS PROJECT) -->
+                <div style="background:#fff; border:1px solid #b4cff7; padding:12px; border-radius:8px; margin: 15px 0;">
+                    <h4 style="margin: 0 0 8px 0; color:#1a73e8;">📅 Liaison Planning Gantt (MS Project)</h4>
+                    <p style="font-size:12px; color:#666; margin-top:0;">Rattachez cette puce à une ou plusieurs tâches d'un planning MS Project ou faites-la apparaître comme un jalon autonome.</p>
+                    
+                    <div class="flex-row" style="margin-bottom:8px;">
+                        <select id="puceGanttPlanningSelect" style="font-size:13px; padding:8px; flex:1;" onchange="rafraichirOptionsLiaisonGanttPuce()">
+                            <option value="">-- Aucun planning sélectionné --</option>
+                        </select>
+                        <select id="puceGanttModeSelect" style="font-size:13px; padding:8px; flex:1;" onchange="rafraichirOptionsLiaisonGanttPuce()">
+                            <option value="none">🚫 Aucune liaison Gantt</option>
+                            <option value="tasks">🔗 Rattacher à une / des tâche(s) MS Project</option>
+                            <option value="milestone">◆ Faire apparaître comme un Jalon autonome</option>
+                        </select>
+                    </div>
+
+                    <div id="puceGanttTasksZone" style="display:none;">
+                        <span style="font-size:12px; font-weight:bold; color:#333;">Cochez la ou les tâches concernées dans ce planning :</span>
+                        <div id="puceGanttTasksCheckboxes" class="gantt-link-list"></div>
+                    </div>
+
+                    <div id="puceGanttMilestoneZone" style="display:none; background:#fef7e0; border:1px solid #fdd835; padding:8px 10px; border-radius:6px; font-size:12px; color:#b06000;">
+                        ◆ Cette puce s'affichera comme un jalon sur la frise chronologique du planning sélectionné à la date d'échéance de ses actions (ou à la date du jour par défaut).
+                    </div>
+                </div>
+
                 <label>Entreprises globales concernées (Optionnel) :</label>
                 <div id="zoneEntreprisesPuceCheckboxes" class="entreprises-selection-list"></div>
 
@@ -677,6 +741,7 @@
                 <div style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom: 10px;">
                     <label class="filter-checkbox-label"><input type="checkbox" id="printOptSynthese" checked> 📝 Imprimer la synthèse &amp; alertes retards (Page 1)</label>
                     <label class="filter-checkbox-label"><input type="checkbox" id="printOptPlans" checked> 🗺️ Imprimer les plans</label>
+                    <label class="filter-checkbox-label"><input type="checkbox" id="printOptGantt" checked> 📅 Imprimer les plannings Gantt</label>
                     <label class="filter-checkbox-label"><input type="checkbox" id="printOptNotes" checked> 📝 Imprimer les notes et croquis</label>
                     <label class="filter-checkbox-label"><input type="checkbox" id="printOptTableau" checked> 📊 Imprimer le tableau</label>
                     <label class="filter-checkbox-label"><input type="checkbox" id="printOptPhotos" checked> 📷 Imprimer le reportage photo</label>
@@ -686,6 +751,46 @@
                     <label class="filter-checkbox-label" style="color:#e67e22;"><input type="checkbox" id="printOptRemarquesEnCours" checked> 🟠 Inclure Remarques En Cours</label>
                     <label class="filter-checkbox-label" style="color:#1e8449;"><input type="checkbox" id="printOptRemarquesLevees" checked> 🟢 Inclure Remarques Levées</label>
                 </div>
+            </div>
+        </div>
+
+        <!-- NOUVEL ONGLET : PLANNING GANTT & RÉPERTOIRE MS PROJECT -->
+        <div id="tabGantt" class="tab-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:15px;">
+                <h2 style="margin:0;">📅 Répertoire des Plannings MS Project</h2>
+                <div>
+                    <button type="button" class="btn btn-success btn-small" onclick="document.getElementById('importMsProjectXmlInput').click()">📥 Importer un MS Project (.xml)</button>
+                    <input type="file" id="importMsProjectXmlInput" accept=".xml" style="display:none;" onchange="importerFichierMsProjectXml(event)">
+                    <input type="file" id="updateMsProjectXmlInput" accept=".xml" style="display:none;" onchange="executerMiseAJourMsProjectXml(event)">
+                </div>
+            </div>
+
+            <div class="gantt-repo-box">
+                <p style="font-size:13px; color:#555; margin-top:0;">Importez vos plannings exportés depuis MS Project au format <strong>.xml</strong> (<em>Fichier &gt; Enregistrer sous &gt; Format XML</em>). Cochez les espaces à afficher simultanément dans l'arborescence ci-dessous.</p>
+                <div id="ganttRepertoireListeContainer">
+                    <p style="font-style:italic; color:#777; margin:0;">Aucun planning MS Project importé dans le répertoire.</p>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px; background:#edf2fa; padding:10px 14px; border-radius:8px; border:1px solid #b4cff7;">
+                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                    <strong style="font-size:13px; color:#1a73e8;">🔍 Filtres Gantt :</strong>
+                    <select id="ganttFilterEntrepriseSelect" style="padding:6px 10px; font-size:13px; width:auto; background:white;" onchange="rafraichirDiagrammeGantt()">
+                        <option value="">Toutes les entreprises / ressources</option>
+                    </select>
+                    <label class="filter-checkbox-label" style="font-size:13px;">
+                        <input type="checkbox" id="ganttFilterOnlyLinked" onchange="rafraichirDiagrammeGantt()">
+                        📍 Uniquement tâches liées ou jalons
+                    </label>
+                </div>
+                <div style="display:flex; gap:6px;">
+                    <button type="button" class="btn btn-small" style="background:#5f6368; font-size:12px; padding:5px 10px;" onclick="basculerDepliageTousPlannings(true)">➕ Tout déplier</button>
+                    <button type="button" class="btn btn-small" style="background:#5f6368; font-size:12px; padding:5px 10px;" onclick="basculerDepliageTousPlannings(false)">➖ Tout replier</button>
+                </div>
+            </div>
+
+            <div class="gantt-viewport" id="ganttDiagrammeContainer">
+                <p style="padding:20px; text-align:center; color:#777;">Importez ou cochez un planning dans le répertoire pour visualiser le diagramme.</p>
             </div>
         </div>
 
@@ -827,14 +932,19 @@
         <div id="pdfPlansMultiples"></div>
     </div>
 
+    <div id="pdfGanttSection" class="page-break" style="display:none;">
+        <h2 id="pdfHeaderGantt">2. Planning Gantt &amp; Jalons de visite</h2>
+        <div id="pdfGanttContainer" style="margin-top:10px;"></div>
+    </div>
+
     <div id="pdfNotesSection" class="page-break" style="display:none;">
-        <h2 id="pdfHeaderNotes">2. Notes &amp; Schémas de visite</h2>
+        <h2 id="pdfHeaderNotes">3. Notes &amp; Schémas de visite</h2>
         <div id="pdfNotesContainer" style="margin-top:15px;"></div>
     </div>
 
     <div id="pdfTableauSection">
         <div class="page-break"></div>
-        <h2 id="pdfTitreRemarques">3. Tableau des constatations et remarques</h2>
+        <h2 id="pdfTitreRemarques">4. Tableau des constatations et remarques</h2>
         <table class="pdf-table">
             <thead>
                 <tr>
@@ -850,7 +960,7 @@
 
     <div id="pdfPhotosSection">
         <div class="page-break"></div>
-        <h2 id="pdfTitrePhotos">4. Reportage photographique</h2>
+        <h2 id="pdfTitrePhotos">5. Reportage photographique</h2>
         <div id="pdfPhotoPagesContainer"></div>
     </div>
 </div>
@@ -861,18 +971,19 @@
     let niveauxTemporaires = []; 
     let planEnCoursDeChargementBase64 = ""; 
     let planDirectTerrainBase64 = "";
-    let photosPuceTemporairesTableau = []; // Stocke des objets { src, archivee: false, entreprise: '' }
+    let photosPuceTemporairesTableau = []; 
     let tachesPuceTemporairesTableau = [];
-    let indexTacheEnEdition = null; // Stocke l'index de la tâche en cours d'édition
-    let zonesPuceTemporairesTableau = []; // Zones associées à la puce en cours d'édition
-    let indexZoneEnEdition = null; // Stocke l'index de la zone en cours de ré-édition
+    let indexTacheEnEdition = null; 
+    let zonesPuceTemporairesTableau = []; 
+    let indexZoneEnEdition = null; 
     let chantierActuel = null; 
     let indexNiveauActuel = 0; 
     let puceSelectionneeId = null;
     let statutPuceTemporaire = "active"; 
 
-    // Variables pour le mode de dessin de zone sur le plan
-    let modeDessinZoneActif = null; // null, 'rect', 'poly'
+    let planningIdEnCoursDeMiseAJour = null;
+
+    let modeDessinZoneActif = null; 
     let pointsZoneEnCours = [];
 
     let idNoteCroquisEnCours = null;
@@ -888,7 +999,6 @@
     let couleurPinceauPhoto = '#d93025';
     let taillePinceauPhoto = 5;
 
-    // Variables pour la visionneuse photo grand format
     let indexPhotoViewerActif = 0;
 
     let estEnTrainDeSynchroniser = false;
@@ -903,7 +1013,6 @@
         return DEFAULT_GOOGLE_DRIVE_URL;
     }
 
-    // Normalisation d'un objet photo (support rétrocompatible string vs object)
     function normaliserPhotoPuce(pic) {
         if (typeof pic === 'string') {
             return { src: pic, archivee: false, entreprise: '' };
@@ -1083,7 +1192,6 @@
             }
         });
 
-        // Touches clavier pour la visionneuse photo
         document.addEventListener('keydown', (e) => {
             const modal = document.getElementById('photoViewerModalOverlay');
             if (modal && modal.style.display === 'flex') {
@@ -1103,7 +1211,7 @@
     function obtenirCouleurHexaParStatut(statut) {
         if (statut === "en_cours") return "#e67e22";
         if (statut === "resolue") return "#28a745";
-        return "#d93025"; // active
+        return "#d93025"; 
     }
 
     function evaluerRetardTache(tache) {
@@ -1129,6 +1237,549 @@
         if (st === "resolue") return false;
         if (!p.taches || p.taches.length === 0) return false;
         return p.taches.some(t => evaluerRetardTache(t).enRetard);
+    }
+
+    /* -------------------------------------------------------------
+       PARSING XML MS PROJECT & GESTION DU RÉPERTOIRE GANTT
+    ------------------------------------------------------------- */
+    function parserContenuXmlMsProject(xmlString, nomFichierFallback) {
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlString, "text/xml");
+
+        if (xmlDoc.getElementsByTagName("parsererror").length > 0) {
+            throw new Error("Le fichier XML MS Project est mal formé ou corrompu.");
+        }
+
+        const getTagText = (parent, tagName) => {
+            const el = parent.getElementsByTagName(tagName)[0];
+            return el ? el.textContent.trim() : "";
+        };
+
+        const projectNode = xmlDoc.getElementsByTagName("Project")[0] || xmlDoc.documentElement;
+        const titreProjet = getTagText(projectNode, "Title") || getTagText(projectNode, "Name") || nomFichierFallback.replace(/\.xml$/i, "");
+
+        // Extraction des ressources (Entreprises / Lots)
+        const ressourcesMap = {};
+        const resourceNodes = xmlDoc.getElementsByTagName("Resource");
+        for (let i = 0; i < resourceNodes.length; i++) {
+            const rUid = getTagText(resourceNodes[i], "UID");
+            const rName = getTagText(resourceNodes[i], "Name");
+            if (rUid && rName) ressourcesMap[rUid] = rName;
+        }
+
+        // Extraction des affectations (TaskUID -> ResourceUID)
+        const taskResourcesMap = {};
+        const assignmentNodes = xmlDoc.getElementsByTagName("Assignment");
+        for (let i = 0; i < assignmentNodes.length; i++) {
+            const tUid = getTagText(assignmentNodes[i], "TaskUID");
+            const rUid = getTagText(assignmentNodes[i], "ResourceUID");
+            if (tUid && rUid && ressourcesMap[rUid]) {
+                if (!taskResourcesMap[tUid]) taskResourcesMap[tUid] = [];
+                if (!taskResourcesMap[tUid].includes(ressourcesMap[rUid])) {
+                    taskResourcesMap[tUid].push(ressourcesMap[rUid]);
+                }
+            }
+        }
+
+        // Extraction des tâches
+        const taskNodes = xmlDoc.getElementsByTagName("Task");
+        const tasksList = [];
+
+        for (let i = 0; i < taskNodes.length; i++) {
+            const tNode = taskNodes[i];
+            const uid = getTagText(tNode, "UID");
+            const id = getTagText(tNode, "ID");
+            const name = getTagText(tNode, "Name");
+            const startRaw = getTagText(tNode, "Start");
+            const finishRaw = getTagText(tNode, "Finish");
+            const outlineLevel = parseInt(getTagText(tNode, "OutlineLevel") || "1", 10);
+            const summary = getTagText(tNode, "Summary") === "1";
+            const milestone = getTagText(tNode, "Milestone") === "1";
+            const percentComplete = parseInt(getTagText(tNode, "PercentComplete") || "0", 10);
+            const wbs = getTagText(tNode, "WBS") || id;
+
+            // Ignorer la tâche récapitulative racine ID 0 si vide
+            if (id === "0" && !name) continue;
+            if (!name || !startRaw || !finishRaw) continue;
+
+            const startDate = startRaw.split("T")[0];
+            const finishDate = finishRaw.split("T")[0];
+            const ressources = taskResourcesMap[uid] || [];
+
+            tasksList.push({
+                uid: uid || String(i + 1),
+                id: id,
+                wbs: wbs,
+                name: name,
+                start: startDate,
+                finish: finishDate,
+                outlineLevel: outlineLevel,
+                summary: summary,
+                milestone: milestone,
+                percentComplete: percentComplete,
+                resources: ressources
+            });
+        }
+
+        if (tasksList.length === 0) {
+            throw new Error("Aucune tâche valide avec dates trouvée dans ce fichier XML MS Project.");
+        }
+
+        return {
+            nom: titreProjet,
+            tasks: tasksList
+        };
+    }
+
+    function importerFichierMsProjectXml(event) {
+        const file = event.target.files[0];
+        if (!file || !chantierActuel) return;
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const parsedData = parserContenuXmlMsProject(e.target.result, file.name);
+                if (!chantierActuel.planningsGantt) chantierActuel.planningsGantt = [];
+
+                const nouveauPlanning = {
+                    id: "gantt_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+                    nom: parsedData.nom,
+                    fichierSource: file.name,
+                    dateImport: new Date().toLocaleDateString('fr-FR'),
+                    visible: true,
+                    expanded: true,
+                    tasks: parsedData.tasks
+                };
+
+                chantierActuel.planningsGantt.push(nouveauPlanning);
+
+                const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
+                if (idx !== -1) listeTousChantiers[idx] = chantierActuel;
+                await sauvegarderUnChantierDansIndexedDB(chantierActuel);
+
+                rafraichirVueGanttComplete();
+                notifierModificationLocale();
+                alert(`✅ Planning "${nouveauPlanning.nom}" importé (${nouveauPlanning.tasks.length} tâches) dans le répertoire !`);
+            } catch (err) {
+                alert("❌ Erreur d'import MS Project XML : " + err.message);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = "";
+    }
+
+    function declencherMiseAJourPlanningGantt(planningId) {
+        planningIdEnCoursDeMiseAJour = planningId;
+        document.getElementById('updateMsProjectXmlInput').click();
+    }
+
+    function executerMiseAJourMsProjectXml(event) {
+        const file = event.target.files[0];
+        if (!file || !chantierActuel || !planningIdEnCoursDeMiseAJour) return;
+
+        const planningCible = (chantierActuel.planningsGantt || []).find(p => p.id === planningIdEnCoursDeMiseAJour);
+        if (!planningCible) return;
+
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const parsedData = parserContenuXmlMsProject(e.target.result, file.name);
+                planningCible.tasks = parsedData.tasks;
+                planningCible.fichierSource = file.name;
+                planningCible.dateImport = new Date().toLocaleDateString('fr-FR') + " (MàJ)";
+
+                // Nettoyage des UIDs de tâches supprimées dans les puces liées tout en conservant les liaisons valides
+                const validUids = new Set(parsedData.tasks.map(t => t.uid));
+                (chantierActuel.puces || []).forEach(puce => {
+                    if (puce.ganttLink && puce.ganttLink.planningId === planningCible.id && puce.ganttLink.mode === "tasks") {
+                        puce.ganttLink.taskUids = (puce.ganttLink.taskUids || []).filter(u => validUids.has(u));
+                    }
+                });
+
+                const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
+                if (idx !== -1) listeTousChantiers[idx] = chantierActuel;
+                await sauvegarderUnChantierDansIndexedDB(chantierActuel);
+
+                rafraichirVueGanttComplete();
+                notifierModificationLocale();
+                alert(`🔄 Planning "${planningCible.nom}" mis à jour avec succès ! Les liaisons avec vos puces ont été conservées.`);
+            } catch (err) {
+                alert("❌ Erreur lors de la mise à jour XML : " + err.message);
+            } finally {
+                planningIdEnCoursDeMiseAJour = null;
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = "";
+    }
+
+    async function renommerPlanningGantt(planningId) {
+        if (!chantierActuel) return;
+        const plan = (chantierActuel.planningsGantt || []).find(p => p.id === planningId);
+        if (!plan) return;
+
+        const nouveauNom = prompt("✏️ Nouveau nom pour ce planning dans le répertoire :", plan.nom);
+        if (nouveauNom && nouveauNom.trim() !== "") {
+            plan.nom = nouveauNom.trim();
+            await sauvegarderChantierActuelEtMajGantt();
+        }
+    }
+
+    async function basculerVisibilitePlanningGantt(planningId, visible) {
+        if (!chantierActuel) return;
+        const plan = (chantierActuel.planningsGantt || []).find(p => p.id === planningId);
+        if (plan) {
+            plan.visible = visible;
+            await sauvegarderChantierActuelEtMajGantt();
+        }
+    }
+
+    async function basculerDepliagePlanningGantt(planningId) {
+        if (!chantierActuel) return;
+        const plan = (chantierActuel.planningsGantt || []).find(p => p.id === planningId);
+        if (plan) {
+            plan.expanded = !plan.expanded;
+            rafraichirDiagrammeGantt();
+        }
+    }
+
+    function basculerDepliageTousPlannings(ouvrir) {
+        if (!chantierActuel || !chantierActuel.planningsGantt) return;
+        chantierActuel.planningsGantt.forEach(p => p.expanded = ouvrir);
+        rafraichirDiagrammeGantt();
+    }
+
+    async function supprimerPlanningGantt(planningId) {
+        if (!chantierActuel) return;
+        const plan = (chantierActuel.planningsGantt || []).find(p => p.id === planningId);
+        if (!plan) return;
+
+        if (confirm(`🗑️ Supprimer le planning "${plan.nom}" du répertoire ? Les liaisons associées sur les puces seront retirées.`)) {
+            chantierActuel.planningsGantt = chantierActuel.planningsGantt.filter(p => p.id !== planningId);
+            (chantierActuel.puces || []).forEach(puce => {
+                if (puce.ganttLink && puce.ganttLink.planningId === planningId) {
+                    delete puce.ganttLink;
+                }
+            });
+            await sauvegarderChantierActuelEtMajGantt();
+        }
+    }
+
+    async function sauvegarderChantierActuelEtMajGantt() {
+        const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
+        if (idx !== -1) listeTousChantiers[idx] = chantierActuel;
+        await sauvegarderUnChantierDansIndexedDB(chantierActuel);
+        rafraichirVueGanttComplete();
+        notifierModificationLocale();
+    }
+
+    function rafraichirVueGanttComplete() {
+        rafraichirRepertoirePlanningsGantt();
+        rafraichirFiltreEntreprisesGantt();
+        rafraichirDiagrammeGantt();
+    }
+
+    function rafraichirRepertoirePlanningsGantt() {
+        const ctn = document.getElementById('ganttRepertoireListeContainer');
+        if (!ctn || !chantierActuel) return;
+
+        const plannings = chantierActuel.planningsGantt || [];
+        if (plannings.length === 0) {
+            ctn.innerHTML = `<p style="font-style:italic; color:#777; margin:0;">Aucun planning MS Project importé dans le répertoire.</p>`;
+            return;
+        }
+
+        ctn.innerHTML = plannings.map(p => {
+            const nbPucesLiees = (chantierActuel.puces || []).filter(puce => puce.ganttLink && puce.ganttLink.planningId === p.id && puce.ganttLink.mode !== 'none').length;
+            return `
+                <div class="gantt-repo-item">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <label class="filter-checkbox-label" style="color:#1a73e8; font-size:14px;">
+                            <input type="checkbox" ${p.visible ? 'checked' : ''} onchange="basculerVisibilitePlanningGantt('${p.id}', this.checked)">
+                            📁 ${p.nom}
+                        </label>
+                        <span style="font-size:11px; color:#666; background:#f1f3f4; padding:2px 8px; border-radius:10px;">${p.tasks.length} tâches • Importé le ${p.dateImport}</span>
+                        ${nbPucesLiees > 0 ? `<span style="font-size:11px; color:#137333; background:#e6f4ea; padding:2px 8px; border-radius:10px; font-weight:bold;">📍 ${nbPucesLiees} puce(s) liée(s)</span>` : ''}
+                    </div>
+                    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                        <button type="button" class="btn btn-small" style="padding:4px 8px; font-size:11px; background:#5f6368;" onclick="renommerPlanningGantt('${p.id}')">✏️ Renommer</button>
+                        <button type="button" class="btn btn-small" style="padding:4px 8px; font-size:11px; background:#1a73e8;" onclick="declencherMiseAJourPlanningGantt('${p.id}')">🔄 MàJ XML</button>
+                        <button type="button" class="btn btn-small btn-danger" style="padding:4px 8px; font-size:11px;" onclick="supprimerPlanningGantt('${p.id}')">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function rafraichirFiltreEntreprisesGantt() {
+        const sel = document.getElementById('ganttFilterEntrepriseSelect');
+        if (!sel || !chantierActuel) return;
+        const valActuelle = sel.value;
+
+        const setEnt = new Set(chantierActuel.entreprises || []);
+        (chantierActuel.planningsGantt || []).forEach(p => {
+            p.tasks.forEach(t => {
+                (t.resources || []).forEach(r => setEnt.add(r));
+            });
+        });
+
+        sel.innerHTML = `<option value="">Toutes les entreprises / ressources</option>` +
+            Array.from(setEnt).map(e => `<option value="${e}" ${e === valActuelle ? 'selected' : ''}>🏢 ${e}</option>`).join('');
+    }
+
+    function obtenirDateEcheancePucePourGantt(puce) {
+        if (puce.taches && puce.taches.length > 0) {
+            const dates = puce.taches.map(t => t.echeance).filter(d => d && d.trim() !== "").sort();
+            if (dates.length > 0) return dates[dates.length - 1];
+        }
+        return chantierActuel.dateVisite || new Date().toISOString().split('T')[0];
+    }
+
+    function rafraichirDiagrammeGantt() {
+        const ctn = document.getElementById('ganttDiagrammeContainer');
+        if (!ctn || !chantierActuel) return;
+
+        const planningsVisibles = (chantierActuel.planningsGantt || []).filter(p => p.visible);
+        if (planningsVisibles.length === 0) {
+            ctn.innerHTML = `<p style="padding:20px; text-align:center; color:#777;">Importez ou cochez un planning dans le répertoire pour visualiser le diagramme.</p>`;
+            return;
+        }
+
+        const filtreEnt = document.getElementById('ganttFilterEntrepriseSelect').value;
+        const onlyLinked = document.getElementById('ganttFilterOnlyLinked').checked;
+
+        // Calcul de la plage temporelle globale (minDate -> maxDate)
+        let minTime = Infinity;
+        let maxTime = -Infinity;
+
+        const pushDateRange = (dStr) => {
+            if (!dStr) return;
+            const t = new Date(dStr + "T00:00:00").getTime();
+            if (!isNaN(t)) {
+                if (t < minTime) minTime = t;
+                if (t > maxTime) maxTime = t;
+            }
+        };
+
+        planningsVisibles.forEach(plan => {
+            plan.tasks.forEach(t => {
+                pushDateRange(t.start);
+                pushDateRange(t.finish);
+            });
+            const jalonsPlan = (chantierActuel.puces || []).filter(puce => puce.ganttLink && puce.ganttLink.planningId === plan.id && puce.ganttLink.mode === "milestone");
+            jalonsPlan.forEach(j => pushDateRange(obtenirDateEcheancePucePourGantt(j)));
+        });
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        pushDateRange(today.toISOString().split('T')[0]);
+
+        if (minTime === Infinity) {
+            ctn.innerHTML = `<p style="padding:20px; text-align:center; color:#777;">Aucune date valide dans les plannings sélectionnés.</p>`;
+            return;
+        }
+
+        // Marge de sécurité de 7 jours avant et après
+        const DAY_MS = 24 * 60 * 60 * 1000;
+        minTime -= 7 * DAY_MS;
+        maxTime += 7 * DAY_MS;
+
+        // Génération des semaines pour l'en-tête
+        const totalDays = Math.max(14, Math.ceil((maxTime - minTime) / DAY_MS));
+        const pxPerDay = 14;
+        const timelineWidthPx = totalDays * pxPerDay;
+
+        let weeksHeaderHtml = "";
+        let cursorTime = minTime;
+        while (cursorTime < maxTime) {
+            const d = new Date(cursorTime);
+            const labelDate = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+            const daysInBlock = Math.min(7, Math.ceil((maxTime - cursorTime) / DAY_MS));
+            const blockW = daysInBlock * pxPerDay;
+            weeksHeaderHtml += `<div style="display:inline-block; width:${blockW}px; border-right:1px solid #ccc; text-align:center; font-size:10px; padding:4px 0; box-sizing:border-box;">${labelDate}</div>`;
+            cursorTime += 7 * DAY_MS;
+        }
+
+        const todayOffsetPx = ((today.getTime() - minTime) / DAY_MS) * pxPerDay;
+
+        let rowsHtml = "";
+
+        planningsVisibles.forEach(plan => {
+            const pucesDuPlanning = (chantierActuel.puces || []).filter(puce => puce.ganttLink && puce.ganttLink.planningId === plan.id && puce.ganttLink.mode !== "none");
+            const jalonsDuPlanning = pucesDuPlanning.filter(puce => puce.ganttLink.mode === "milestone");
+
+            // Ligne Racine du Répertoire (Espace / Calendrier)
+            rowsHtml += `
+                <tr class="gantt-row-folder" onclick="basculerDepliagePlanningGantt('${plan.id}')">
+                    <td class="gantt-sticky-col">
+                        ${plan.expanded ? '▼' : '▶'} 📁 ${plan.nom}
+                        <span style="font-size:11px; font-weight:normal; color:#555;">(${pucesDuPlanning.length} puce(s))</span>
+                    </td>
+                    <td style="width:${timelineWidthPx}px; position:relative; background:#edf2fa;">
+                        <div class="gantt-today-line" style="left:${todayOffsetPx}px;"></div>
+                    </td>
+                </tr>
+            `;
+
+            if (plan.expanded) {
+                // Tâches MS Project
+                plan.tasks.forEach(t => {
+                    const pucesLieesTache = pucesDuPlanning.filter(puce => puce.ganttLink.mode === "tasks" && (puce.ganttLink.taskUids || []).includes(t.uid));
+
+                    if (filtreEnt) {
+                        const matchRes = (t.resources || []).some(r => r.toLowerCase().includes(filtreEnt.toLowerCase()));
+                        const matchPuce = pucesLieesTache.some(puce => puceConcerneEntreprise(puce, filtreEnt));
+                        if (!matchRes && !matchPuce) return;
+                    }
+                    if (onlyLinked && pucesLieesTache.length === 0) return;
+
+                    const tStart = new Date(t.start + "T00:00:00").getTime();
+                    const tFinish = new Date(t.finish + "T00:00:00").getTime();
+                    const leftPx = Math.max(0, ((tStart - minTime) / DAY_MS) * pxPerDay);
+                    const widthPx = Math.max(10, (((tFinish - tStart) / DAY_MS) + 1) * pxPerDay);
+
+                    const indentPx = Math.max(0, (t.outlineLevel - 1) * 14);
+                    const hasLatePuce = pucesLieesTache.some(puce => puceAUnRetardAction(puce));
+                    const badgePucesHtml = pucesLieesTache.length > 0
+                        ? `<span class="gantt-puce-badge ${hasLatePuce ? 'late' : ''}" title="Puces liées : ${pucesLieesTache.map(x => 'N°' + x.numero).join(', ')}">📍 ${pucesLieesTache.length}${hasLatePuce ? ' 🚨' : ''}</span>`
+                        : '';
+
+                    const clickAction = pucesLieesTache.length > 0
+                        ? `onclick="ouvrirDetailPuceDepuisGantt(${pucesLieesTache[0].id})"`
+                        : `title="${t.name} (${formaterDateFr(t.start)} → ${formaterDateFr(t.finish)})"`;
+
+                    const resBadge = (t.resources && t.resources.length > 0) ? ` <span style="font-size:10px; color:#5f6368;">[${t.resources.join(', ')}]</span>` : '';
+
+                    rowsHtml += `
+                        <tr class="${t.summary ? 'gantt-row-summary' : ''}">
+                            <td class="gantt-sticky-col" style="padding-left:${8 + indentPx}px;">
+                                ${t.summary ? '📂' : (t.milestone ? '◆' : '•')} ${t.name}${resBadge}
+                            </td>
+                            <td class="gantt-timeline-cell" style="width:${timelineWidthPx}px; background-size:${pxPerDay * 7}px 100%;">
+                                <div class="gantt-today-line" style="left:${todayOffsetPx}px;"></div>
+                                <div class="gantt-bar ${t.summary ? 'summary' : ''} ${hasLatePuce ? 'has-late' : ''}" style="left:${leftPx}px; width:${widthPx}px;" ${clickAction}>
+                                    <div class="gantt-bar-progress" style="width:${t.percentComplete}%;"></div>
+                                    ${!t.summary ? `<span style="position:relative; z-index:2; font-size:9px;">${t.percentComplete}%</span>` : ''}
+                                    ${badgePucesHtml}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                // Jalons autonomes issus des Puces Terrain
+                jalonsDuPlanning.forEach(puce => {
+                    if (filtreEnt && !puceConcerneEntreprise(puce, filtreEnt)) return;
+
+                    const st = normaliserStatutPuce(puce);
+                    const dateJalon = obtenirDateEcheancePucePourGantt(puce);
+                    const jTime = new Date(dateJalon + "T00:00:00").getTime();
+                    const leftPx = Math.max(4, ((jTime - minTime) / DAY_MS) * pxPerDay);
+
+                    let mClass = "";
+                    if (st === "en_cours") mClass = "progress";
+                    else if (st === "resolue") mClass = "resolved";
+
+                    const enRetard = puceAUnRetardAction(puce);
+
+                    rowsHtml += `
+                        <tr style="background:#fffdf5;">
+                            <td class="gantt-sticky-col" style="padding-left:22px; color:#b06000; font-weight:bold; cursor:pointer;" onclick="ouvrirDetailPuceDepuisGantt(${puce.id})">
+                                ◆ Jalon Puce N° ${puce.numero} (${puce.niveauNom}${puce.zonePrecis ? ' - ' + puce.zonePrecis : ''}) ${enRetard ? '🚨' : ''}
+                            </td>
+                            <td class="gantt-timeline-cell" style="width:${timelineWidthPx}px; background-size:${pxPerDay * 7}px 100%;">
+                                <div class="gantt-today-line" style="left:${todayOffsetPx}px;"></div>
+                                <div class="gantt-milestone ${mClass}" style="left:${leftPx}px;" onclick="ouvrirDetailPuceDepuisGantt(${puce.id})" title="Cliquer pour ouvrir la Puce N°${puce.numero}"></div>
+                                <span class="gantt-milestone-label" style="left:${leftPx}px;" onclick="ouvrirDetailPuceDepuisGantt(${puce.id})">Puce N°${puce.numero} (${formaterDateFr(dateJalon)})</span>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        });
+
+        ctn.innerHTML = `
+            <table class="gantt-table">
+                <thead>
+                    <tr>
+                        <th class="gantt-sticky-col">Arborescence Plannings &amp; Tâches</th>
+                        <th style="padding:0; text-align:left; width:${timelineWidthPx}px;">${weeksHeaderHtml}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml || `<tr><td colspan="2" style="padding:15px; text-align:center;">Aucune tâche ne correspond aux filtres sélectionnés.</td></tr>`}
+                </tbody>
+            </table>
+        `;
+    }
+
+    function ouvrirDetailPuceDepuisGantt(idPuce) {
+        switchTab('tabTerrain');
+        selectionnerPuceDepuisTableau(idPuce);
+    }
+
+    /* -------------------------------------------------------------
+       LIAISON DEPUIS LA FICHE DE SAISIE D'UNE PUCE
+    ------------------------------------------------------------- */
+    function initialiserSelecteurGanttDansFichePuce(puce) {
+        const selPlan = document.getElementById('puceGanttPlanningSelect');
+        const selMode = document.getElementById('puceGanttModeSelect');
+        if (!selPlan || !selMode) return;
+
+        const plannings = chantierActuel.planningsGantt || [];
+        selPlan.innerHTML = `<option value="">-- Sélectionner un planning --</option>` +
+            plannings.map(pl => `<option value="${pl.id}">📁 ${pl.nom}</option>`).join('');
+
+        const link = puce.ganttLink || { planningId: "", mode: "none", taskUids: [] };
+        selPlan.value = link.planningId || "";
+        selMode.value = link.mode || "none";
+
+        rafraichirOptionsLiaisonGanttPuce(link.taskUids || []);
+    }
+
+    function rafraichirOptionsLiaisonGanttPuce(preselectedUids = null) {
+        const planningId = document.getElementById('puceGanttPlanningSelect').value;
+        const mode = document.getElementById('puceGanttModeSelect').value;
+        const tasksZone = document.getElementById('puceGanttTasksZone');
+        const milestoneZone = document.getElementById('puceGanttMilestoneZone');
+        const cbxContainer = document.getElementById('puceGanttTasksCheckboxes');
+
+        tasksZone.style.display = "none";
+        milestoneZone.style.display = "none";
+
+        if (!planningId || mode === "none") return;
+
+        if (mode === "milestone") {
+            milestoneZone.style.display = "block";
+            return;
+        }
+
+        if (mode === "tasks") {
+            const plan = (chantierActuel.planningsGantt || []).find(p => p.id === planningId);
+            if (!plan || !plan.tasks || plan.tasks.length === 0) {
+                cbxContainer.innerHTML = `<span style="font-size:12px; color:#888;">Aucune tâche disponible dans ce planning.</span>`;
+                tasksZone.style.display = "block";
+                return;
+            }
+
+            let checkedSet = new Set(preselectedUids || []);
+            if (preselectedUids === null) {
+                checkedSet = new Set(Array.from(document.querySelectorAll('#puceGanttTasksCheckboxes input:checked')).map(i => i.value));
+            }
+
+            cbxContainer.innerHTML = plan.tasks.map(t => {
+                const indent = Math.max(0, (t.outlineLevel - 1) * 14);
+                const isChecked = checkedSet.has(t.uid) ? 'checked' : '';
+                return `
+                    <label class="entreprise-checkbox-item" style="padding-left:${indent}px; font-size:12px;">
+                        <input type="checkbox" value="${t.uid}" ${isChecked}>
+                        <span>${t.summary ? '📂 <strong>' + t.name + '</strong>' : '• ' + t.name} <span style="color:#666;">(${formaterDateFr(t.start)} → ${formaterDateFr(t.finish)})</span></span>
+                    </label>
+                `;
+            }).join('');
+
+            tasksZone.style.display = "block";
+        }
     }
 
     /* -------------------------------------------------------------
@@ -1202,15 +1853,12 @@
         document.querySelectorAll('.chk-entreprise-export').forEach(chk => chk.checked = cocher);
     }
 
-    /* VERIFICATION SI UNE PUCE A AU MOINS UNE ACTION ACTIVES / NON SOLDÉE POUR UNE ENTREPRISE */
     function puceConcerneEntreprise(p, nomEntreprise) {
         if (!nomEntreprise) return true;
         const stPuce = normaliserStatutPuce(p);
 
-        // Si la puce complète est levée/résolue, elle ne concerne plus l'entreprise pour son rapport
         if (stPuce === "resolue") return false;
 
-        // Vérification dans les sous-tâches : il faut au moins une tâche attribuée à l'entreprise ET non soldée
         if (p.taches && p.taches.length > 0) {
             const aDesTachesNonSoldees = p.taches.some(t => {
                 if (t.entreprise && t.entreprise !== nomEntreprise) return false;
@@ -1219,7 +1867,6 @@
             if (aDesTachesNonSoldees) return true;
         }
 
-        // Vérification dans les entreprises globales cochées si aucune tâche spécifique n'est définie
         if ((!p.taches || p.taches.length === 0) && p.entreprises && p.entreprises.includes(nomEntreprise)) {
             return true;
         }
@@ -1240,7 +1887,6 @@
             puces = puces.filter(p => puceConcerneEntreprise(p, entrepriseFiltre));
         }
 
-        // 1. Analyse des puces globales et statuts
         const actives = puces.filter(p => normaliserStatutPuce(p) === "active");
         const enCours = puces.filter(p => normaliserStatutPuce(p) === "en_cours");
         const levees = puces.filter(p => normaliserStatutPuce(p) === "resolue");
@@ -1248,7 +1894,6 @@
         const entText = entrepriseFiltre ? ` pour le lot ${entrepriseFiltre}` : '';
         lignesSynthese.push(`• Bilan des constatations${entText} : ${puces.length} point(s) enregistré(s) au total (${actives.length} actif(s), ${enCours.length} en cours, ${levees.length} levé(s)).`);
 
-        // 2. Détection dynamique des actions en retard
         let retardsDetail = [];
         puces.forEach(p => {
             const st = normaliserStatutPuce(p);
@@ -1372,6 +2017,10 @@
         document.getElementById(tabId).classList.add('active');
         const clickedBtn = Array.from(document.querySelectorAll('.tab-button')).find(b => b.getAttribute('onclick').includes(tabId));
         if(clickedBtn) clickedBtn.classList.add('active');
+
+        if (tabId === 'tabGantt') {
+            rafraichirVueGanttComplete();
+        }
     }
 
     function obtenirNomDossierChantier(nomChantier) {
@@ -1497,7 +2146,6 @@
             const nomDossier = obtenirNomDossierChantier(chantierActuel.nom);
             const urlConfig = `https://api.github.com/repos/${user}/${repo}/contents/${nomDossier}/config.json`;
 
-            let distantChantier = null;
             let shaDistant = null;
 
             const resGet = await fetch(`${urlConfig}?t=${Date.now()}`, {
@@ -1622,6 +2270,9 @@
         }, 500);
     }
 
+    /* -------------------------------------------------------------
+       EXPORTATION ZIP INCLUANT LES PLANNINGS GANTT DU RÉPERTOIRE
+    ------------------------------------------------------------- */
     async function exporterRapportDuJourIncr() {
         fermerMenuActions();
         if(!chantierActuel) return alert("Aucun chantier actif sélectionné.");
@@ -1634,6 +2285,7 @@
 
         const pucesCopie = JSON.parse(JSON.stringify(chantierActuel.puces || []));
         const notesCopie = JSON.parse(JSON.stringify(chantierActuel.notes || []));
+        const planningsCopie = JSON.parse(JSON.stringify(chantierActuel.planningsGantt || []));
 
         pucesCopie.forEach((p) => {
             if (p.photos && p.photos.length > 0) {
@@ -1671,6 +2323,14 @@
             }
         });
 
+        // Sauvegarde structurée de chaque planning Gantt dans un dossier dédié gantt/ du ZIP
+        const indexGanttZip = [];
+        planningsCopie.forEach((plan, idxPlan) => {
+            const nomFichierGantt = `gantt/planning_${idxPlan + 1}_${formaterSanitizedChaine(plan.nom)}.json`;
+            zip.file(nomFichierGantt, JSON.stringify(plan, null, 2));
+            indexGanttZip.push(nomFichierGantt);
+        });
+
         const rapportJsonObj = {
             type_fichier: "rapport_visite_incremental",
             chantier_id: chantierActuel.id,
@@ -1678,7 +2338,9 @@
             reference: chantierActuel.reference,
             date_visite: dateAujourdhui,
             constatations_puces: pucesCopie,
-            notes_associees: notesCopie
+            notes_associees: notesCopie,
+            plannings_gantt: planningsCopie,
+            fichiers_gantt_zip: indexGanttZip
         };
 
         zip.file("rapport.json", JSON.stringify(rapportJsonObj, null, 2));
@@ -1697,7 +2359,7 @@
 
         const driveUrl = obtenirLienDriveActuel();
         setTimeout(() => {
-            if (confirm(`📦 Archive "${zipNomFichierLocal}" téléchargée en local !\n\nVoulez-vous ouvrir le dossier Google Drive de ce chantier pour y déposer ce rapport ?`)) {
+            if (confirm(`📦 Archive "${zipNomFichierLocal}" téléchargée en local (avec ${planningsCopie.length} planning(s) Gantt inclus) !\n\nVoulez-vous ouvrir le dossier Google Drive de ce chantier pour y déposer ce rapport ?`)) {
                 window.open(driveUrl, '_blank');
             }
         }, 500);
@@ -1747,6 +2409,7 @@
 
                 rafraichirPucesGraphiques();
                 rafraichirTableauRemarques();
+                rafraichirVueGanttComplete();
                 notifierModificationLocale();
                 alert("🗑️ Le rapport de visite a été entièrement réinitialisé ! Tous les points et remarques ont été supprimés.");
             }
@@ -1766,6 +2429,9 @@
         alert("💾 Paramètres enregistrés pour ce chantier !");
     }
 
+    /* -------------------------------------------------------------
+       IMPORTATION / FUSION ZIP INCLUANT LES PLANNINGS GANTT
+    ------------------------------------------------------------- */
     async function injecterHistoriqueRemarquesJson(event) {
         const file = event.target.files[0];
         if (!file || !chantierActuel) return;
@@ -1773,6 +2439,7 @@
         try {
             let pucesAInjecter = [];
             let notesAInjecter = [];
+            let planningsAInjecter = [];
 
             if (file.name.endsWith('.zip')) {
                 const zip = await JSZip.loadAsync(file);
@@ -1787,6 +2454,18 @@
 
                 pucesAInjecter = rapportObj.constatations_puces || rapportObj.puces || [];
                 notesAInjecter = rapportObj.notes_associees || rapportObj.notes || [];
+                planningsAInjecter = rapportObj.plannings_gantt || [];
+
+                // Si les plannings sont dans le dossier gantt/ du ZIP et non dans rapport.json
+                if (planningsAInjecter.length === 0 && rapportObj.fichiers_gantt_zip) {
+                    for (let cheminGantt of rapportObj.fichiers_gantt_zip) {
+                        const fGantt = zip.file(cheminGantt);
+                        if (fGantt) {
+                            const gText = await fGantt.async("string");
+                            planningsAInjecter.push(JSON.parse(gText));
+                        }
+                    }
+                }
 
                 for (let p of pucesAInjecter) {
                     if (p.photos && p.photos.length > 0) {
@@ -1824,9 +2503,10 @@
                 const rapportObj = JSON.parse(jsonText);
                 pucesAInjecter = rapportObj.constatations_puces || rapportObj.puces || [];
                 notesAInjecter = rapportObj.notes_associees || rapportObj.notes || [];
+                planningsAInjecter = rapportObj.plannings_gantt || rapportObj.planningsGantt || [];
             }
 
-            await appliquerFusionDonneesRapport(pucesAInjecter, notesAInjecter);
+            await appliquerFusionDonneesRapport(pucesAInjecter, notesAInjecter, planningsAInjecter);
 
         } catch (err) {
             alert("❌ Impossible de décompresser ou lire ce fichier rapport. Détail : " + err.message);
@@ -1834,10 +2514,21 @@
         event.target.value = ""; 
     }
 
-    async function appliquerFusionDonneesRapport(pucesAInjecter, notesAInjecter) {
-        if (pucesAInjecter.length === 0 && notesAInjecter.length === 0) {
-            return alert("⚠️ Aucune remarque ou note valide trouvée dans ce rapport.");
+    async function appliquerFusionDonneesRapport(pucesAInjecter, notesAInjecter, planningsAInjecter = []) {
+        if (pucesAInjecter.length === 0 && notesAInjecter.length === 0 && planningsAInjecter.length === 0) {
+            return alert("⚠️ Aucune remarque, note ou planning valide trouvé dans ce rapport.");
         }
+
+        // Fusion / Mise à jour intelligente des plannings Gantt
+        if (!chantierActuel.planningsGantt) chantierActuel.planningsGantt = [];
+        planningsAInjecter.forEach(planIn => {
+            const idxExist = chantierActuel.planningsGantt.findIndex(p => p.id === planIn.id || p.nom.toLowerCase() === planIn.nom.toLowerCase());
+            if (idxExist !== -1) {
+                chantierActuel.planningsGantt[idxExist] = planIn;
+            } else {
+                chantierActuel.planningsGantt.push(planIn);
+            }
+        });
 
         pucesAInjecter.forEach(p => {
             if (p.photo && (!p.photos || p.photos.length === 0)) {
@@ -1867,8 +2558,9 @@
 
         chargerPlanEtPucesDuNiveauActuel();
         rafraichirVueNotes();
+        rafraichirVueGanttComplete();
         notifierModificationLocale();
-        alert(`🎯 Succès ! ${pucesAInjecter.length} puces et ${notesAInjecter.length} note(s) ont été fusionnées sur vos plans.`);
+        alert(`🎯 Succès ! ${pucesAInjecter.length} puce(s), ${notesAInjecter.length} note(s) et ${planningsAInjecter.length} planning(s) Gantt ont été fusionnés.`);
     }
 
     function chargerImagePlanNiveauDirectTerrain(event) {
@@ -1992,11 +2684,13 @@
                             listeTousChantiers[idx] = {
                                 ...cObj,
                                 puces: listeTousChantiers[idx].puces || [],
-                                notes: listeTousChantiers[idx].notes || []
+                                notes: listeTousChantiers[idx].notes || [],
+                                planningsGantt: listeTousChantiers[idx].planningsGantt || []
                             };
                         } else {
                             cObj.puces = [];
                             cObj.notes = [];
+                            cObj.planningsGantt = [];
                             listeTousChantiers.push(cObj);
                         }
 
@@ -2062,7 +2756,7 @@
             driveUrl: driveUrlSaisi || DEFAULT_GOOGLE_DRIVE_URL,
             dateVisite: new Date().toISOString().split('T')[0],
             folderName: obtenirNomDossierChantier(nouveauNom),
-            niveaux: niveauxTemporaires, entreprises: entreprisesTemporaires, puces: [], notes: []
+            niveaux: niveauxTemporaires, entreprises: entreprisesTemporaires, puces: [], notes: [], planningsGantt: []
         };
 
         listeTousChantiers.push(nouveauChantier);
@@ -2083,7 +2777,7 @@
             <div class="chantier-card" onclick="ouvrirEtChargerChantier('${c.id}')">
                 <h3 style="margin:0; padding-right:80px; font-size:16px;">🏢 ${c.nom}</h3>
                 <p style="margin:5px 0 0 0; font-size:13px; color:#666;">Ref : ${c.reference} — Lieu : ${c.localisation}</p>
-                <div style="margin-top:5px; font-size:11px; color:#1a73e8; font-weight:bold;">📊 ${c.puces ? c.puces.length : 0} puce(s) active(s)</div>
+                <div style="margin-top:5px; font-size:11px; color:#1a73e8; font-weight:bold;">📊 ${c.puces ? c.puces.length : 0} puce(s) active(s) • 📅 ${c.planningsGantt ? c.planningsGantt.length : 0} planning(s)</div>
                 <button type="button" class="btn-delete-card" onclick="supprimerChantierDefinitif(event, '${c.id}', '${c.nom.replace(/'/g, "\\'")}')">Supprimer 🗑️</button>
             </div>
         `).join('');
@@ -2119,6 +2813,7 @@
         if(!chantierActuel.puces) chantierActuel.puces = [];
         if(!chantierActuel.niveaux) chantierActuel.niveaux = [];
         if(!chantierActuel.entreprises) chantierActuel.entreprises = [];
+        if(!chantierActuel.planningsGantt) chantierActuel.planningsGantt = [];
         if(!chantierActuel.dateVisite) chantierActuel.dateVisite = new Date().toISOString().split('T')[0];
 
         document.getElementById('viewNom').innerText = chantierActuel.nom || "Sans nom";
@@ -2128,7 +2823,6 @@
         document.getElementById('viewDateVisiteInput').value = chantierActuel.dateVisite;
         document.getElementById('viewEntreprises').innerHTML = chantierActuel.entreprises.map(e => `<span class="enterprise-badge">${e}</span>`).join('') || "Aucune entreprise";
 
-        // Initialisation du texte de synthèse automatique s'il n'existe pas encore
         const texteAutoSynthese = chantierActuel.syntheseManuel || genererSyntheseEvolutionsChantier();
         document.getElementById('syntheseEvolutionsInput').value = texteAutoSynthese;
 
@@ -2147,6 +2841,7 @@
 
         document.getElementById('printOptSynthese').checked = true;
         document.getElementById('printOptPlans').checked = true;
+        document.getElementById('printOptGantt').checked = true;
         document.getElementById('printOptNotes').checked = true;
         document.getElementById('printOptTableau').checked = true;
         document.getElementById('printOptPhotos').checked = true;
@@ -2154,13 +2849,13 @@
         document.getElementById('printOptRemarquesEnCours').checked = true;
         document.getElementById('printOptRemarquesLevees').checked = true;
 
-        // Réinitialisation du mode d'export
         const radioGlobal = document.querySelector('input[name="radioModeExportPdf"][value="global"]');
         if (radioGlobal) radioGlobal.checked = true;
         basculerModeExportPdf('global');
 
         switchTab('tabTerrain');
         rafraichirVueNotes();
+        rafraichirVueGanttComplete();
         changerPage('pageChantierDetails');
     }
 
@@ -2635,7 +3330,6 @@
         modeDessinZoneActif = z.type;
         pointsZoneEnCours = z.points ? [...z.points] : [];
 
-        // Mise à jour des sélecteurs de style
         if (z.couleur) document.getElementById('zoneColorPicker').value = z.couleur;
         if (z.epaisseur) {
             document.getElementById('zoneBorderWidthRange').value = z.epaisseur;
@@ -2740,7 +3434,6 @@
             return;
         }
 
-        // Mode standard : Déplacement / Placement de puce
         placerPuce(x, y);
     }
 
@@ -2836,7 +3529,6 @@
 
                 const pZones = (p.id === puceSelectionneeId) ? zonesPuceTemporairesTableau : (p.zones || []);
 
-                // Rendu des zones et lignes de liaison
                 pZones.forEach((z) => {
                     const couleurZone = z.couleur || obtenirCouleurHexaParStatut(st);
                     const epaisseurBorder = z.epaisseur ? (z.epaisseur * 0.15) : 0.4;
@@ -2854,7 +3546,6 @@
                     }
                 });
 
-                // Rendu de la puce ponctuelle
                 const div = document.createElement('div'); 
                 let classStatut = '';
                 if (st === "en_cours") classStatut = ' progress';
@@ -2875,7 +3566,6 @@
             }
         });
 
-        // Rendu temporaire pendant le tracé en cours
         if (modeDessinZoneActif && pointsZoneEnCours.length > 0) {
             const coulDraft = document.getElementById('zoneColorPicker').value || "#1a73e8";
             const epDraft = (document.getElementById('zoneBorderWidthRange').value || 2) * 0.15;
@@ -2925,6 +3615,7 @@
         entSelect.innerHTML = `<option value="">-- Entreprise responsable --</option>` + 
             (chantierActuel.entreprises || []).map(e => `<option value="${e}">${e}</option>`).join('');
 
+        initialiserSelecteurGanttDansFichePuce(p);
         rafraichirListeZonesSaisiePuce();
         rafraichirAffichageGaleriePhotosSaisie();
         rafraichirListeSousTachesSaisie();
@@ -3164,8 +3855,24 @@
             p.resolue = (statutPuceTemporaire === "resolue");
             p.updatedAt = Date.now();
 
+            // Sauvegarde de la liaison Gantt (MS Project)
+            const ganttPlanId = document.getElementById('puceGanttPlanningSelect').value;
+            const ganttMode = document.getElementById('puceGanttModeSelect').value;
+            if (ganttPlanId && ganttMode !== "none") {
+                const selectedTaskUids = ganttMode === "tasks"
+                    ? Array.from(document.querySelectorAll('#puceGanttTasksCheckboxes input:checked')).map(i => i.value)
+                    : [];
+                p.ganttLink = {
+                    planningId: ganttPlanId,
+                    mode: ganttMode,
+                    taskUids: selectedTaskUids
+                };
+            } else {
+                delete p.ganttLink;
+            }
+
             document.getElementById('zoneSaisiePuce').style.display = 'none'; puceSelectionneeId = null;
-            rafraichirTableauRemarques(); rafraichirPucesGraphiques();
+            rafraichirTableauRemarques(); rafraichirPucesGraphiques(); rafraichirVueGanttComplete();
 
             const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
             if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
@@ -3180,7 +3887,7 @@
         chantierActuel.puces = chantierActuel.puces.filter(p => p.id !== puceSelectionneeId);
         chantierActuel.puces.forEach((p, i) => p.numero = i + 1);
         document.getElementById('zoneSaisiePuce').style.display = 'none'; puceSelectionneeId = null;
-        rafraichirPucesGraphiques(); rafraichirTableauRemarques();
+        rafraichirPucesGraphiques(); rafraichirTableauRemarques(); rafraichirVueGanttComplete();
 
         const idx = listeTousChantiers.findIndex(c => c.id == chantierActuel.id);
         if(idx !== -1) listeTousChantiers[idx] = chantierActuel;
@@ -3210,6 +3917,16 @@
             const nbZones = p.zones ? p.zones.length : 0;
             const zoneAffichee = p.zonePrecis ? ` — <b>${p.zonePrecis}</b>` : '';
             const badgeZonesText = nbZones > 0 ? ` <span style="font-size:11px; color:#1a73e8; font-weight:bold;">[📐 ${nbZones} zone(s)]</span>` : '';
+
+            // Badge de liaison Gantt dans le tableau
+            let badgeGanttText = '';
+            if (p.ganttLink && p.ganttLink.planningId && p.ganttLink.mode !== 'none') {
+                const planRef = (chantierActuel.planningsGantt || []).find(pl => pl.id === p.ganttLink.planningId);
+                if (planRef) {
+                    const iconG = p.ganttLink.mode === 'milestone' ? '◆ Jalon' : `🔗 ${p.ganttLink.taskUids.length} tâche(s)`;
+                    badgeGanttText = ` <span style="font-size:11px; color:#137333; background:#e6f4ea; padding:1px 6px; border-radius:8px; font-weight:bold;">[📅 ${planRef.nom} : ${iconG}]</span>`;
+                }
+            }
 
             let labelStatut = '<span class="status-badge active">Active</span>';
             let styleLigne = '';
@@ -3244,7 +3961,7 @@
             html += `
                 <tr class="clickable-row" ${styleLigne} onclick="selectionnerPuceDepuisTableau(${p.id})">
                     <td><b>Puce ${p.numero}${gyroIcone}</b></td>
-                    <td>${p.niveauNom}${zoneAffichee}${badgeZonesText}</td>
+                    <td>${p.niveauNom}${zoneAffichee}${badgeZonesText}${badgeGanttText}</td>
                     <td>${nbPics > 0 ? `📷 (${nbPics})` : 'Non'}</td>
                     <td>${labelStatut}</td>
                     <td>${tachesHtml}${entGlobale}${obsText}</td>
@@ -3288,7 +4005,6 @@
         fermerMenuActions();
         if (!chantierActuel) return;
 
-        // Demande / Confirmation de la date de la visite avant impression
         const dateVisiteEffective = demanderEtObtenirDateVisiteExport();
 
         const modeExport = document.querySelector('input[name="radioModeExportPdf"]:checked')?.value || 'global';
@@ -3299,10 +4015,8 @@
                 return alert("⚠️ Veuillez cocher au moins une entreprise à exporter.");
             }
 
-            // Lancement séquentiel des impressions par entreprise
             lancerImpressionSequentielleEntreprises(checkboxesCochees, 0, dateVisiteEffective);
         } else {
-            // Mode global unique
             genererEtImprimerDocPdf(null, dateVisiteEffective);
         }
     }
@@ -3313,7 +4027,6 @@
         const nomEnt = listeEntreprises[indexCourant];
         genererEtImprimerDocPdf(nomEnt, dateVisiteEffective);
 
-        // Si plusieurs entreprises sélectionnées, on attend la fermeture de la fenêtre avant d'enchaîner
         if (indexCourant + 1 < listeEntreprises.length) {
             setTimeout(() => {
                 if (confirm(`▶ Passer à l'impression de l'entreprise suivante (${listeEntreprises[indexCourant + 1]}) ?`)) {
@@ -3326,6 +4039,7 @@
     function genererEtImprimerDocPdf(entrepriseFiltre = null, dateVisiteVal = null) {
         const imprimerSynthese = document.getElementById('printOptSynthese').checked;
         const imprimerPlans = document.getElementById('printOptPlans').checked;
+        const imprimerGantt = document.getElementById('printOptGantt').checked;
         const imprimerNotes = document.getElementById('printOptNotes').checked;
         const imprimerTableau = document.getElementById('printOptTableau').checked;
         const imprimerPhotos = document.getElementById('printOptPhotos').checked;
@@ -3338,7 +4052,6 @@
         const dateSanitized = formaterSanitizedChaine(dateVisiteTexteFr);
         const chantierSanitized = formaterSanitizedChaine(chantierActuel.nom);
 
-        // APPLICATION DES CLASSES CSS D'EXPRESSION DE TAILLE DE PLAN
         const printTemplateElem = document.getElementById('printTemplate');
         if (entrepriseFiltre) {
             printTemplateElem.classList.remove('mode-global');
@@ -3348,7 +4061,6 @@
             printTemplateElem.classList.add('mode-global');
         }
 
-        // NOMMAGE AUTOMATIQUE DU FICHIER PDF GÉNÉRÉ
         if (entrepriseFiltre) {
             const entSanitized = formaterSanitizedChaine(entrepriseFiltre);
             document.title = `Rapport_Visite_${chantierSanitized}_${entSanitized}_${dateSanitized}`;
@@ -3356,7 +4068,6 @@
             document.title = `Rapport_Visite_${chantierSanitized}_Global_${dateSanitized}`;
         }
 
-        // Mise à jour du titre du document
         const elTitrePrincipal = document.getElementById('pdfTitrePrincipalDoc');
         if (entrepriseFiltre) {
             elTitrePrincipal.innerText = `RAPPORT DE VISITE — DESTINÉ À : ${entrepriseFiltre.toUpperCase()}`;
@@ -3375,7 +4086,6 @@
             document.getElementById('pdfEntreprises').innerText = (chantierActuel.entreprises || []).join(', ') || "Aucune entreprise spécifiée";
         }
 
-        // Injection du bloc de synthèse sur la page 1 du PDF
         const blockPdfSynthese = document.getElementById('pdfSyntheseBlock');
         if (imprimerSynthese) {
             blockPdfSynthese.style.display = "block";
@@ -3390,15 +4100,14 @@
         const blockPlans = document.getElementById('pdfPlansSection');
         const blockTableauGlobal = document.getElementById('pdfTableauSection');
 
-        // MODE EXPORT PAR ENTREPRISE (COMPACT : PLAN + TABLEAU DU NIVEAU SUR LA MÊME PAGE)
+        // 1. SECTION PLANS
         if (entrepriseFiltre) {
-            blockTableauGlobal.style.display = "none"; // Désactivation du grand tableau global séparé
+            blockTableauGlobal.style.display = "none";
 
             if (imprimerPlans && chantierActuel.niveaux) {
                 const pdfPlansMultiples = document.getElementById('pdfPlansMultiples'); 
                 pdfPlansMultiples.innerHTML = "";
 
-                // Filtrage strict : Niveaux ayant des puces NON LEVÉES concernant l'entreprise
                 const niveauxAAfficher = chantierActuel.niveaux.filter(niv => {
                     if (!chantierActuel.puces) return false;
                     return chantierActuel.puces.some(p => {
@@ -3440,7 +4149,6 @@
                         svgPdfOverlay.setAttribute("preserveAspectRatio", "none");
                         let svgPdfContent = "";
 
-                        // Puces filtrées non levées du niveau pour cette entreprise
                         const pucesNiveauEnt = (chantierActuel.puces || []).filter(p => {
                             if (p.niveauNom !== niv.nom) return false;
                             return puceConcerneEntreprise(p, entrepriseFiltre);
@@ -3486,7 +4194,6 @@
                         ctn.appendChild(svgPdfOverlay);
                         blockNiveau.appendChild(ctn);
 
-                        // FUSION DU TABLEAU DES REMARQUES IMMÉDIATEMENT SOUS LE PLAN
                         if (imprimerTableau && pucesNiveauEnt.length > 0) {
                             const tableElem = document.createElement('table');
                             tableElem.className = "pdf-table";
@@ -3516,12 +4223,11 @@
                                     tr.style.backgroundColor = "#fffdf9";
                                 }
 
-                                // Extraction des sous-tâches NON RÉALISÉES pour cette entreprise
                                 let pdfTachesHtml = "";
                                 if (p.taches && p.taches.length > 0) {
                                     const tachesActivesEnt = p.taches.filter(t => {
                                         if (t.entreprise && t.entreprise !== entrepriseFiltre) return false;
-                                        return t.statut !== "resolue" && !t.faite; // Retrait des tâches réalisées
+                                        return t.statut !== "resolue" && !t.faite;
                                     });
 
                                     if (tachesActivesEnt.length > 0) {
@@ -3554,7 +4260,6 @@
                 blockPlans.style.display = "none";
             }
         } 
-        // MODE GLOBAL (DOCUMENT COMPLET INITIAL AVEC PLAN PLEINE PAGE)
         else {
             if (imprimerPlans && chantierActuel.niveaux) {
                 blockPlans.style.display = "block";
@@ -3647,8 +4352,160 @@
             } else {
                 blockPlans.style.display = "none";
             }
+        }
 
-            // GRAND TABLEAU GLOBAL
+        // 2. SECTION PLANNING GANTT PDF
+        const pdfGanttSection = document.getElementById('pdfGanttSection');
+        const pdfGanttContainer = document.getElementById('pdfGanttContainer');
+        const planningsImprimables = (chantierActuel.planningsGantt || []).filter(p => p.visible);
+
+        if (imprimerGantt && planningsImprimables.length > 0) {
+            pdfGanttSection.style.display = "block";
+            document.getElementById('pdfHeaderGantt').innerText = `${compteurChapitreIndex}. Planning Gantt & Jalons de visite`;
+            compteurChapitreIndex++;
+
+            let minTime = Infinity, maxTime = -Infinity;
+            const pushD = (dStr) => {
+                if (!dStr) return;
+                const t = new Date(dStr + "T00:00:00").getTime();
+                if (!isNaN(t)) {
+                    if (t < minTime) minTime = t;
+                    if (t > maxTime) maxTime = t;
+                }
+            };
+
+            planningsImprimables.forEach(plan => {
+                plan.tasks.forEach(t => { pushD(t.start); pushD(t.finish); });
+                (chantierActuel.puces || []).forEach(puce => {
+                    if (puce.ganttLink && puce.ganttLink.planningId === plan.id && puce.ganttLink.mode === "milestone") {
+                        pushD(obtenirDateEcheancePucePourGantt(puce));
+                    }
+                });
+            });
+
+            const totalSpan = Math.max(1, maxTime - minTime);
+            const dateDebutLabel = formaterDateFr(new Date(minTime).toISOString().split('T')[0]);
+            const dateFinLabel = formaterDateFr(new Date(maxTime).toISOString().split('T')[0]);
+
+            let rowsPdfGantt = "";
+            planningsImprimables.forEach(plan => {
+                const pucesPlan = (chantierActuel.puces || []).filter(puce => puce.ganttLink && puce.ganttLink.planningId === plan.id && puce.ganttLink.mode !== "none");
+                rowsPdfGantt += `
+                    <tr style="background:#edf2fa; font-weight:bold;">
+                        <td colspan="3">📁 ${plan.nom}</td>
+                    </tr>
+                `;
+
+                plan.tasks.forEach(t => {
+                    const pucesLiees = pucesPlan.filter(puce => puce.ganttLink.mode === "tasks" && (puce.ganttLink.taskUids || []).includes(t.uid));
+                    if (entrepriseFiltre) {
+                        const matchRes = (t.resources || []).some(r => r.toLowerCase().includes(entrepriseFiltre.toLowerCase()));
+                        const matchPuce = pucesLiees.some(puce => puceConcerneEntreprise(puce, entrepriseFiltre));
+                        if (!matchRes && !matchPuce) return;
+                    }
+
+                    const tStart = new Date(t.start + "T00:00:00").getTime();
+                    const tFinish = new Date(t.finish + "T00:00:00").getTime();
+                    const leftPct = Math.max(0, Math.min(98, ((tStart - minTime) / totalSpan) * 100));
+                    const widthPct = Math.max(2, Math.min(100 - leftPct, ((tFinish - tStart) / totalSpan) * 100));
+                    const indent = Math.max(0, (t.outlineLevel - 1) * 10);
+                    const badgeP = pucesLiees.length > 0 ? ` <strong>[Puces: ${pucesLiees.map(x => 'N°' + x.numero).join(', ')}]</strong>` : '';
+
+                    rowsPdfGantt += `
+                        <tr>
+                            <td style="padding-left:${4 + indent}px;">${t.summary ? '<strong>' + t.name + '</strong>' : t.name}${badgeP}</td>
+                            <td style="text-align:center;">${formaterDateFr(t.start)} → ${formaterDateFr(t.finish)}</td>
+                            <td>
+                                <div class="pdf-gantt-bar-wrap">
+                                    <div class="pdf-gantt-bar ${t.summary ? 'summary' : ''}" style="left:${leftPct}%; width:${widthPct}%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                const jalons = pucesPlan.filter(puce => puce.ganttLink.mode === "milestone");
+                jalons.forEach(puce => {
+                    if (entrepriseFiltre && !puceConcerneEntreprise(puce, entrepriseFiltre)) return;
+                    const dJal = obtenirDateEcheancePucePourGantt(puce);
+                    const jTime = new Date(dJal + "T00:00:00").getTime();
+                    const leftPct = Math.max(1, Math.min(98, ((jTime - minTime) / totalSpan) * 100));
+
+                    rowsPdfGantt += `
+                        <tr style="background:#fffdf5;">
+                            <td style="padding-left:14px; font-weight:bold; color:#b06000;">◆ Jalon Puce N° ${puce.numero} (${puce.niveauNom})</td>
+                            <td style="text-align:center;">${formaterDateFr(dJal)}</td>
+                            <td>
+                                <div class="pdf-gantt-bar-wrap">
+                                    <div class="pdf-gantt-milestone" style="left:${leftPct}%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+            });
+
+            pdfGanttContainer.innerHTML = `
+                <table class="pdf-gantt-table">
+                    <thead>
+                        <tr>
+                            <th style="width:42%; text-align:left;">Tâche / Lot / Jalon</th>
+                            <th style="width:18%;">Période</th>
+                            <th style="width:40%;">Frise (${dateDebutLabel} → ${dateFinLabel})</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsPdfGantt}</tbody>
+                </table>
+            `;
+        } else {
+            pdfGanttSection.style.display = "none";
+        }
+
+        // 3. SECTION NOTES ET CROQUIS
+        const pdfNotesSection = document.getElementById('pdfNotesSection');
+        const pdfNotesContainer = document.getElementById('pdfNotesContainer');
+        const notesImprimables = (chantierActuel.notes || []).filter(n => {
+            if (!n.inclurePdf) return false;
+            if (entrepriseFiltre && n.puceLieeId) {
+                const puceLiee = (chantierActuel.puces || []).find(p => p.id == n.puceLieeId);
+                if (puceLiee) {
+                    if (!puceConcerneEntreprise(puceLiee, entrepriseFiltre)) return false;
+                }
+            }
+            return true;
+        });
+
+        if (imprimerNotes && notesImprimables.length > 0) {
+            pdfNotesSection.style.display = "block";
+            document.getElementById('pdfHeaderNotes').innerText = `${compteurChapitreIndex}. Notes & Schémas de visite`;
+            compteurChapitreIndex++;
+
+            pdfNotesContainer.innerHTML = notesImprimables.map(n => {
+                let puceLieeInfo = '';
+                if(n.puceLieeId) {
+                    const puceObj = (chantierActuel.puces || []).find(p => p.id == n.puceLieeId);
+                    if(puceObj) {
+                        puceLieeInfo = `<div style="font-size:9.5pt; font-weight:bold; color:#d93025; margin-bottom:6px;">📍 Associé à la remarque Puce N° ${puceObj.numero} (${puceObj.niveauNom}${puceObj.zonePrecis ? ' - ' + puceObj.zonePrecis : ''})</div>`;
+                    }
+                }
+
+                return `
+                    <div style="border:1px solid #000; padding:10px; margin-bottom:12px; page-break-inside:avoid; break-inside:avoid; background:#fff;">
+                        <div style="font-size:9pt; font-weight:bold; color:#555; border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:6px;">
+                            Date : ${n.dateCreation}
+                        </div>
+                        ${puceLieeInfo}
+                        <div style="font-size:10pt; white-space:pre-wrap;">${n.texte || 'Aucune observation textuelle.'}</div>
+                        ${n.croquis ? `<img src="${n.croquis}" style="max-width:100%; max-height:220px; display:block; margin-top:10px; border:1px solid #888;">` : ''}
+                    </div>
+                `;
+            }).join('');
+        } else {
+            pdfNotesSection.style.display = "none";
+        }
+
+        // 4. GRAND TABLEAU GLOBAL (MODE GLOBAL UNIQUEMENT)
+        if (!entrepriseFiltre) {
             if (imprimerTableau && chantierActuel.puces) {
                 blockTableauGlobal.style.display = "block";
                 document.getElementById('pdfTitreRemarques').innerText = `${compteurChapitreIndex}. Tableau des constatations et remarques`;
@@ -3708,50 +4565,7 @@
             }
         }
 
-        // SECTION NOTES ET CROQUIS
-        const pdfNotesSection = document.getElementById('pdfNotesSection');
-        const pdfNotesContainer = document.getElementById('pdfNotesContainer');
-        const notesImprimables = (chantierActuel.notes || []).filter(n => {
-            if (!n.inclurePdf) return false;
-            if (entrepriseFiltre && n.puceLieeId) {
-                const puceLiee = (chantierActuel.puces || []).find(p => p.id == n.puceLieeId);
-                if (puceLiee) {
-                    if (!puceConcerneEntreprise(puceLiee, entrepriseFiltre)) return false;
-                }
-            }
-            return true;
-        });
-
-        if (imprimerNotes && notesImprimables.length > 0) {
-            pdfNotesSection.style.display = "block";
-            document.getElementById('pdfHeaderNotes').innerText = `${compteurChapitreIndex}. Notes & Schémas de visite`;
-            compteurChapitreIndex++;
-
-            pdfNotesContainer.innerHTML = notesImprimables.map(n => {
-                let puceLieeInfo = '';
-                if(n.puceLieeId) {
-                    const puceObj = (chantierActuel.puces || []).find(p => p.id == n.puceLieeId);
-                    if(puceObj) {
-                        puceLieeInfo = `<div style="font-size:9.5pt; font-weight:bold; color:#d93025; margin-bottom:6px;">📍 Associé à la remarque Puce N° ${puceObj.numero} (${puceObj.niveauNom}${puceObj.zonePrecis ? ' - ' + puceObj.zonePrecis : ''})</div>`;
-                    }
-                }
-
-                return `
-                    <div style="border:1px solid #000; padding:10px; margin-bottom:12px; page-break-inside:avoid; break-inside:avoid; background:#fff;">
-                        <div style="font-size:9pt; font-weight:bold; color:#555; border-bottom:1px solid #ccc; padding-bottom:4px; margin-bottom:6px;">
-                            Date : ${n.dateCreation}
-                        </div>
-                        ${puceLieeInfo}
-                        <div style="font-size:10pt; white-space:pre-wrap;">${n.texte || 'Aucune observation textuelle.'}</div>
-                        ${n.croquis ? `<img src="${n.croquis}" style="max-width:100%; max-height:220px; display:block; margin-top:10px; border:1px solid #888;">` : ''}
-                    </div>
-                `;
-            }).join('');
-        } else {
-            pdfNotesSection.style.display = "none";
-        }
-
-        // SECTION REPORTAGE PHOTO (FILTRAGE DES PHOTOS PAR ENTREPRISE ET LÉGENDES DÉTAILLÉES)
+        // 5. SECTION REPORTAGE PHOTO
         const blockPhotos = document.getElementById('pdfPhotosSection');
         if (imprimerPhotos && chantierActuel.puces) {
             blockPhotos.style.display = "block";
@@ -3770,7 +4584,6 @@
                 if (p.photo && (!p.photos || p.photos.length === 0)) { p.photos = [normaliserPhotoPuce(p.photo)]; delete p.photo; }
                 const st = normaliserStatutPuce(p);
 
-                // En export ciblé entreprise, une puce levée/soldée est toujours exclue du PDF.
                 if (entrepriseFiltre && st === "resolue") return;
 
                 if (!inclureActives && st === "active") return;
@@ -3778,17 +4591,14 @@
                 if (!inclureLevees && st === "resolue") return;
 
                 if (p.photos && p.photos.length > 0) {
-                    // FILTRE DES PHOTOS ARCHIVÉES ET FILTRAGE SPECIFIQUE PAR ENTREPRISE
                     const photosValidesPdf = p.photos.map(pic => normaliserPhotoPuce(pic)).filter(pObj => {
                         if (pObj.archivee) return false;
                         if (entrepriseFiltre) {
-                            // En mode entreprise, inclure la photo si elle est globale (vide) OU si elle est assignée à cette entreprise
                             return !pObj.entreprise || pObj.entreprise === entrepriseFiltre;
                         }
                         return true;
                     });
 
-                    // Légende volontairement courte et fixe pour éviter tout débordement de la planche photo.
                     photosValidesPdf.forEach((photoObj) => {
                         collectionToutesPhotosImprimables.push({
                             src: photoObj.src,
@@ -3803,7 +4613,7 @@
             if (collectionToutesPhotosImprimables.length === 0) {
                 photoPagesContainer.innerHTML = "<p style='font-style:italic;'>Aucune photographie filtrée à imprimer pour cette sélection.</p>";
             } else {
-                const PHOTOS_PAR_PAGE = 8; // Planche photo 8 images par page (2x4)
+                const PHOTOS_PAR_PAGE = 8;
                 const nbPages = Math.ceil(collectionToutesPhotosImprimables.length / PHOTOS_PAR_PAGE);
                 
                 for (let pageIdx = 0; pageIdx < nbPages; pageIdx++) {
