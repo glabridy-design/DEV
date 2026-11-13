@@ -133,9 +133,9 @@
         .note-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid #f1f3f4; padding-bottom: 8px; flex-wrap: wrap; gap: 8px; }
         .note-sketch-img { max-width: 100%; max-height: 250px; border: 1px solid #ccc; border-radius: 6px; margin-top: 10px; display: block; background: #fff; }
 
-        /* FENÊTRES MODALES : MASQUÉES STRICTEMENT PAR DÉFAUT ÉCRAN ET IMPRESSION */
+        /* FENÊTRES MODALES : MASQUÉES PAR DÉFAUT (SANS !important POUR PERMETTRE L'OUVERTURE JS) */
         .sketch-modal-overlay, .photo-viewer-overlay { 
-            display: none !important; 
+            display: none; 
             position: fixed; 
             top: 0; left: 0; right: 0; bottom: 0; 
             background: rgba(0,0,0,0.6); 
@@ -260,16 +260,16 @@
                 page-break-inside: auto !important;
             }
             .pdf-table thead {
-                display: table-header-group !important; /* Répétition automatique de l'en-tête sur chaque page */
+                display: table-header-group !important;
             }
             .pdf-table tr {
                 page-break-inside: avoid !important;
-                break-inside: avoid !important; /* Empêche de couper une ligne au milieu */
+                break-inside: avoid !important;
             }
             .pdf-table th, .pdf-table td { 
                 border: 1px solid #000 !important; 
                 padding: 3px 5px !important; 
-                font-size: 7.5pt !important; /* Police réduite pour optimiser le gain de place */
+                font-size: 7.5pt !important; 
                 line-height: 1.25 !important;
                 text-align: left !important; 
             }
@@ -288,10 +288,10 @@
                 border-collapse: separate !important; 
                 border-spacing: 3px !important; 
                 page-break-inside: avoid !important; 
-                break-inside: avoid !important;
+                break-inside: avoid !important; 
                 margin: 0 !important;
             }
-            .photo-grid-table tr {
+            .photo-grid-table tr { 
                 height: 62mm !important;
                 page-break-inside: avoid !important; 
                 break-inside: avoid !important;
@@ -305,7 +305,7 @@
                 text-align: center !important; 
                 background: #fff !important; 
                 page-break-inside: avoid !important; 
-                break-inside: avoid !important;
+                break-inside: avoid !important; 
                 overflow: hidden !important;
             }
             .photo-grid-img { 
@@ -319,12 +319,12 @@
                 border: 1px solid #eee !important; 
             }
             .photo-grid-caption { 
-                display: block !important;
-                height: 6mm !important;
-                max-height: 6mm !important;
-                overflow: hidden !important;
-                white-space: nowrap !important;
-                text-overflow: ellipsis !important;
+                display: block !important; 
+                height: 6mm !important; 
+                max-height: 6mm !important; 
+                overflow: hidden !important; 
+                white-space: nowrap !important; 
+                text-overflow: ellipsis !important; 
                 font-size: 7.5pt !important; 
                 font-weight: bold !important; 
                 color: #1a73e8 !important; 
@@ -2481,7 +2481,6 @@
         if(!photoSrc) return;
 
         const img = new Image();
-        img.src = photoSrc;
         img.onload = () => {
             photoBaseImageObj = img;
             const canvas = document.getElementById('photoAnnotateCanvas');
@@ -2500,6 +2499,7 @@
             canvas.height = height;
 
             const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, width, height);
             ctx.drawImage(img, 0, 0, width, height);
 
             couleurPinceauPhoto = '#d93025';
@@ -2514,6 +2514,7 @@
 
             document.getElementById('photoAnnotationModalOverlay').style.display = 'flex';
         };
+        img.src = photoSrc;
     }
 
     function choisirCouleurPinceauPhoto(color, btnEl) {
@@ -3802,7 +3803,7 @@
             if (collectionToutesPhotosImprimables.length === 0) {
                 photoPagesContainer.innerHTML = "<p style='font-style:italic;'>Aucune photographie filtrée à imprimer pour cette sélection.</p>";
             } else {
-                const PHOTOS_PAR_PAGE = 8; // Plante photo 8 images par page (2x4)
+                const PHOTOS_PAR_PAGE = 8; // Planche photo 8 images par page (2x4)
                 const nbPages = Math.ceil(collectionToutesPhotosImprimables.length / PHOTOS_PAR_PAGE);
                 
                 for (let pageIdx = 0; pageIdx < nbPages; pageIdx++) {
